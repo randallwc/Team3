@@ -34,13 +34,13 @@ class Cloud:
 
     def SetX(self, val):
         self.x = val
-    
+
     def GetX(self):
         return self.x
 
     def SetY(self, val):
         self.y = val
-    
+
     def GetY(self):
         return self.y
 
@@ -66,28 +66,37 @@ class RangerShip:
 #################### INIT ####################
 pygame.init()
 clock = pygame.time.Clock()
-screenwidth, screenheight = (600, 400)
+screenwidth, screenheight = (1280, 720)
 screen = pygame.display.set_mode((screenwidth, screenheight))
 
-# Load Images
+# Load Assets
 background_path = os.path.join("./static", "background2.jpeg")
 background_image = pygame.image.load(background_path)
 ranger_path = os.path.join("./static", "rangership_50.png")
 cloud_path = os.path.join("./static", "cloud1_transparent_30.png")
+laser_path = os.path.join("./static", "laser.mp3")
 
 # pygame.mouse.set_visible(0)
 pygame.display.set_caption('Sky Danger Ranger')
 
 # initialize cloud object
-cloud = Cloud(cloud_path, randrange(0,screenwidth), 0)
+cloud = Cloud(cloud_path, randrange(0,screenwidth, 1), 0)
 
 # initialize ranger object
 Ranger = RangerShip(screenheight, screenwidth, ranger_path, 0, 0)
 
 # replace 200 with the actual height of the cloud
-# so we can continue to spawn in the cloud when it 
+# so we can continue to spawn in the cloud when it
 # goes out of view
 BOUND = 200
+
+# laser info
+maxLineWidth = 20
+lineWidth = maxLineWidth
+minLineWidth = 2
+isClicking = False # TODO move this into a screen class
+laser_sound = pygame.mixer.Sound(laser_path)
+isPlayingLaserSound = False
 
 #################### MAIN LOOP ####################
 while True:
@@ -104,8 +113,17 @@ while True:
     cloud.Show(screen)
     cloud.SetY(cloud.GetY()+10)
     if cloud.GetY() < -BOUND or cloud.GetY() > screenheight + BOUND:
-        cloud.SetX(randrange(0, screenheight))
-        cloud.SetY(-100)
+        cloud.SetX(randrange(0, screenwidth,1))
+        cloud.SetY(-100) # TODO change this to be variable based on the cloud size
+
+    # display laser
+    if isClicking:
+        if lineWidth == maxLineWidth:
+            pygame.mixer.Sound.play(laser_sound)
+        pygame.draw.line(screen, (255,0,0), (x,y), (x,0), lineWidth)
+        lineWidth -= 1
+        if lineWidth < minLineWidth:
+            lineWidth = minLineWidth
 
     # show ranger
     Ranger.UpdateCoords(x, y)
@@ -115,5 +133,10 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            isClicking = True
+        if event.type == pygame.MOUSEBUTTONUP:
+            isClicking = False
+            lineWidth = maxLineWidth
 
     pygame.display.update()
