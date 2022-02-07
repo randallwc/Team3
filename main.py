@@ -1,38 +1,51 @@
 #! /usr/bin/env python3
 
+#################### IMPORTS ####################
+
 import pygame
 import sys
 import os
+from time import sleep
+from random import randrange
 
-pygame.init()
-clock = pygame.time.Clock()
-screenwidth, screenheight = (1400, 850)
-screen = pygame.display.set_mode((screenwidth, screenheight))
-
-#Load background
-bg = pygame.image.load(os.path.join("./static", "background2.jpeg"))
-ranger_plane_file = os.path.join("./static", "rangership_50.png")
-cloud1 = os.path.join("./static", "cloud1_transparent_30.png")
-
-# pygame.mouse.set_visible(0)
-pygame.display.set_caption('Sky Danger Ranger')
-
+#################### TODOs ####################
+'''
+- [x] make cloud appear
+- [x] make plane follow cursor
+- [ ] make multiple clouds appear
+- [ ] make enemies appear
+- [ ] make enemies take damage
+- [ ] make enemies deal damage
+- [ ] make amo boxes appear
+- [ ] make plane shoot
+- [ ] make plane GIF render plane flying
+- [ ] ...
+'''
+#################### CLASSES ####################
 class Cloud:
     def __init__(self, imagefile, x, y):
         self.image = imagefile
         self.shape = pygame.image.load(imagefile)
-
         self.x = x
         self.y = y
 
     def Show(self, surface):
         surface.blit(self.shape, (self.x, self.y))
 
-    def MoveDown(self, amt):
-        # @will, was last trying to get this to work, it looks like self.y is updated but it doesnt update on screen
-        print('later')
-        self.y = amt
-        print('gater', self.y)
+    def SetX(self, val):
+        self.x = val
+    
+    def GetX(self):
+        return self.x
+
+    def SetY(self, val):
+        self.y = val
+    
+    def GetY(self):
+        return self.y
+
+    def GetCoords(self):
+        return (self.x, self.y)
 
 class RangerShip:
     def __init__(self, screenheight, screenwidth, imagefile, x, y):
@@ -40,7 +53,6 @@ class RangerShip:
         self.shape = pygame.image.load(imagefile)
         self.top = screenheight/2 - self.shape.get_height()
         self.left = screenwidth/2 - self.shape.get_width()/2
-
         self.x = x
         self.y = y
 
@@ -48,38 +60,60 @@ class RangerShip:
         surface.blit(self.shape, (self.left, self.top))
 
     def UpdateCoords(self, x, y):
-
-        # x_direction = x - self.x
-        # y_direction = y - self.y
-        # angle = (180/math.pi) * -1 * math.atan2(y_direction, x_direction)
-        # self.shape = pygame.transform.rotate(self.shape, int(angle))
-
         self.left = x-self.shape.get_width()/2
-        self.top = y - self.shape.get_height()/2
+        self.top = y-self.shape.get_height()/2
 
+#################### INIT ####################
+pygame.init()
+clock = pygame.time.Clock()
+screenwidth, screenheight = (600, 400)
+screen = pygame.display.set_mode((screenwidth, screenheight))
+
+# Load Images
+background_path = os.path.join("./static", "background2.jpeg")
+background_image = pygame.image.load(background_path)
+ranger_path = os.path.join("./static", "rangership_50.png")
+cloud_path = os.path.join("./static", "cloud1_transparent_30.png")
+
+# pygame.mouse.set_visible(0)
+pygame.display.set_caption('Sky Danger Ranger')
+
+# initialize cloud object
+cloud = Cloud(cloud_path, randrange(0,screenwidth), 0)
+
+# initialize ranger object
+Ranger = RangerShip(screenheight, screenwidth, ranger_path, 0, 0)
+
+# replace 200 with the actual height of the cloud
+# so we can continue to spawn in the cloud when it 
+# goes out of view
+BOUND = 200
+
+#################### MAIN LOOP ####################
 while True:
+    # loop clock
     clock.tick(60)
 
-    screen.blit(bg, (0,0))
+    # re render the background
+    screen.blit(background_image, (0,0))
+
+    # get coordinates of mouse
     x, y = pygame.mouse.get_pos()
 
-    # show cloud(s)
-    cloud = Cloud(cloud1, screenwidth/2, 0)
+    # show cloud
     cloud.Show(screen)
-    cloud.MoveDown(1000)
-
+    cloud.SetY(cloud.GetY()+10)
+    if cloud.GetY() < -BOUND or cloud.GetY() > screenheight + BOUND:
+        cloud.SetX(randrange(0, screenheight))
+        cloud.SetY(-100)
 
     # show ranger
-    Ranger = RangerShip(screenheight, screenwidth, ranger_plane_file, x, y)
     Ranger.UpdateCoords(x, y)
     Ranger.Show(screen)
 
-    # print(x, y)
-
+    # check for quit signal
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
-    pygame.display.update()
 
-    # pygame.draw.rect(screen, (255, 255, 255), (x, y, 400, 400))
     pygame.display.update()
