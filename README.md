@@ -1,7 +1,7 @@
 # Team 3
 
 # To Run
-`python3 game.py`
+`python3 main.py`
 
 # Requirements
 - python3
