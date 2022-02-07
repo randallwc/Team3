@@ -1,0 +1,13 @@
+*.idea
+*.icloud
+*.out
+*.pyc
+*.swp
+.DS_Store
+.Spotlight-V100
+.Trashes
+._*
+Desktop.ini
+Thumbs.db
+node_modules
+venv
