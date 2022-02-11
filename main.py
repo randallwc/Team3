@@ -76,7 +76,7 @@ ranger_path = os.path.join("./static", "rangership_50.png")
 cloud_path = os.path.join("./static", "cloud1_transparent_30.png")
 laser_path = os.path.join("./static", "laser.mp3")
 
-# pygame.mouse.set_visible(0)
+pygame.mouse.set_visible(0)
 pygame.display.set_caption('Sky Danger Ranger')
 
 # initialize cloud object
@@ -93,7 +93,7 @@ BOUND = 200
 # laser info
 maxLineWidth = 20
 lineWidth = maxLineWidth
-minLineWidth = 2
+minLineWidth = 0
 isClicking = False # TODO move this into a screen class
 laser_sound = pygame.mixer.Sound(laser_path)
 isPlayingLaserSound = False
