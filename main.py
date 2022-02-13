@@ -129,10 +129,12 @@ while True:
     Ranger.UpdateCoords(x, y)
     Ranger.Show(screen)
 
-    # check for quit signal
+    # check for events
     for event in pygame.event.get():
+        # check for window close
         if event.type == pygame.QUIT:
             sys.exit()
+        # check for mouse clicks
         if event.type == pygame.MOUSEBUTTONDOWN:
             isClicking = True
         if event.type == pygame.MOUSEBUTTONUP:
