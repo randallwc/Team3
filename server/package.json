@@ -1,0 +1,24 @@
+{
+  "name": "Sky Danger Ranger",
+  "version": "1.0.0",
+  "description": "Sky Danger Ranger game for UCLA Senior Project",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.26.0",
+    "body-parser": "^1.19.2",
+    "connect-mongo": "^4.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "express-session": "^1.17.2",
+    "express-socket.io-session": "^1.3.5",
+    "mongodb": "^4.4.0",
+    "mongoose": "^6.2.2",
+    "socket.io": "^4.4.1"
+  }
+}

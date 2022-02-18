@@ -7,6 +7,7 @@ import sys
 import os
 from time import sleep
 from random import randrange
+import socketio
 
 #################### TODOs ####################
 '''
@@ -68,6 +69,26 @@ pygame.init()
 clock = pygame.time.Clock()
 screenwidth, screenheight = (1280, 720)
 screen = pygame.display.set_mode((screenwidth, screenheight))
+
+# Socket.io client connection
+sock = socketio.Client()
+
+# will change once deployed
+# to environmental variable
+sock.connect('http://localhost:8000')
+
+@sock.on("WelcomeClient")
+def on_welcome(data):
+    print("Server: ", data['message'])
+    print("Client: Wow this server is so nice he just welcomed me! Let's leave a nice tip honey")
+    sock.emit("clientMessageToServer", {
+        'message': 'Hi server! Nice to meet you (:'
+    })
+    sock.emit("clientMessageToDatabase", {
+        'username': "willy",
+        'message': "Armando likes keyboards and Will also enjoys such activities"
+    })
+
 
 # Load Assets
 background_path = os.path.join("./static", "background2.jpeg")
