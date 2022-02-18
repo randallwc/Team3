@@ -6,6 +6,7 @@
 # Requirements
 - python3
 - pygame `python3 -m pip install -U pygame`
+- `pip3 install "python-socketio[client]"`
 
 # Assets
 ![](static/background.png)
