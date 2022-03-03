@@ -6,18 +6,7 @@
 # Requirements
 - python3
 - pygame `python3 -m pip install -U pygame`
-- `pip3 install "python-socketio[client]"`
-
-# Assets
-![](static/background.png)
-![](static/background.webp)
-![](static/background1.png)
-![](static/background2.jpeg)
-![](static/cloud1.png)
-![](static/cloud1_transparent.png)
-![](static/cloud1_transparent_30.png)
-![](static/rangership.png)
-![](static/rangership_50.png)
+- socketio `pip3 install "python-socketio"`
 
 # Sources
 - https://ak.picdn.net/shutterstock/videos/1036373483/thumb/1.jpg
