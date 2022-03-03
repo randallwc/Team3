@@ -1,9 +1,8 @@
-import Exceptions
 import pygame
 
 
 class Entity:
-    def __init__(self, x, y, z, num_z_levels, image_path):
+    def __init__(self, x, y, z, num_z_levels, image_path, image_dimensions=None):
         self.x = x
         self.y = y
         self.z = z
@@ -12,7 +11,9 @@ class Entity:
         self.shape = pygame.image.load(self.image)
         self.top = x + self.shape.get_width() // 2
         self.left = y + self.shape.get_height() // 2
-        self.is_alive = True
+        self.should_display = True
+        if image_dimensions is not None:
+            self.scale_image(*image_dimensions)
 
     def set_level(self, current_level):
         if current_level in range(self.num_z_levels):

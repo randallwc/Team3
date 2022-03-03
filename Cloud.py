@@ -1,5 +1,5 @@
-import Entity
 from random import randrange
+import Entity
 
 
 class Cloud(Entity.Entity):

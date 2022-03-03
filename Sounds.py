@@ -1,6 +1,7 @@
 import pygame
 import Paths
 
+
 def play_sound(file_path):
     pygame.mixer.Sound(file_path).play()
 

@@ -23,5 +23,5 @@ class ScreenManager:
         fgcolor = (0, 0, 0)
         bgcolor = (255, 255, 255)
         font = pygame.font.SysFont('Comic Sans', 20)
-        rendered_font = font.render(f'score: {current_score}', 1, fgcolor, bgcolor)
+        rendered_font = font.render(f'score: {current_score}', True, fgcolor, bgcolor)
         self.surface.blit(rendered_font, (self.screen_dimensions[0] - 100, self.screen_dimensions[1] - 100))
