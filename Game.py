@@ -47,7 +47,7 @@ class Game:
             },
             'david': {
                 'is_good': False,
-                'death_sound_path': Paths.wronge_answer_sound_path,
+                'death_sound_path': Paths.wrong_answer_sound_path,
                 'image_path': Paths.david_path,
                 'max_time_alive': 300,
                 'speed': randrange(1, 4, 1),
@@ -74,7 +74,7 @@ class Game:
         self.frame_rate = 60
         self.max_spawn_counter = 100
         self.network = Network.Network()
-        self.num_clouds = 100
+        self.num_clouds = 10
         self.num_z_levels = 1
         self.opponent_rangers = []
         self.screen_height = screen_height
@@ -184,3 +184,6 @@ class Game:
 
             # update display
             pygame.display.update()
+
+        pygame.quit()
+        quit()
