@@ -10,9 +10,10 @@ import Paths
 import Player
 import ScreenManager
 import pygame
+import Server
 
 
-class Game:
+class GameMultiplayer:
     def __init__(self, screen_width=1280, screen_height=720, window_title='Sky Danger Ranger'):
         # pygame initialization
         pygame.init()
@@ -22,44 +23,14 @@ class Game:
             pygame.image.load(Paths.ranger_path)
         )
 
-        # member variables
-        self.enemy_info = {
-            'jc': {
-                'is_good': True,
-                'death_sound_path': Paths.friendly_fire_sound_path,
-                'image_path': Paths.jc_path,
-                'max_time_alive': 200,
-                'speed': randrange(1, 4, 1),
-            },
-            'cow': {
-                'is_good': True,
-                'death_sound_path': Paths.friendly_fire_sound_path,
-                'image_path': Paths.cow_path,
-                'max_time_alive': 200,
-                'speed': randrange(1, 4, 1),
-            },
-            'ricky': {
-                'is_good': False,
-                'death_sound_path': Paths.ricky_death_sound_path,
-                'image_path': Paths.ricky_path,
-                'max_time_alive': 300,
-                'speed': randrange(1, 4, 1),
-            },
-            'david': {
-                'is_good': False,
-                'death_sound_path': Paths.ricky_death_sound_path,
-                'image_path': Paths.david_path,
-                'max_time_alive': 300,
-                'speed': randrange(1, 4, 1),
-            }
-        }
         self.clock = pygame.time.Clock()
         self.clouds = []
         self.enemies = []
-        self.enemy_types = list(self.enemy_info.keys())
         self.frame_rate = 60
         self.max_spawn_counter = 100
         self.network = Network.Network()
+        self.server = Server.Server()
+        self.server.fetchEnemies() # Make socket call to fetch and set enemies
         self.num_clouds = 8
         self.num_z_levels = 1
         self.opponent_rangers = []
@@ -83,6 +54,11 @@ class Game:
         self.clouds.append(cloud)
 
     def run(self):
+        #Did here so self.server.serverEnemies is not null,
+        #tried it in init & didnt work
+        self.enemy_info = self.server.serverEnemies
+        self.enemy_types = list(self.enemy_info.keys())
+
         # create clouds
         for _ in range(self.num_clouds):
             screen_x, screen_y = self.screen_manager.screen_dimensions
