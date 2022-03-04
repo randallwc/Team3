@@ -25,8 +25,8 @@ class Game:
         # member variables
         self.enemy_info = {
             'jc': {
-                'is_good': True,
-                'death_sound_path': Paths.friendly_fire_sound_path,
+                'is_good': False,
+                'death_sound_path': Paths.jc_death_sound_path,
                 'image_path': Paths.jc_path,
                 'max_time_alive': 200,
                 'speed': randrange(1, 4, 1),
@@ -47,11 +47,25 @@ class Game:
             },
             'david': {
                 'is_good': False,
-                'death_sound_path': Paths.ricky_death_sound_path,
+                'death_sound_path': Paths.wronge_answer_sound_path,
                 'image_path': Paths.david_path,
                 'max_time_alive': 300,
                 'speed': randrange(1, 4, 1),
-            }
+            },
+            'anton': {
+                'is_good': False,
+                'death_sound_path': Paths.anton_death_sound_path,
+                'image_path': Paths.anton_path,
+                'max_time_alive': 300,
+                'speed': randrange(1, 4, 1),
+            },
+            'armando': {
+                'is_good': True,
+                'death_sound_path': Paths.friendly_fire_sound_path,
+                'image_path': Paths.armando_path,
+                'max_time_alive': 300,
+                'speed': randrange(1, 4, 1),
+            },
         }
         self.clock = pygame.time.Clock()
         self.clouds = []
@@ -60,7 +74,7 @@ class Game:
         self.frame_rate = 60
         self.max_spawn_counter = 100
         self.network = Network.Network()
-        self.num_clouds = 8
+        self.num_clouds = 100
         self.num_z_levels = 1
         self.opponent_rangers = []
         self.screen_height = screen_height
@@ -144,6 +158,7 @@ class Game:
             )
 
             # display all enemies
+            # TODO -- current bug is that sometimes the enemy flickers when something is deleted and i dont know why
             for enemy in self.enemies:
                 enemy.show(self.screen_manager.surface)
                 enemy.step(self.screen_manager.screen_dimensions)
