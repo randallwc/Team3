@@ -66,6 +66,13 @@ class Game:
                 'max_time_alive': 300,
                 'speed': randrange(1, 4, 1),
             },
+            'david2': {
+                'is_good': True,
+                'death_sound_path': Paths.david2_death_sound_path,
+                'image_path': Paths.david2_path,
+                'max_time_alive': 300,
+                'speed': 20,
+            },
         }
         self.clock = pygame.time.Clock()
         self.clouds = []
@@ -74,7 +81,7 @@ class Game:
         self.frame_rate = 60
         self.max_spawn_counter = 100
         self.network = Network.Network()
-        self.num_clouds = 10
+        self.num_clouds = 20
         self.num_z_levels = 1
         self.opponent_rangers = []
         self.screen_height = screen_height
