@@ -7,8 +7,9 @@ class Entity:
         self.y = y
         self.z = z
         self.num_z_levels = num_z_levels
-        self.image = image_path
-        self.shape = pygame.image.load(self.image)
+        self.image_path = image_path
+        self.shape = self.set_image(self.image_path)
+        self.rect = self.shape.get_rect()  # get rect for collisions
         self.top = x + self.shape.get_width() // 2
         self.left = y + self.shape.get_height() // 2
         self.should_display = True
@@ -22,8 +23,9 @@ class Entity:
             raise Exception("level invalid")
 
     def set_image(self, image_path):
-        self.image = image_path
-        self.shape = pygame.image.load(self.image)
+        self.image_path = image_path
+        self.shape = pygame.image.load(self.image_path)
+        return self.shape
 
     def update_coordinates(self, x, y):
         self.x = x
