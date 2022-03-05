@@ -14,7 +14,8 @@ import Server
 
 
 class GameMultiplayer:
-    def __init__(self, screen_width=1280, screen_height=720, window_title='Sky Danger Ranger'):
+    def __init__(self, screen_width=1280, screen_height=720,
+                 window_title='Sky Danger Ranger'):
         # pygame initialization
         pygame.init()
         ScreenManager.show_mouse(True)
@@ -30,7 +31,7 @@ class GameMultiplayer:
         self.max_spawn_counter = 100
         self.network = Network.Network()
         self.server = Server.Server()
-        self.server.fetchEnemies() # Make socket call to fetch and set enemies
+        self.server.fetchEnemies()  # Make socket call to fetch and set enemies
         self.num_clouds = 8
         self.num_z_levels = 1
         self.opponent_rangers = []
@@ -38,10 +39,12 @@ class GameMultiplayer:
         self.screen_width = screen_width
 
         self.controller = Controller.Controller(self.network)
-        self.screen_manager = ScreenManager.ScreenManager(Paths.sky_path, self.screen_width, self.screen_height)
+        self.screen_manager = ScreenManager.ScreenManager(
+            Paths.sky_path, self.screen_width, self.screen_height)
         self.spawn_counter = self.max_spawn_counter
         self.db = DatabaseIface.DatabaseIface(self.network)
-        self.multiplayer_socket = MultiplayerSocket.MultiplayerSocket(self.network)
+        self.multiplayer_socket = MultiplayerSocket.MultiplayerSocket(
+            self.network)
         self.player = Player.Player(screen_width, screen_height, self.db)
 
     def add_enemy(self, enemy: Enemy):
@@ -54,8 +57,8 @@ class GameMultiplayer:
         self.clouds.append(cloud)
 
     def run(self):
-        #Did here so self.server.serverEnemies is not null,
-        #tried it in init & didnt work
+        # Did here so self.server.serverEnemies is not null,
+        # tried it in init & didnt work
         self.enemy_info = self.server.serverEnemies
         self.enemy_types = list(self.enemy_info.keys())
 
@@ -95,7 +98,16 @@ class GameMultiplayer:
                 self.spawn_counter = self.max_spawn_counter
                 current_enemy_type = choice(self.enemy_types)
                 self.enemies.append(
-                    Enemy.Enemy(randrange(0, self.screen_width, 1), 100, 0, 1, current_enemy_type, self.enemy_info)
+                    Enemy.Enemy(
+                        randrange(
+                            0,
+                            self.screen_width,
+                            1),
+                        100,
+                        0,
+                        1,
+                        current_enemy_type,
+                        self.enemy_info)
                 )
 
             # ranger movement

@@ -4,9 +4,6 @@ import json
 import Paths
 
 
-
-
-
 # TODO -- create this class or decide on whether or not to delete it
 class Server:
     def __init__(self):
@@ -16,19 +13,19 @@ class Server:
         self.idMapping = {
             '0': {
                 'death_sound_path': Paths.friendly_fire_sound_path,
-                'image_path':Paths.jc_path
+                'image_path': Paths.jc_path
             },
-            '1':{
+            '1': {
                 'death_sound_path': Paths.friendly_fire_sound_path,
-                'image_path':Paths.jc_path
+                'image_path': Paths.jc_path
             },
-            '2':{
+            '2': {
                 'death_sound_path': Paths.friendly_fire_sound_path,
-                'image_path':Paths.jc_path
+                'image_path': Paths.jc_path
             },
-            '3':{
+            '3': {
                 'death_sound_path': Paths.friendly_fire_sound_path,
-                'image_path':Paths.jc_path
+                'image_path': Paths.jc_path
             }
         }
 
@@ -44,7 +41,6 @@ class Server:
                 data[enemy]["death_sound_path"] = self.idMapping[id]["death_sound_path"]
                 data[enemy]["image_path"] = self.idMapping[id]["image_path"]
             self.serverEnemies = data
-
 
     def connect(self):
         raise Exceptions.NotImplementedException
