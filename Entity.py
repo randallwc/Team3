@@ -2,7 +2,8 @@ import pygame
 
 
 class Entity:
-    def __init__(self, x, y, z, num_z_levels, image_path, image_dimensions=None):
+    def __init__(self, x, y, z, num_z_levels,
+                 image_path, image_dimensions=None):
         self.x = x
         self.y = y
         self.z = z

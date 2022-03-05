@@ -5,7 +5,8 @@ import pygame
 
 
 class Enemy(Entity.Entity):
-    def __init__(self, x, y, z, num_z_levels, enemy_type, enemy_info, health=1, image_dimensions=(100, 100)):
+    def __init__(self, x, y, z, num_z_levels, enemy_type,
+                 enemy_info, health=1, image_dimensions=(100, 100)):
         self.enemy_info = enemy_info
         self.enemy_type = enemy_type
         self.health = health
@@ -41,7 +42,8 @@ class Enemy(Entity.Entity):
         return self.enemy_info[self.enemy_type]['speed']
 
     def get_x_hitbox(self):
-        return range(self.x - self.shape.get_width() // 2, self.x + self.shape.get_width() // 2)
+        return range(self.x - self.shape.get_width() // 2,
+                     self.x + self.shape.get_width() // 2)
 
     def play_death_sound(self):
         if self.health <= 0:
@@ -66,7 +68,8 @@ class Enemy(Entity.Entity):
             # if dead it shouldn't display
             self.should_display = False
 
-    # TODO -- make this take a pattern argument e.g. circle or snake and then make it move in those patterns
+    # TODO -- make this take a pattern argument e.g. circle or snake and then
+    # make it move in those patterns
     def step(self, screen_dimensions):
         screen_width, screen_height = screen_dimensions
 

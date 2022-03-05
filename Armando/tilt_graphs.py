@@ -30,4 +30,3 @@ plt.ylabel('Gyro Angle')
 plt.title('Forward Tilt Gyro Angle for IMU')
 plt.legend()
 plt.show()
-

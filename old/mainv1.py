@@ -140,7 +140,8 @@ while True:
     cloud.SetY(cloud.GetY() + 10)
     if cloud.GetY() < -BOUND or cloud.GetY() > screenheight + BOUND:
         cloud.SetX(randrange(0, screenwidth, 1))
-        cloud.SetY(-100)  # TODO change this to be variable based on the cloud size
+        # TODO change this to be variable based on the cloud size
+        cloud.SetY(-100)
 
     # display laser
     if isClicking:

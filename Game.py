@@ -13,7 +13,8 @@ import pygame
 
 
 class Game:
-    def __init__(self, screen_width=1280, screen_height=720, window_title='Sky Danger Ranger'):
+    def __init__(self, screen_width=1280, screen_height=720,
+                 window_title='Sky Danger Ranger'):
         # pygame initialization
         pygame.init()
         ScreenManager.show_mouse(True)
@@ -88,10 +89,12 @@ class Game:
         self.screen_width = screen_width
 
         self.controller = Controller.Controller(self.network)
-        self.screen_manager = ScreenManager.ScreenManager(Paths.sky_path, self.screen_width, self.screen_height)
+        self.screen_manager = ScreenManager.ScreenManager(
+            Paths.sky_path, self.screen_width, self.screen_height)
         self.spawn_counter = self.max_spawn_counter
         self.db = DatabaseIface.DatabaseIface(self.network)
-        self.multiplayer_socket = MultiplayerSocket.MultiplayerSocket(self.network)
+        self.multiplayer_socket = MultiplayerSocket.MultiplayerSocket(
+            self.network)
         self.player = Player.Player(screen_width, screen_height, self.db)
 
     def add_enemy(self, enemy: Enemy):
@@ -140,7 +143,16 @@ class Game:
                 self.spawn_counter = self.max_spawn_counter
                 current_enemy_type = choice(self.enemy_types)
                 self.enemies.append(
-                    Enemy.Enemy(randrange(0, self.screen_width, 1), 100, 0, 1, current_enemy_type, self.enemy_info)
+                    Enemy.Enemy(
+                        randrange(
+                            0,
+                            self.screen_width,
+                            1),
+                        100,
+                        0,
+                        1,
+                        current_enemy_type,
+                        self.enemy_info)
                 )
 
             # ranger movement
@@ -165,7 +177,8 @@ class Game:
             )
 
             # display all enemies
-            # TODO -- current bug is that sometimes the enemy flickers when something is deleted and i dont know why
+            # TODO -- current bug is that sometimes the enemy flickers when
+            # something is deleted and i dont know why
             for enemy in self.enemies:
                 enemy.show(self.screen_manager.surface)
                 enemy.step(self.screen_manager.screen_dimensions)
