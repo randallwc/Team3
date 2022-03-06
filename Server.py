@@ -10,6 +10,11 @@ class Server:
         self.socket = socketio.Client()
         self.socket.connect('http://localhost:8000')
         self.serverEnemies = None
+        self.isHost = False
+        self.roomID = ''
+        self.socketID = ''
+        self.opponent_rangers = []
+
         self.idMapping = {
             '0': {
                 'death_sound_path': Paths.jc_death_sound_path,
@@ -44,6 +49,7 @@ class Server:
         @self.socket.on("WelcomeClient")
         def on_welcome(data):
             print("Server: ", data['message'])
+            self.socketID = data['socketID']
 
         @self.socket.on("enemyInfoToClient")
         def setEnemiesFromServer(data):
@@ -54,8 +60,25 @@ class Server:
                 data[enemy]["image_path"] = self.idMapping[id]["image_path"]
             self.serverEnemies = data
 
-    def connect(self):
-        raise Exceptions.NotImplementedException
+        @self.socket.on("serverSendingOpponentRangersInGame")
+        def setOpponentRangers(data):
+            opponent_rangers = []
+            for ranger in data["list"]:
+                if ranger != self.socketID:
+                    opponent_rangers.append(ranger)
+
+            self.opponent_rangers = opponent_rangers
+
+    def connect(self, roomID, mp_game_mode):
+        if mp_game_mode != '0' and mp_game_mode != '1':
+            raise Exception("Multiplayer game mode must be either 0 (join existing room) or 1 (create new room)")
+
+        eventName = "joinExistingRoom" if mp_game_mode == '0' else "joinNewRoom"
+        self.isHost = False if mp_game_mode == '0' else True
+        self.roomID = roomID
+        self.socket.emit(eventName, {
+            'roomID': roomID
+        })
 
     def disconnect(self):
         raise Exceptions.NotImplementedException
@@ -68,3 +91,12 @@ class Server:
 
     def fetchEnemies(self):
         self.socket.emit('fetchEnemies')
+
+    def sendLocation(self, x, y):
+        self.socket.emit("updateMyCoordinates", {
+            'x':x,
+            'y':y
+        })
+
+    def fetchRangerOpponents(self):
+        self.socket.emit("fetchOpponentRangers")

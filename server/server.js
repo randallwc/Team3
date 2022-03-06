@@ -23,6 +23,7 @@ let express = require("express"),
     path    = require("path");
 let mongoose = require("mongoose");
 let session = require("express-session");
+let sharedSIOSession = require("express-socket.io-session");
 let mongoStore = require("connect-mongo");
 let bodyParser = require("body-parser");
 const PORT = 8000;
@@ -85,7 +86,9 @@ app.use(sessionData);
 
 
 
-
+io.use(sharedSIOSession(sessionData, {
+    autoSave: true
+}));
 
 const MAXSPEED = 4;
 function getRandomInt(max) {
@@ -143,25 +146,46 @@ const enemy_info = {
 
 
 
+let roomTracker = {}
 // main socket.io stuff
 io.on('connection', socket => {
 
     // When client joins, emit message
-    socket.emit("WelcomeClient", {
-        message: "Welcome to sky danger ranger! we're glad to have you here. It's gonna be a ride!"
-    });
+    emitWelcome(socket);
 
+    // Fetching types of enemies
+    listenForEnemiesFetched(socket);
+
+    // Joining rooms
+    listenForJoiningNewRoom(socket, roomTracker);
+    listenForJoiningExistingRoom(socket, roomTracker);
+
+    // Client disconnects
+    listenForDisconnection(socket, roomTracker);
+
+    // Ranger updates coordinates
+    listenForUpdatingCoordinates(socket)
+
+    // Send opponent rangers to everyone in room
+    listenForFetchingOpponentRangers(socket, roomTracker);
+});
+
+
+const emitWelcome = (socket) => {
+    socket.emit("WelcomeClient", {
+        message: "Welcome to sky danger ranger! we're glad to have you here. It's gonna be a ride!",
+        socketID: socket.id
+    });
+};
+
+const listenForEnemiesFetched = socket => {
     socket.on('fetchEnemies', request => {
         socket.emit("enemyInfoToClient", enemy_info);
-        console.log("enemies fetched")
     })
+}
 
-    // Client sends message
-    socket.on('clientMessageToServer', request => {
-        console.log(`Message from Client with id ${socket.id}: ${request.message}`);
-    });
 
-    // Client sends message to be stored in DB
+const listenForClientMessageToDB = (socket) => {
     socket.on("clientMessageToDatabase", request => {
         if (!request.username || !request.message) {
             console.log("User didn't specify both username and message! Rip to the B.I.G.");
@@ -177,13 +201,73 @@ io.on('connection', socket => {
             console.log("New object created! Here it is: ", createdDBObject);
         });
     });
+}
 
-    // Client disconnects
+const listenForJoiningNewRoom = (socket, roomTracker) => {
+    socket.on("joinNewRoom", request => {
+        console.log("ID joining:", socket.id)
+        console.log('Before new room', roomTracker)
+        if (!roomTracker[request.roomID]){
+            socket.join(request.roomID)
+            roomTracker[request.roomID] = {
+                list: [socket.id],
+                host: socket.id
+            }
+            console.log("After new room", roomTracker)
+            socket.handshake.session.roomID = request.roomID;
+        }
+    });
+}
+
+const listenForJoiningExistingRoom = (socket, roomTracker) => {
+    socket.on("joinExistingRoom", request => {
+        console.log("ID joining:", socket.id)
+        console.log("Before Joining existing room", roomTracker)
+        if (!!roomTracker[request.roomID]){
+            socket.join(request.roomID)
+            roomTracker[request.roomID].list.push(socket.id)
+            socket.broadcast.to(request.roomID).emit("newPlayerJoinedRoom", {
+                roomID: request.roomID,
+                socketID: socket.id
+            });
+            socket.handshake.session.roomID = request.roomID;
+            console.log("After Joining existing room",roomTracker)
+        }
+    });
+};
+
+const listenForDisconnection = (socket, roomTracker) => {
     socket.on('disconnect', () => {
         console.log(`Client with the following id has connected: ${socket.id}`);
-    });
-});
+        console.log(`Was in room:`, socket.handshake.session?.roomID)
 
+        let roomLength = roomTracker[socket.handshake.session.roomID]?.list.length
+        let list = roomTracker[socket.handshake.session.roomID]?.list
+
+        for(let i = 0 ; i < roomLength; i++){
+            // remove person from list of players in room
+            if (list[i] === socket.id){
+                list.splice(i, 1);
+            }
+        }
+    });
+};
+
+const listenForUpdatingCoordinates = (socket) => {
+    socket.on("updateMyCoordinates", request => {
+        // console.log(`ID: ${socket.id} ${request?.x} ${request?.y}`, request);
+    });
+};
+
+const listenForFetchingOpponentRangers = (socket, roomTracker) => {
+
+    socket.on("fetchOpponentRangers", request => {
+        const roomID = socket.handshake.session?.roomID;
+        if (!!roomID){
+            io.to(roomID).emit("serverSendingOpponentRangersInGame", roomTracker[roomID])
+        }
+    });
+}
 
 
 /*
