@@ -28,9 +28,10 @@ class GameMultiplayer:
             elif mp_game_mode == '1':
                 roomID = input("Pick a room ID for everyone to join!:")
             roomIDStripped = "".join(roomID.split())
-            self.mp_game_mode = mp_game_mode
+
+            self.isHost = True if mp_game_mode == '1' else False
             self.roomID = roomIDStripped
-            print("Multiplayer game mode:", mp_game_mode, "roomID", roomIDStripped)
+            print("Multiplayer game mode(isHost):", self.isHost, "roomID", roomIDStripped)
 
         # pygame initialization
         pygame.init()
@@ -43,7 +44,7 @@ class GameMultiplayer:
         #Server setup
         self.server = Server.Server()
         self.server.fetchEnemies()  # Make socket call to fetch and set enemy types
-        self.server.connect(self.roomID, self.mp_game_mode) #connect to room
+        self.server.connect(self.roomID, self.isHost) #connect to room
 
         self.clock = pygame.time.Clock()
         self.clouds = []

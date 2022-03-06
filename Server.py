@@ -69,12 +69,9 @@ class Server:
 
             self.opponent_rangers = opponent_rangers
 
-    def connect(self, roomID, mp_game_mode):
-        if mp_game_mode != '0' and mp_game_mode != '1':
-            raise Exception("Multiplayer game mode must be either 0 (join existing room) or 1 (create new room)")
-
-        eventName = "joinExistingRoom" if mp_game_mode == '0' else "joinNewRoom"
-        self.isHost = False if mp_game_mode == '0' else True
+    def connect(self, roomID, isHost):
+        eventName = "joinNewRoom" if isHost else "joinExistingRoom"
+        self.isHost = isHost
         self.roomID = roomID
         self.socket.emit(eventName, {
             'roomID': roomID
