@@ -118,7 +118,26 @@ const enemy_info = {
         'id': 3,
         'max_time_alive': 300,
         'speed': getRandomInt(MAXSPEED)
-    }
+    },
+    'anton': {
+        'is_good': false,
+        'max_time_alive': 300,
+        'speed': getRandomInt(MAXSPEED),
+        'id': 4
+    },
+    'armando': {
+        'is_good': true,
+        'max_time_alive': 300,
+        'speed': getRandomInt(MAXSPEED),
+        'id': 5
+    },
+    'david2': {
+        'is_good': true,
+        'max_time_alive': 300,
+        'speed': 20,
+        'id': 6
+
+    },
 }
 
 
