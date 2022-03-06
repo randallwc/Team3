@@ -1,15 +1,16 @@
+import pygame
+
 import CameraIface
 import Exceptions
 import ImuIface
 import Network
 import VoiceIface
-import pygame
 
 
 class Controller:
     def __init__(self, network: Network):
         self.xy_axis = ImuIface.ImuIface(network)
-        self.z_axis = CameraIface.CameraIface()
+        self.z_axis = CameraIface.CameraIface(100, 100)
         self.voice = VoiceIface.VoiceIface()
 
     def get_xy(self, screen_width, screen_height, x, y, speed, max_speed):
