@@ -11,8 +11,8 @@ class ImuIface:
         x, y, is_idle, is_pushing = 0, 0, False, False
         # ...
         return {
-            'x_tilt': x, # x = variable with value from -100 to 100
-            'y_tilt': y, # y = variable with value from -100 to 100
-            'is_idle': is_idle, # is_idle = True or False
-            'is_pushing': is_pushing, # is_pushing = = True or False
+            'x_tilt': x,  # x = variable with value from -100 to 100
+            'y_tilt': y,  # y = variable with value from -100 to 100
+            'is_idle': is_idle,  # is_idle = True or False
+            'is_pushing': is_pushing,  # is_pushing = = True or False
         }
