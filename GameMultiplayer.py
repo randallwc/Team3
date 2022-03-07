@@ -17,11 +17,12 @@ class GameMultiplayer:
     def __init__(self, screen_width=1280, screen_height=720,
                  window_title='Sky Danger Ranger'):
 
-        #Ask user if they want to join game or create new one
-        #0 is create new game, 1 is join new game
+        # Ask user if they want to join game or create new one
+        # 0 is create new game, 1 is join new game
         mp_game_mode = None
         while mp_game_mode != '0' and mp_game_mode != '1':
-            mp_game_mode = input("Would you like to join an existing game(0) or create a new game(1)?: ")
+            mp_game_mode = input(
+                "Would you like to join an existing game(0) or create a new game(1)?: ")
             roomID = ""
             if mp_game_mode == '0':
                 roomID = input("What is the room ID that you'd like to join?:")
@@ -31,7 +32,11 @@ class GameMultiplayer:
 
             self.isHost = True if mp_game_mode == '1' else False
             self.roomID = roomIDStripped
-            print("Multiplayer game mode(isHost):", self.isHost, "roomID", roomIDStripped)
+            print(
+                "Multiplayer game mode(isHost):",
+                self.isHost,
+                "roomID",
+                roomIDStripped)
 
         # pygame initialization
         pygame.init()
@@ -41,10 +46,10 @@ class GameMultiplayer:
             pygame.image.load(Paths.ranger_path)
         )
 
-        #Server setup
+        # Server setup
         self.server = Server.Server()
         self.server.fetchEnemies()  # Make socket call to fetch and set enemy types
-        self.server.connect(self.roomID, self.isHost) #connect to room
+        self.server.connect(self.roomID, self.isHost)  # connect to room
 
         self.clock = pygame.time.Clock()
         self.clouds = []
@@ -176,7 +181,7 @@ class GameMultiplayer:
             self.server.fetchRangerOpponents()
             self.opponent_rangers = self.server.opponent_rangers
 
-            #uncomment this to print out all opponent rangers
+            # uncomment this to print out all opponent rangers
             #print('list of opponent rangers',self.server.opponent_rangers)
 
             # show current score
