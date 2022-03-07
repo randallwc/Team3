@@ -10,6 +10,22 @@ class CameraIface:
         # ... initialize the class with constant values here ...
         self.camera_width = camera_width
         self.camera_height = camera_height
+        
+        if (self.camera_width / self.camera_height == (16/9)):
+            self.xBoxMin = math.floor(self.camera_width*0.25)
+            self.xBoxMax = math.floor(self.camera_width*0.37)
+            self.yBoxMin = math.floor(self.camera_height*0.40)
+            self.yBoxMax=  math.floor(self.camera_height*0.61)
+
+        else:
+            # Default to 4:3 aspect ratio
+            # (self.camera_width / self.camera_height == (4/3)):
+            self.xBoxMin = math.floor(self.camera_width*0.31)
+            self.xBoxMax = math.floor(self.camera_width*0.47)
+            self.yBoxMin = math.floor(self.camera_height*0.42)
+            self.yBoxMax=  math.floor(self.camera_height*0.63)
+
+
         self.num_levels = num_levels
         # ... add member variables here and if you don't know what they should be set to then say
         # self.variable_name = None
@@ -34,6 +50,8 @@ class CameraIface:
 
         # Camera Program
         self.cap1 = cv2.VideoCapture(0)
+        self.cap1.set(cv2.CAP_PROP_FRAME_WIDTH, self.camera_width)
+        self.cap1.set(cv2.CAP_PROP_FRAME_HEIGHT, self.camera_height)
 
     def calibrate(self):
         # ... create a function that enters calibration mode here ... [DONE]
@@ -47,7 +65,7 @@ class CameraIface:
             if not ret:
                 print("failed to grab frame")
                 break
-            cv2.rectangle(frame, (197, 197), (302, 302), (0, 255, 0), 4)
+            cv2.rectangle(frame, (self.xBoxMin - 3, self.yBoxMin - 3), (self.xBoxMax + 2, self.yBoxMax + 2), (0, 255, 0), 4)
             cv2.imshow("Calibration", frame)
         
             k = cv2.waitKey(1)
@@ -58,7 +76,7 @@ class CameraIface:
             elif k % 256 == 32:
                 # SPACE pressed
                 img_name = "opencv_frame_0.png"
-                cv2.imwrite(img_name, frame[200:300, 200:300])
+                cv2.imwrite(img_name, frame[self.xBoxMin:self.xBoxMax, self.yBoxMin:self.yBoxMax])
                 print("{} written!".format(img_name))
         cv2.waitKey(1)
         cv2.destroyWindow('Calibration')
@@ -118,7 +136,7 @@ class CameraIface:
             eye1 = i + 1
             L = self.linePlacement * eye1
             self.yPlacements[i] = L
-            cv2.line(frame, (0, L), (639, L), (0, 0, 255), 3)
+            cv2.line(frame, (0, L), (self.camera_width, L), (0, 0, 255), 3)
 
         # Creating Bounding Box
         if contours:
