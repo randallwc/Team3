@@ -91,8 +91,8 @@ class Server:
 
     def sendLocation(self, x, y):
         self.socket.emit("updateMyCoordinates", {
-            'x':x,
-            'y':y
+            'x': x,
+            'y': y
         })
 
     def fetchRangerOpponents(self):
