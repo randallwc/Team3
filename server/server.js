@@ -146,7 +146,9 @@ const enemy_info = {
 
 
 
+// Who is in what room
 let roomTracker = {}
+let coordinatesTracker = {}
 // main socket.io stuff
 io.on('connection', socket => {
 
@@ -255,7 +257,18 @@ const listenForDisconnection = (socket, roomTracker) => {
 
 const listenForUpdatingCoordinates = (socket) => {
     socket.on("updateMyCoordinates", request => {
-        // console.log(`ID: ${socket.id} ${request?.x} ${request?.y}`, request);
+        console.log(`ID: ${socket.id} ${request?.x} ${request?.y}`);
+        coordinatesTracker[socket.id] = {
+            'x': request?.x,
+            'y': request?.y,
+            'z': request?.z,
+        }
+        socket.broadcast.to(socket.handshake.session.roomID).emit("updateOpponentRangerCoordinates", {
+            'x': request?.x,
+            'y': request?.y,
+            'z': request?.z,
+            'socketID': socket.id
+        })
     });
 };
 
@@ -268,6 +281,12 @@ const listenForFetchingOpponentRangers = (socket, roomTracker) => {
         }
     });
 }
+
+//TODO
+const listenForFetchingAllEntities = (socket) => {
+    const roomID = socket.handshake.session.roomID;
+
+};
 
 
 /*

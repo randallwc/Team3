@@ -14,6 +14,7 @@ class Server:
         self.roomID = ''
         self.socketID = ''
         self.opponent_rangers = []
+        self.opponent_ranger_coordinates = {}
 
         self.idMapping = {
             '0': {
@@ -66,8 +67,13 @@ class Server:
             for ranger in data["list"]:
                 if ranger != self.socketID:
                     opponent_rangers.append(ranger)
-
             self.opponent_rangers = opponent_rangers
+
+        @self.socket.on("updateOpponentRangerCoordinates")
+        def updateOpponentRangerCoordinates(data):
+            # set coordinates of opponent rangers
+            self.opponent_ranger_coordinates[data["socketID"]] = (data['x'], data['y'], data['z'])
+
 
     def connect(self, roomID, isHost):
         eventName = "joinNewRoom" if isHost else "joinExistingRoom"
@@ -89,10 +95,11 @@ class Server:
     def fetchEnemies(self):
         self.socket.emit('fetchEnemies')
 
-    def sendLocation(self, x, y):
+    def sendLocation(self, x, y, z):
         self.socket.emit("updateMyCoordinates", {
             'x': x,
-            'y': y
+            'y': y,
+            'z': z
         })
 
     def fetchRangerOpponents(self):

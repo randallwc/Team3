@@ -150,7 +150,7 @@ class GameMultiplayer:
             # update ranger coordinates
             self.player.ranger.update_coordinates(x, y)
             # update server coordinates
-            self.server.sendLocation(x, y)
+            self.server.sendLocation(x, y, self.player.ranger.z)
 
             # show laser
             self.player.ranger.fire(
@@ -181,7 +181,25 @@ class GameMultiplayer:
             self.server.fetchRangerOpponents()
             self.opponent_rangers = self.server.opponent_rangers
 
-            # uncomment this to print out all opponent rangers
+            # Update Ranger Opponents list
+            opponent_dict = {}
+            for opponent_ranger in self.opponent_rangers:
+                if opponent_ranger not in opponent_dict:
+                    opponent = Player.Player(self.screen_width, self.screen_height, self.db)
+                    opponent_dict[opponent_ranger] = opponent
+
+            # Show and update coords of Ranger Opponents
+            for opp in opponent_dict:
+                try:
+                    coords = self.server.opponent_ranger_coordinates[opp]
+                    opponent_dict[opp].ranger.update_coordinates(coords[0], coords[1])
+                    opponent_dict[opp].ranger.show(self.screen_manager.surface)
+
+                except:
+                    # for when opponent_ranger_coordinates is not yet updated, we can try again on next rendering
+                    continue
+
+            # uncomment this to print out all opponent rangers' socketIDs
             #print('list of opponent rangers',self.server.opponent_rangers)
 
             # show current score
