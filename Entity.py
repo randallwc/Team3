@@ -58,7 +58,14 @@ class Entity:
 
     def show_rect(self, surface: pygame.surface, color=white):
         for i in range(4):
-            pygame.draw.rect(surface, color, (self.rect.x - i, self.rect.y - i, self.rect.width, self.rect.height), 1)
+            pygame.draw.rect(
+                surface,
+                color,
+                (self.rect.x - i,
+                 self.rect.y - i,
+                 self.rect.width,
+                 self.rect.height),
+                1)
 
     def scale_image(self, width, height):
         # this ruins the rectangle
