@@ -40,3 +40,6 @@ class Entity:
 
     def scale_image(self, width, height):
         self.shape = pygame.transform.scale(self.shape, (width, height))
+
+    def get_coordinates(self):
+        return (self.x, self.y, self.z)
