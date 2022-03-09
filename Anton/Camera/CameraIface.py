@@ -10,6 +10,7 @@ class CameraIface:
         # ... initialize the class with constant values here ...
         self.camera_width = camera_width
         self.camera_height = camera_height
+        self.n_clusters = 10
         
         if (self.camera_width / self.camera_height == (16/9)):
             self.xBoxMin = math.floor(self.camera_width*0.25)
