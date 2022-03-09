@@ -6,25 +6,17 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 
 class CameraIface:
-    def __init__(self, camera_width=640, camera_height=480, num_levels=3):
-        # ... initialize the class with constant values here ...
-        self.camera_width = camera_width
-        self.camera_height = camera_height
+    def __init__(self, num_levels):
+        self.camera_width = 640
+        self.camera_height = 480
         self.n_clusters = 10
         
-        if (self.camera_width / self.camera_height == (16/9)):
-            self.xBoxMin = math.floor(self.camera_width*0.25)
-            self.xBoxMax = math.floor(self.camera_width*0.37)
-            self.yBoxMin = math.floor(self.camera_height*0.40)
-            self.yBoxMax=  math.floor(self.camera_height*0.61)
-
-        else:
-            # Default to 4:3 aspect ratio
-            # (self.camera_width / self.camera_height == (4/3)):
-            self.xBoxMin = math.floor(self.camera_width*0.31)
-            self.xBoxMax = math.floor(self.camera_width*0.47)
-            self.yBoxMin = math.floor(self.camera_height*0.42)
-            self.yBoxMax=  math.floor(self.camera_height*0.63)
+        # 4:3 aspect ratio
+        # (self.camera_width / self.camera_height == (4/3)):
+        self.xBoxMin = math.floor(self.camera_width*0.31)
+        self.xBoxMax = math.floor(self.camera_width*0.47)
+        self.yBoxMin = math.floor(self.camera_height*0.42)
+        self.yBoxMax=  math.floor(self.camera_height*0.63)
 
 
         self.num_levels = num_levels
@@ -63,7 +55,7 @@ running = True
             ret, frame = self.cap1.read()
             if not ret:
                 print("failed to grab frame")
-                break
+                running = False
             cv2.rectangle(frame, (self.xBoxMin - 3, self.yBoxMin - 3), (self.xBoxMax + 2, self.yBoxMax + 2), (0, 255, 0), 4)
             cv2.imshow("Calibration", frame)
         
@@ -80,12 +72,11 @@ running = True
         cv2.waitKey(1)
         cv2.destroyWindow('Calibration')
 
-        n_clusters = 10
         img = cv2.imread("opencv_frame_0.png")
         img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         # represent as row*column,channel number
         img = img.reshape((img.shape[0] * img.shape[1], 3))
-        clt = KMeans(n_clusters)  # cluster number
+        clt = KMeans(self.n_clusters)  # cluster number
         clt.fit(img)
 
         # Determine BGR range (initialization)
@@ -115,8 +106,6 @@ running = True
         pass
 
     def get_object_position(self):
-        # ... create a function that returns the x, y position of the ball here ...
-    
         # Capture frame-by-frame
         ret, frame = self.cap1.read()
 
@@ -162,7 +151,6 @@ running = True
 
         x = self.x + (self.w//2)
         y = self.y + (self.h//2)
-        # ... write the code that takes a picture and then returns the center position of the ball ...
         return x, y
     
     def get_object_level(self):
