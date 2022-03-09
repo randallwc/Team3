@@ -63,7 +63,7 @@ class GameMultiplayer:
         self.max_spawn_counter = 100
         self.network = Network.Network()
         self.num_clouds = 8
-        self.num_z_levels = 1
+        self.num_z_levels = 3
         self.opponent_rangers = []
         self.screen_height = screen_height
         self.screen_width = screen_width
@@ -75,7 +75,7 @@ class GameMultiplayer:
         self.db = DatabaseIface.DatabaseIface(self.network)
         self.multiplayer_socket = MultiplayerSocket.MultiplayerSocket(
             self.network)
-        self.player = Player.Player(screen_width, screen_height, self.db)
+        self.player = Player.Player(screen_width, screen_height, self.db, self.num_z_levels)
 
     def add_enemy(self, enemy: MultiplayerEnemy):
         self.enemies.append(enemy)
