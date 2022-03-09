@@ -111,7 +111,11 @@ class Game:
         self.db = DatabaseIface.DatabaseIface(self.network)
         self.multiplayer_socket = MultiplayerSocket.MultiplayerSocket(
             self.network)
-        self.player = Player.Player(screen_width, screen_height, self.db, self.num_z_levels)
+        self.player = Player.Player(
+            screen_width,
+            screen_height,
+            self.db,
+            self.num_z_levels)
 
     def run(self):
         # create clouds
@@ -149,7 +153,8 @@ class Game:
                 cloud.loop_around(self.screen_width, self.screen_height)
 
             # spawn an enemy every self.max_spawn_counter frames
-            if self.spawn_counter <= 0 and len(self.enemies) < self.max_num_enemies:
+            if self.spawn_counter <= 0 and len(
+                    self.enemies) < self.max_num_enemies:
                 # reset spawn countdown timer
                 self.spawn_counter = self.max_spawn_counter
                 self.enemies.append(
@@ -182,7 +187,10 @@ class Game:
             # update ranger coordinates
             self.player.ranger.update_coordinates(x, y)
             # update z axis
-            self.player.ranger.set_level(self.controller.get_z(self.player.ranger.z, self.num_z_levels))
+            self.player.ranger.set_level(
+                self.controller.get_z(
+                    self.player.ranger.z,
+                    self.num_z_levels))
 
             # show laser
             self.player.ranger.fire(
@@ -196,13 +204,15 @@ class Game:
                 # do logic on enemies in same level
                 if enemy.z == self.player.ranger.z:
                     # TODO -- move this into a game function
-                    if pygame.Rect.colliderect(enemy.rect, self.player.ranger.rect):
+                    if pygame.Rect.colliderect(
+                            enemy.rect, self.player.ranger.rect):
                         if enemy.enemy_type in enemy.bad_enemies:
                             # TODO -- lower health instead of points
                             self.player.handle_point_change(-1)
                             # TODO -- remove enemy
                         if enemy.enemy_type in enemy.good_enemies:
-                            # TODO -- get back health if you pick up a good enemy
+                            # TODO -- get back health if you pick up a good
+                            # enemy
                             self.player.handle_point_change(1)
                             enemy.health = 0
                     enemy.show(self.screen_manager.surface)
@@ -220,7 +230,8 @@ class Game:
                 else:
                     # display enemies on other levels
                     is_above = enemy.z > self.player.ranger.z
-                    enemy.show_diff_level(self.screen_manager.surface, is_above)
+                    enemy.show_diff_level(
+                        self.screen_manager.surface, is_above)
 
                 # remove dead and timed out enemies
                 if not enemy.should_display:
@@ -237,7 +248,8 @@ class Game:
             self.screen_manager.render_score(self.player.current_score)
 
             # show current level minimap
-            self.screen_manager.render_level(self.player.ranger.z, self.num_z_levels, self.enemies)
+            self.screen_manager.render_level(
+                self.player.ranger.z, self.num_z_levels, self.enemies)
 
             # TODO -- show current health
 
