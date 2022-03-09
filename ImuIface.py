@@ -24,11 +24,11 @@ class ImuIface:
         return Exceptions.NotImplementedException
 
     def get_imu_info(self):
-        #places info from IMU into dictionary IMU_dict
+        # places info from IMU into dictionary IMU_dict
         message, address = self.sock.recvfrom(4096)
         self.IMU_dict = json.loads(message)
 
-        #print(self.IMU_dict)
+        # print(self.IMU_dict)
 
     def get_tilt(self):
         gyroXangle = self.IMU_dict["x_gyro"]
