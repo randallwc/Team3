@@ -25,10 +25,14 @@ class GameMultiplayer:
                 "Would you like to join an existing game(0) or create a new game(1)?: ")
             roomID = ""
             if mp_game_mode == '0':
-                roomID = input("What is the room ID that you'd like to join?:")
+                roomID = input("What is the room ID that you'd like to join?: ")
             elif mp_game_mode == '1':
-                roomID = input("Pick a room ID for everyone to join!:")
+                roomID = input("Pick a room ID for everyone to join!: ")
             roomIDStripped = "".join(roomID.split())
+
+            username = input("What username would you like to use? One word only plz: ")
+            usernameStripped= "".join(username.split())
+            self.username = usernameStripped
 
             self.isHost = True if mp_game_mode == '1' else False
             self.roomID = roomIDStripped
@@ -47,7 +51,7 @@ class GameMultiplayer:
         )
 
         # Server setup
-        self.server = Server.Server()
+        self.server = Server.Server(self.username)
         self.server.fetchEnemies()  # Make socket call to fetch and set enemy types
         self.server.connect(self.roomID, self.isHost)  # connect to room
         self.enemy_id_count = 0

@@ -6,7 +6,7 @@ import MultiplayerEnemy
 
 # TODO -- create this class or decide on whether or not to delete it
 class Server:
-    def __init__(self):
+    def __init__(self, username):
         self.socket = socketio.Client()
         self.socket.connect('http://localhost:8000')
         self.serverEnemies = None
@@ -15,6 +15,8 @@ class Server:
         self.socketID = ''
         self.opponent_rangers = []
         self.opponent_ranger_coordinates = {}
+        self.username = username
+
 
         # Will be all enemies spawned on host
         # everyone else uses host's enemies
