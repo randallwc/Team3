@@ -219,7 +219,6 @@ const listenForEnemyRemoved = (socket) => {
         const id = request.id;
         let enemyList = roomToEnemyList[socket.handshake.session.roomID];
         delete enemyList[id];
-        console.log("enemy deleted!!!:", id)
     });
 };
 
