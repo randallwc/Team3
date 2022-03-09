@@ -58,6 +58,8 @@ class CameraIface:
         # Takes a screenshot with SPACE
         cv2.namedWindow("Calibration")
         
+        print('press space while the object is in the bounding box. when you are happy with the image press esc')
+        
         while True:
             ret, frame = self.cap1.read()
             if not ret:
