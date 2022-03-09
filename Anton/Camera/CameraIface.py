@@ -52,9 +52,6 @@ class CameraIface:
         self.cap1.set(cv2.CAP_PROP_FRAME_HEIGHT, self.camera_height)
 
     def calibrate(self):
-        # ... create a function that enters calibration mode here ... [DONE]
-        # ... then store that calibration in the class ... []
- 
         # Takes a screenshot with SPACE
         cv2.namedWindow("Calibration")
         
