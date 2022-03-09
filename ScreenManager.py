@@ -53,17 +53,18 @@ class ScreenManager:
         line_color = (255, 255, 255)
         line_thickness = 3
         circle_radius = 5
-        circle_color = (0, 0, 255)
-        circle_center = (line_x, line_bottom[1] - line_length * (current_level / (num_z_levels - 1)))
         pygame.draw.line(self.surface, line_color, line_top, line_bottom, line_thickness)
-        pygame.draw.circle(self.surface, circle_color, circle_center, circle_radius)
         for i in range(num_z_levels):
+            if current_level == i:
+                circle_color = (0, 0, 255)
+                number_color = circle_color
+            else:
+                circle_color = (255, 255, 255)
+                number_color = line_color
+            circle_center = (line_x, line_bottom[1] - line_length * (i / (num_z_levels - 1)))
+            pygame.draw.circle(self.surface, circle_color, circle_center, circle_radius)
             num_cur_enemies = num_enemies_on_level(enemies, i)
             if num_cur_enemies > 0:
-                if current_level == i:
-                    number_color = circle_color
-                else:
-                    number_color = line_color
                 font = pygame.font.SysFont('Comic Sans', 20)
                 rendered_font = font.render(f'{num_enemies_on_level(enemies, i)}', True, number_color)
                 text_x = line_x + 10
