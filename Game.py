@@ -1,15 +1,16 @@
 from random import randrange, choice
+
+import pygame
+
 import Cloud
 import Controller
 import DatabaseIface
 import Enemy
 import MultiplayerSocket
 import Network
-import OpponentRanger
 import Paths
 import Player
 import ScreenManager
-import pygame
 
 
 class Game:
@@ -29,61 +30,76 @@ class Game:
                 'is_good': False,
                 'death_sound_path': Paths.jc_death_sound_path,
                 'image_path': Paths.jc_path,
-                'max_time_alive': 200,
-                'speed': randrange(1, 4, 1),
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right'])
             },
             'cow': {
                 'is_good': True,
                 'death_sound_path': Paths.friendly_fire_sound_path,
                 'image_path': Paths.cow_path,
-                'max_time_alive': 200,
-                'speed': randrange(1, 4, 1),
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right'])
             },
             'ricky': {
                 'is_good': False,
                 'death_sound_path': Paths.ricky_death_sound_path,
                 'image_path': Paths.ricky_path,
-                'max_time_alive': 300,
-                'speed': randrange(1, 4, 1),
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right'])
             },
             'david': {
                 'is_good': False,
-                'death_sound_path': Paths.wrong_answer_sound_path,
+                'death_sound_path': None,
                 'image_path': Paths.david_path,
-                'max_time_alive': 300,
-                'speed': randrange(1, 4, 1),
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right'])
             },
             'anton': {
                 'is_good': False,
                 'death_sound_path': Paths.anton_death_sound_path,
                 'image_path': Paths.anton_path,
-                'max_time_alive': 300,
-                'speed': randrange(1, 4, 1),
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right'])
             },
             'armando': {
                 'is_good': True,
                 'death_sound_path': Paths.friendly_fire_sound_path,
                 'image_path': Paths.armando_path,
-                'max_time_alive': 300,
-                'speed': randrange(1, 4, 1),
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right'])
             },
             'david2': {
-                'is_good': True,
+                'is_good': False,
                 'death_sound_path': Paths.david2_death_sound_path,
                 'image_path': Paths.david2_path,
-                'max_time_alive': 300,
-                'speed': 20,
+                'max_time_alive': 1000,
+                'x_speed': 20,
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right'])
             },
         }
         self.clock = pygame.time.Clock()
         self.clouds = []
         self.enemies = []
+        self.max_num_enemies = 3
         self.enemy_types = list(self.enemy_info.keys())
         self.frame_rate = 60
         self.max_spawn_counter = 100
         self.network = Network.Network()
-        self.num_clouds = 20
-        self.num_z_levels = 1
+        self.num_clouds = 10
+        self.num_z_levels = 3
         self.opponent_rangers = []
         self.screen_height = screen_height
         self.screen_width = screen_width
@@ -95,22 +111,13 @@ class Game:
         self.db = DatabaseIface.DatabaseIface(self.network)
         self.multiplayer_socket = MultiplayerSocket.MultiplayerSocket(
             self.network)
-        self.player = Player.Player(screen_width, screen_height, self.db)
-
-    def add_enemy(self, enemy: Enemy):
-        self.enemies.append(enemy)
-
-    def add_opponent_rangers(self, opponent: OpponentRanger):
-        self.opponent_rangers.append(opponent)
-
-    def add_cloud(self, cloud: Cloud):
-        self.clouds.append(cloud)
+        self.player = Player.Player(screen_width, screen_height, self.db, self.num_z_levels)
 
     def run(self):
         # create clouds
         for _ in range(self.num_clouds):
             screen_x, screen_y = self.screen_manager.screen_dimensions
-            self.add_cloud(
+            self.clouds.append(
                 Cloud.Cloud(
                     randrange(0, screen_x, 1),
                     randrange(0, screen_y, 1),
@@ -128,9 +135,12 @@ class Game:
                 # check for window close
                 if event.type == pygame.QUIT:
                     running = False
+                    break
 
             self.clock.tick(self.frame_rate)
             self.screen_manager.render_background()
+
+            # decrement the countdown until spawning new enemy
             self.spawn_counter -= 1
 
             # render each cloud
@@ -139,9 +149,9 @@ class Game:
                 cloud.loop_around(self.screen_width, self.screen_height)
 
             # spawn an enemy every self.max_spawn_counter frames
-            if self.spawn_counter <= 0:
+            if self.spawn_counter <= 0 and len(self.enemies) < self.max_num_enemies:
+                # reset spawn countdown timer
                 self.spawn_counter = self.max_spawn_counter
-                current_enemy_type = choice(self.enemy_types)
                 self.enemies.append(
                     Enemy.Enemy(
                         randrange(
@@ -149,9 +159,9 @@ class Game:
                             self.screen_width,
                             1),
                         100,
-                        0,
-                        1,
-                        current_enemy_type,
+                        randrange(0, self.num_z_levels, 1),
+                        self.num_z_levels,
+                        choice(self.enemy_types),
                         self.enemy_info)
                 )
 
@@ -161,6 +171,8 @@ class Game:
                 self.player.ranger.x, self.player.ranger.y,
                 self.player.speed, self.player.max_speed
             )
+
+            # movement acceleration
             if self.controller.is_moving():
                 # gradually increase speed when holding down key
                 self.player.speed *= self.player.acceleration
@@ -169,6 +181,8 @@ class Game:
                 self.player.speed = self.player.min_speed
             # update ranger coordinates
             self.player.ranger.update_coordinates(x, y)
+            # update z axis
+            self.player.ranger.set_level(self.controller.get_z(self.player.ranger.z, self.num_z_levels))
 
             # show laser
             self.player.ranger.fire(
@@ -177,19 +191,39 @@ class Game:
             )
 
             # display all enemies
-            # TODO -- current bug is that sometimes the enemy flickers when
-            # something is deleted and i dont know why
             for enemy in self.enemies:
-                enemy.show(self.screen_manager.surface)
                 enemy.step(self.screen_manager.screen_dimensions)
-                if enemy.should_display:
+                # do logic on enemies in same level
+                if enemy.z == self.player.ranger.z:
+                    # TODO -- move this into a game function
+                    if pygame.Rect.colliderect(enemy.rect, self.player.ranger.rect):
+                        if enemy.enemy_type in enemy.bad_enemies:
+                            # TODO -- lower health instead of points
+                            self.player.handle_point_change(-1)
+                            # TODO -- remove enemy
+                        if enemy.enemy_type in enemy.good_enemies:
+                            # TODO -- get back health if you pick up a good enemy
+                            self.player.handle_point_change(1)
+                            enemy.health = 0
+                    enemy.show(self.screen_manager.surface)
+
                     # detect laser hits
-                    if self.player.ranger.laser_is_deadly and self.player.ranger.x in enemy.get_x_hitbox():
+                    # TODO -- move this into a game function
+                    if enemy.should_display \
+                            and self.player.ranger.laser_is_deadly \
+                            and self.player.ranger.x in enemy.get_x_hitbox() \
+                            and self.player.ranger.y > enemy.y \
+                            and self.player.ranger.z == enemy.z:
                         damage = 1
                         enemy.got_hit(damage)
-                        self.player.current_score += enemy.handle_death()
+                        self.player.handle_point_change(enemy.handle_death())
                 else:
-                    # remove dead and timed out enemies
+                    # display enemies on other levels
+                    is_above = enemy.z > self.player.ranger.z
+                    enemy.show_diff_level(self.screen_manager.surface, is_above)
+
+                # remove dead and timed out enemies
+                if not enemy.should_display:
                     self.enemies.remove(enemy)
 
             # show ranger
@@ -201,6 +235,11 @@ class Game:
 
             # show current score
             self.screen_manager.render_score(self.player.current_score)
+
+            # show current level minimap
+            self.screen_manager.render_level(self.player.ranger.z, self.num_z_levels, self.enemies)
+
+            # TODO -- show current health
 
             # update display
             pygame.display.update()

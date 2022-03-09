@@ -9,9 +9,12 @@ import VoiceIface
 
 class Controller:
     def __init__(self, network: Network):
+        self.current_z = None
         self.xy_axis = ImuIface.ImuIface(network)
         self.z_axis = CameraIface.CameraIface(100, 100)
         self.voice = VoiceIface.VoiceIface()
+        self.pressing_down_level = False
+        self.pressing_up_level = False
 
     def get_xy(self, screen_width, screen_height, x, y, speed, max_speed):
         # return self.get_xy_mouse()
@@ -42,6 +45,8 @@ class Controller:
             'left': keys[pygame.K_LEFT] or keys[pygame.K_a],
             'right': keys[pygame.K_RIGHT] or keys[pygame.K_d],
             'space': keys[pygame.K_SPACE],
+            'down_level': keys[pygame.K_q],
+            'up_level': keys[pygame.K_e],
         }
 
     def get_mouse(self):
@@ -54,8 +59,29 @@ class Controller:
         # return self.get_mouse()['left_click']
         return self.get_keys()['space']
 
-    def get_z(self):
-        raise Exceptions.NotImplementedException
+    def get_z(self, current_z: int, num_levels: int):
+        assert (0 <= current_z < num_levels)
+        self.current_z = current_z
+        if self.get_keys()['down_level']:
+            if not self.pressing_down_level:
+                self.pressing_down_level = True
+                self.current_z -= 1
+        else:
+            self.pressing_down_level = False
+
+        if self.get_keys()['up_level']:
+            if not self.pressing_up_level:
+                self.pressing_up_level = True
+                self.current_z += 1
+        else:
+            self.pressing_up_level = False
+
+        if self.current_z < 0:
+            self.current_z = 0
+        elif self.current_z >= num_levels:
+            self.current_z = num_levels - 1
+
+        return self.current_z
 
     def get_current_state(self):
         return Exceptions.NotImplementedException

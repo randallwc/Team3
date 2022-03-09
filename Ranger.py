@@ -1,11 +1,12 @@
+import pygame
+
 import Entity
 import Paths
-import pygame
 import Sounds
 
 
 class Ranger(Entity.Entity):
-    def __init__(self, x, y, z, num_z_levels, image_path=Paths.ranger_path):
+    def __init__(self, x, y, z, num_z_levels, screen_width, screen_height, image_path=Paths.ranger_path):
         super().__init__(x, y, z, num_z_levels, image_path)
         self.delta_laser_width = 1
         self.max_laser_width = 20
@@ -15,6 +16,23 @@ class Ranger(Entity.Entity):
         self.current_laser_width = self.max_laser_width
         self.frames_clicking = 0
         self.laser_is_deadly = False
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+        self.health = 1
+        self.is_alive = True
+
+    # TODO -- add got damaged function that decreases health and changes is_alive
+
+    def update_coordinates(self, x, y):
+        if x <= 0:
+            x = 0
+        elif x >= self.screen_width:
+            x = self.screen_width
+        if y <= 0:
+            y = 0
+        elif y >= self.screen_height:
+            y = self.screen_height
+        super().update_coordinates(x, y)
 
     def fire(self, is_firing: bool, surface: pygame.surface):
         # update coordinates
