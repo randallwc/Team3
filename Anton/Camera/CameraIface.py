@@ -27,8 +27,6 @@ class CameraIface:
 
 
         self.num_levels = num_levels
-        # ... add member variables here and if you don't know what they should be set to then say
-        # self.variable_name = None
         self.x = 0
         self.y = 0
         self.h = 0
