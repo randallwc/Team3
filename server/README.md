@@ -81,10 +81,9 @@ sudo mongod --dbpath <absolute_path_you_chose>
 ```bash
 sudo mongod --dbpath /Users/jcrios/Documents/School/ECE180/UCLASeniorProject/Team3/server/localDB
 ```
+> Feel free to make an alias, thats what I did
 
-## Feel free to make an alias, thats what I did
-
-#Troubleshooting
+# Troubleshooting
 
 If having trouble starting up database, sometimes it just has leftover ports it is still using from previous execution. Try:
 
