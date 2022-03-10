@@ -2,7 +2,7 @@
 import CameraIface
 
 # create an instance of the camera interface class
-myCameraIface = CameraIface.CameraIface(100,3)
+myCameraIface = CameraIface.CameraIface(100, 3)
 
 # call the class method to calibrate the camera interface
 myCameraIface.calibrate()
