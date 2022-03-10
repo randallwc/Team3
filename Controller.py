@@ -10,7 +10,7 @@ import VoiceIface
 class Controller:
     def __init__(self, network: Network):
         self.current_z = None
-        self.xy_axis = ImuIface.ImuIface(network)
+        # self.xy_axis = ImuIface.ImuIface()
         self.z_axis = CameraIface.CameraIface(100, 100)
         self.voice = VoiceIface.VoiceIface()
         self.pressing_down_level = False
