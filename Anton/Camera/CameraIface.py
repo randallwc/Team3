@@ -63,7 +63,9 @@ class CameraIface:
                 break
             elif k % 256 == 32:
                 # SPACE pressed
-                cv2.imwrite(self.img_name, frame_raw[self.xBoxMin:self.xBoxMax, self.yBoxMin:self.yBoxMax])
+                cv2.imwrite(self.img_name,
+                            frame_raw[self.xBoxMin:self.xBoxMax,
+                                      self.yBoxMin:self.yBoxMax])
                 print("{} written!".format(self.img_name))
         cv2.waitKey(1)
         cv2.destroyWindow('Calibration')
@@ -114,7 +116,8 @@ class CameraIface:
 
         # Find colours in camera feed
         mask = cv2.inRange(hsv, lower, upper)
-        contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(
+            mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         # Making N lines across the screen
         for i in range(self.n_lines):
@@ -130,9 +133,16 @@ class CameraIface:
                 if cv2.contourArea(contour) > cv2.contourArea(max_contour):
                     max_contour = contour
             contour = max_contour
-            approx = cv2.approxPolyDP(contour, 0.01 * cv2.arcLength(contour, True), True)
+            approx = cv2.approxPolyDP(
+                contour,
+                0.01 *
+                cv2.arcLength(
+                    contour,
+                    True),
+                True)
             self.x, self.y, self.w, self.h = cv2.boundingRect(approx)
-            cv2.rectangle(frame, (self.x, self.y), (self.x + self.w, self.y + self.h), (0, 255, 0), 4)
+            cv2.rectangle(frame, (self.x, self.y), (self.x +
+                                                    self.w, self.y + self.h), (0, 255, 0), 4)
             self.is_visible = True
         else:
             self.is_visible = False
@@ -160,7 +170,8 @@ class CameraIface:
         else:
             for i in range(self.n_lines):
                 line2 = i + 1
-                if (y_center > self.y_placements[i]) and (y_center < self.y_placements[line2]):
+                if (y_center > self.y_placements[i]) and (
+                        y_center < self.y_placements[line2]):
                     curr_level = "Level " + str(self.lv_place[line2])
 
         return curr_level
