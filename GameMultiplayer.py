@@ -25,13 +25,15 @@ class GameMultiplayer:
                 "Would you like to join an existing game(0) or create a new game(1)?: ")
             roomID = ""
             if mp_game_mode == '0':
-                roomID = input("What is the room ID that you'd like to join?: ")
+                roomID = input(
+                    "What is the room ID that you'd like to join?: ")
             elif mp_game_mode == '1':
                 roomID = input("Pick a room ID for everyone to join!: ")
             roomIDStripped = "".join(roomID.split())
 
-            username = input("What username would you like to use? One word only plz: ")
-            usernameStripped= "".join(username.split())
+            username = input(
+                "What username would you like to use? One word only plz: ")
+            usernameStripped = "".join(username.split())
             self.username = usernameStripped
 
             self.isHost = True if mp_game_mode == '1' else False
@@ -75,7 +77,11 @@ class GameMultiplayer:
         self.db = DatabaseIface.DatabaseIface(self.network)
         self.multiplayer_socket = MultiplayerSocket.MultiplayerSocket(
             self.network)
-        self.player = Player.Player(screen_width, screen_height, self.db, self.num_z_levels)
+        self.player = Player.Player(
+            screen_width,
+            screen_height,
+            self.db,
+            self.num_z_levels)
 
     def add_enemy(self, enemy: MultiplayerEnemy):
         self.enemies.append(enemy)
@@ -140,7 +146,7 @@ class GameMultiplayer:
                         current_enemy_type,
                         self.enemy_info,
                         self.enemy_id_count
-                        )
+                    )
                     self.enemies.append(new_enemy)
                     self.server.append_new_enemy_to_server(new_enemy)
                     self.enemy_id_count += 1
@@ -169,7 +175,7 @@ class GameMultiplayer:
             )
 
             ################################################
-            ###Handle enemies
+            # Handle enemies
             ################################################
             self.server.fetch_all_entities()
             # display all enemies
@@ -178,7 +184,8 @@ class GameMultiplayer:
                 enemy.step(self.screen_manager.screen_dimensions)
                 # Update server on where enemy stepped
                 enemy_coords = enemy.get_coordinates()
-                self.server.update_enemy_coords(enemy.id, enemy_coords[0], enemy_coords[1])
+                self.server.update_enemy_coords(
+                    enemy.id, enemy_coords[0], enemy_coords[1])
                 if enemy.should_display:
                     # detect laser hits
                     if self.player.ranger.laser_is_deadly and self.player.ranger.x in enemy.get_x_hitbox():
@@ -209,9 +216,8 @@ class GameMultiplayer:
             # show ranger
             self.player.ranger.show(self.screen_manager.surface)
 
-
             ################################################
-            ###Handle opponent rangers
+            # Handle opponent rangers
             ################################################
             self.server.fetchRangerOpponents()
             self.opponent_rangers = self.server.opponent_rangers
@@ -220,17 +226,20 @@ class GameMultiplayer:
             opponent_dict = {}
             for opponent_ranger in self.opponent_rangers:
                 if opponent_ranger not in opponent_dict:
-                    opponent = Player.Player(self.screen_width, self.screen_height, self.db)
+                    opponent = Player.Player(
+                        self.screen_width, self.screen_height, self.db)
                     opponent_dict[opponent_ranger] = opponent
             # Show and update coords of Ranger Opponents
             for opp in opponent_dict:
                 try:
                     coords = self.server.opponent_ranger_coordinates[opp]
-                    opponent_dict[opp].ranger.update_coordinates(coords[0], coords[1])
+                    opponent_dict[opp].ranger.update_coordinates(
+                        coords[0], coords[1])
                     opponent_dict[opp].ranger.show(self.screen_manager.surface)
 
-                except:
-                    # for when opponent_ranger_coordinates is not yet updated, we can try again on next rendering
+                except BaseException:
+                    # for when opponent_ranger_coordinates is not yet updated,
+                    # we can try again on next rendering
                     continue
 
             # uncomment this to print out all opponent rangers' socketIDs
