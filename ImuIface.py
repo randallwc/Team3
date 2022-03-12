@@ -41,7 +41,6 @@ class ImuIface:
         self.IMU_dict['is_right_tilt'] = is_right_tilt
         self.IMU_dict['is_left_tilt'] = is_left_tilt
 
-        print(self.IMU_dict)
         return self.IMU_dict
 
     def get_tilt(self):
