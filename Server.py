@@ -5,6 +5,8 @@ import Paths
 import MultiplayerEnemy
 
 # TODO -- create this class or decide on whether or not to delete it
+
+
 class Server:
     def __init__(self, username):
         self.socket = socketio.Client()
@@ -16,7 +18,6 @@ class Server:
         self.opponent_rangers = []
         self.opponent_ranger_coordinates = {}
         self.username = username
-
 
         # Will be all enemies spawned on host
         # everyone else uses host's enemies
@@ -76,20 +77,22 @@ class Server:
         @self.socket.on("updateOpponentRangerCoordinates")
         def updateOpponentRangerCoordinates(data):
             # set coordinates of opponent rangers
-            self.opponent_ranger_coordinates[data["socketID"]] = (data['x'], data['y'], data['z'])
+            self.opponent_ranger_coordinates[data["socketID"]] = (
+                data['x'], data['y'], data['z'])
 
         @self.socket.on("allEntitiesToClient")
         def receiving_all_entities(data):
-            ############ HANDLING ENEMIES
-            #two steps
-            #1: remove old enemies
-            #2: add new enemies
-            #3 update coordinates of existing entities
+            # HANDLING ENEMIES
+            # two steps
+            # 1: remove old enemies
+            # 2: add new enemies
+            # 3 update coordinates of existing entities
 
-            ### remove old enemies
-            # find which enemies on local version are no longer on server version & remove them
+            # remove old enemies
+            # find which enemies on local version are no longer on server
+            # version & remove them
             new_enemies = []
-            #do this in reverse so we don't skip any on deleting
+            # do this in reverse so we don't skip any on deleting
             i = len(self.host_enemies) - 1
             while i >= 0:
                 curr_enemy = self.host_enemies[i]
@@ -98,14 +101,15 @@ class Server:
                     self.host_enemies.pop(i)
                 i -= 1
 
-            ### add new enemies
-            #find new opponents
-            #find enemy IDs in data["enemies"] that is not in host_enemies, add new enemy object
+            # add new enemies
+            # find new opponents
+            # find enemy IDs in data["enemies"] that is not in host_enemies,
+            # add new enemy object
             host_enemy_ids = list(data["enemies"].keys())
             for enemy in self.host_enemies:
                 try:
                     host_enemy_ids.remove(enemy.id)
-                except:
+                except BaseException:
                     continue
 
             # all existing ids have been removed
@@ -121,11 +125,12 @@ class Server:
                     enem_data['enemy_type'],
                     self.serverEnemies,
                     new_enemy_id
-                    )
+                )
                 self.host_enemies.append(new_enemy)
 
             for enemy in self.host_enemies:
-                enemy.update_coordinates(data["enemies"][enemy.id]['x'], data["enemies"][enemy.id]['y'])
+                enemy.update_coordinates(
+                    data["enemies"][enemy.id]['x'], data["enemies"][enemy.id]['y'])
 
     def connect(self, roomID, isHost):
         eventName = "joinNewRoom" if isHost else "joinExistingRoom"
@@ -168,17 +173,18 @@ class Server:
                 'y': coords[1],
                 'z': coords[2],
                 'id': enemy.id,
-                'enemy_type':enemy.enemy_type,
+                'enemy_type': enemy.enemy_type,
                 'health': enemy.health,
-                'num_z_levels':enemy.num_z_levels
+                'num_z_levels': enemy.num_z_levels
             }
             self.socket.emit('hostAppendingNewEnemy', stripped_enemy)
+
     def update_enemy_coords(self, id, x, y):
         if self.isHost:
-            self.socket.emit("hostUpdatingEnemyCoordinates",{
+            self.socket.emit("hostUpdatingEnemyCoordinates", {
                 'id': id,
                 'x': x,
-                'y':y
+                'y': y
             })
 
     def remove_enemy_from_server(self, id):

@@ -73,7 +73,7 @@ class MultiplayerEnemy(Entity.Entity):
     # make it move in those patterns
     def step(self, screen_dimensions):
         screen_width, screen_height = screen_dimensions
-        #TODO make account for z value
+        # TODO make account for z value
         # make it wiggle
         self.x += randrange(-self.speed, self.speed + 1, 1)
         self.y += randrange(-self.speed, self.speed + 1, 1)
@@ -88,6 +88,7 @@ class MultiplayerEnemy(Entity.Entity):
             self.y = screen_height - self.speed
         elif self.y < 0:
             self.y = self.speed
+
     def countdown_time_alive(self):
         self.time_alive_countdown -= 1
         if self.time_alive_countdown <= 0:
