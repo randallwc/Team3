@@ -146,31 +146,42 @@ const enemy_info = {
 
 
 
-let roomTracker = {}
+
 // main socket.io stuff
 io.on('connection', socket => {
 
-    // When client joins, emit message
+    //// When client joins, emit message
     emitWelcome(socket);
 
-    // Fetching types of enemies
-    listenForEnemiesFetched(socket);
+    //// Fetching types of enemies
+    listenForEnemyTypesFetched(socket);
 
-    // Joining rooms
+    //// Joining rooms
     listenForJoiningNewRoom(socket, roomTracker);
     listenForJoiningExistingRoom(socket, roomTracker);
 
-    // Client disconnects
+    //// Fetch all entities
+    listenForFetchingAllEntities(socket);
+
+    //// Handle Enemies
+    listenForAppendingEnemyByHost(socket);
+    listenForEnemyRemoved(socket);
+    listenForUpdatingEnemyCoordsByHost(socket);
+
+    //// Client disconnects
     listenForDisconnection(socket, roomTracker);
 
+    //// Handle Rangers
     // Ranger updates coordinates
     listenForUpdatingCoordinates(socket)
 
-    // Send opponent rangers to everyone in room
+    //// Send opponent rangers to everyone in room
     listenForFetchingOpponentRangers(socket, roomTracker);
-});
+    });
 
-
+//////////////////////////////////////////////////////////
+// Setup Calls
+//////////////////////////////////////////////////////////
 const emitWelcome = (socket) => {
     socket.emit("WelcomeClient", {
         message: "Welcome to sky danger ranger! we're glad to have you here. It's gonna be a ride!",
@@ -178,13 +189,145 @@ const emitWelcome = (socket) => {
     });
 };
 
-const listenForEnemiesFetched = socket => {
+const listenForEnemyTypesFetched = socket => {
     socket.on('fetchEnemies', request => {
         socket.emit("enemyInfoToClient", enemy_info);
     })
 }
 
+//////////////////////////////////////////////////////////
+// Handling Enemies
+//////////////////////////////////////////////////////////
+const roomToEnemyList = {}
+const listenForAppendingEnemyByHost = (socket) => {
+    socket.on("hostAppendingNewEnemy", request => {
 
+        if(roomTracker[socket.handshake.session.roomID]["host"] === socket.id){
+
+            let id = request.id;
+            if (!roomToEnemyList[socket.handshake.session.roomID]) {
+                // Initialize as empty
+                roomToEnemyList[socket.handshake.session.roomID] = {};
+            }
+            roomToEnemyList[socket.handshake.session.roomID][id] = request;
+        }
+    });
+};
+
+const listenForEnemyRemoved = (socket) => {
+    socket.on("removeEnemy", request => {
+        const id = request.id;
+        let enemyList = roomToEnemyList[socket.handshake.session.roomID];
+        delete enemyList[id];
+    });
+};
+
+const listenForUpdatingEnemyCoordsByHost = (socket) => {
+    // Assuming enemies don't change levels
+    // Expects request in the form of
+    // req = {
+    //     'id':id,
+    //     'x':x,
+    //     'y':y,
+    // }
+
+    socket.on("hostUpdatingEnemyCoordinates", request => {
+        if(roomTracker[socket.handshake.session.roomID]["host"] === socket.id) {
+            let enemyList = roomToEnemyList[socket.handshake.session.roomID];
+            if (!!enemyList[request.id]){
+                // If enemy still exists in server
+                // Not sure what would potentially happen in high speed socket transmissions
+                enemyList[request.id]['x'] = request.x;
+                enemyList[request.id]['y'] = request.y;
+                // console.log(`Updating id: ${request.id} with coords: (${request.x}, ${request.y})`)
+            }
+        }
+    })
+};
+
+//////////////////////////////////////////////////////////
+// Handling Room Joining
+//////////////////////////////////////////////////////////
+// Keep track of what room all rangers are connected to
+let roomTracker = {}
+
+const listenForJoiningExistingRoom = (socket, roomTracker) => {
+    socket.on("joinExistingRoom", request => {
+        console.log("ID joining:", socket.id)
+        console.log("Before Joining existing room", roomTracker)
+        if (!!roomTracker[request.roomID]){
+            socket.join(request.roomID)
+            roomTracker[request.roomID].list.push(socket.id)
+            socket.broadcast.to(request.roomID).emit("newPlayerJoinedRoom", {
+                roomID: request.roomID,
+                socketID: socket.id
+            });
+            socket.handshake.session.roomID = request.roomID;
+            console.log("After Joining existing room",roomTracker)
+            socket.handshake.session.save()
+        }
+    });
+};
+
+const listenForJoiningNewRoom = (socket, roomTracker) => {
+    socket.on("joinNewRoom", request => {
+        console.log("ID joining:", socket.id)
+        console.log('Before new room', roomTracker)
+        if (!roomTracker[request.roomID]){
+            socket.join(request.roomID)
+            roomTracker[request.roomID] = {
+                list: [socket.id],
+                host: socket.id
+            }
+
+            console.log("After new room", roomTracker)
+            socket.handshake.session.roomID = request.roomID;
+            socket.handshake.session.save()
+        }
+    });
+}
+
+
+//////////////////////////////////////////////////////////
+// Handle Rangers
+//////////////////////////////////////////////////////////
+// Coordinates of all rangers connected to server
+let rangerCoordinatesTracker = {}
+
+const listenForFetchingOpponentRangers = (socket, roomTracker) => {
+
+    socket.on("fetchOpponentRangers", request => {
+        const roomID = socket.handshake.session?.roomID;
+        if (!!roomID){
+
+            io.to(roomID).emit("serverSendingOpponentRangersInGame", roomTracker[roomID])
+        }
+    });
+}
+
+const listenForUpdatingCoordinates = (socket) => {
+
+    // Should also take into account health
+    socket.on("updateMyCoordinates", request => {
+        // console.log(`ID: ${socket.id} ${request?.x} ${request?.y}`);
+        rangerCoordinatesTracker[socket.id] = {
+            'x': request?.x,
+            'y': request?.y,
+            'z': request?.z,
+        }
+
+        socket.broadcast.to(socket.handshake.session.roomID).emit("updateOpponentRangerCoordinates", {
+            'x': request?.x,
+            'y': request?.y,
+            'z': request?.z,
+            'socketID': socket.id
+        })
+    });
+};
+
+//////////////////////////////////////////////////////////
+// Misc
+//////////////////////////////////////////////////////////
 const listenForClientMessageToDB = (socket) => {
     socket.on("clientMessageToDatabase", request => {
         if (!request.username || !request.message) {
@@ -203,38 +346,7 @@ const listenForClientMessageToDB = (socket) => {
     });
 }
 
-const listenForJoiningNewRoom = (socket, roomTracker) => {
-    socket.on("joinNewRoom", request => {
-        console.log("ID joining:", socket.id)
-        console.log('Before new room', roomTracker)
-        if (!roomTracker[request.roomID]){
-            socket.join(request.roomID)
-            roomTracker[request.roomID] = {
-                list: [socket.id],
-                host: socket.id
-            }
-            console.log("After new room", roomTracker)
-            socket.handshake.session.roomID = request.roomID;
-        }
-    });
-}
 
-const listenForJoiningExistingRoom = (socket, roomTracker) => {
-    socket.on("joinExistingRoom", request => {
-        console.log("ID joining:", socket.id)
-        console.log("Before Joining existing room", roomTracker)
-        if (!!roomTracker[request.roomID]){
-            socket.join(request.roomID)
-            roomTracker[request.roomID].list.push(socket.id)
-            socket.broadcast.to(request.roomID).emit("newPlayerJoinedRoom", {
-                roomID: request.roomID,
-                socketID: socket.id
-            });
-            socket.handshake.session.roomID = request.roomID;
-            console.log("After Joining existing room",roomTracker)
-        }
-    });
-};
 
 const listenForDisconnection = (socket, roomTracker) => {
     socket.on('disconnect', () => {
@@ -253,21 +365,38 @@ const listenForDisconnection = (socket, roomTracker) => {
     });
 };
 
-const listenForUpdatingCoordinates = (socket) => {
-    socket.on("updateMyCoordinates", request => {
-        // console.log(`ID: ${socket.id} ${request?.x} ${request?.y}`, request);
+
+
+
+
+//TODO
+const listenForFetchingAllEntities = (socket) => {
+    const {roomID} = socket.handshake.session;
+
+    socket.on('fetchAllEntities', request => {
+
+        if (!!socket.handshake.session.roomID){
+            // Get Enemies
+            let enemies = roomToEnemyList[socket.handshake.session.roomID];
+            if (!enemies){
+                socket.emit("allEntitiesToClient", {
+                    "enemies": {}
+                });
+            }else{
+
+                socket.emit("allEntitiesToClient", {
+                    "enemies": enemies
+                });
+            }
+
+
+            //TODO Get rangers
+            // let opponent_rangers = roomTracker[socket.handshake.session.roomID]["list"];
+            // Didn't work as easy when Done here
+        }
+
     });
 };
-
-const listenForFetchingOpponentRangers = (socket, roomTracker) => {
-
-    socket.on("fetchOpponentRangers", request => {
-        const roomID = socket.handshake.session?.roomID;
-        if (!!roomID){
-            io.to(roomID).emit("serverSendingOpponentRangersInGame", roomTracker[roomID])
-        }
-    });
-}
 
 
 /*

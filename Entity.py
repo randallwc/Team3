@@ -71,3 +71,6 @@ class Entity:
         # this ruins the rectangle
         self.shape = pygame.transform.scale(self.shape, (width, height))
         self.rect = self.shape.get_rect()
+
+    def get_coordinates(self):
+        return (self.x, self.y, self.z)
