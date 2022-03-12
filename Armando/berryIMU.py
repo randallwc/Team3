@@ -24,6 +24,15 @@ import datetime
 import os
 import csv
 
+import paho.mqtt.client as mqtt
+import numpy as np
+import time
+
+import socket
+import json
+from time import sleep
+from struct import pack
+
 
 RAD_TO_DEG = 57.29578
 M_PI = 3.14159265358979323846
@@ -156,9 +165,9 @@ def kalmanFilterX(accAngle, gyroRate, DT):
     return KFangleX
 
 
-gyroXangle = 0.0
-gyroYangle = 0.0
-gyroZangle = 0.0
+gyro_x_angle = 0.0
+gyro_y_angle = 0.0
+gyro_z_angle = 0.0
 CFangleX = 0.0
 CFangleY = 0.0
 CFangleXFiltered = 0.0
@@ -304,9 +313,9 @@ while True:
     rate_gyr_z = GYRz * G_GAIN
 
     # Calculate the angles from the gyro.
-    gyroXangle += rate_gyr_x * LP
-    gyroYangle += rate_gyr_y * LP
-    gyroZangle += rate_gyr_z * LP
+    gyro_x_angle += rate_gyr_x * LP
+    gyro_y_angle += rate_gyr_y * LP
+    gyro_z_angle += rate_gyr_z * LP
 
     # Convert Accelerometer values to degrees
     AccXangle = (math.atan2(ACCy, ACCz) * RAD_TO_DEG)
@@ -372,23 +381,23 @@ while True:
 
     ##################### END Tilt Compensation ########################
 
-    if 1:  # Change to '0' to stop showing the angles from the accelerometer
+    if 0:  # Change to '0' to stop showing the angles from the accelerometer
         outputString += "#  ACCX Angle %5.2f ACCY Angle %5.2f  #  " % (
             AccXangle, AccYangle)
 
-    if 1:  # Change to '0' to stop  showing the angles from the gyro
+    if 0:  # Change to '0' to stop  showing the angles from the gyro
         outputString += "\t# GRYX Angle %5.2f  GYRY Angle %5.2f  GYRZ Angle %5.2f # " % (
-            gyroXangle, gyroYangle, gyroZangle)
+            gyro_x_angle, gyro_y_angle, gyro_z_angle)
 
-    if 1:  # Change to '0' to stop  showing the angles from the complementary filter
+    if 0:  # Change to '0' to stop  showing the angles from the complementary filter
         outputString += "\t#  CFangleX Angle %5.2f   CFangleY Angle %5.2f  #" % (
             CFangleX, CFangleY)
 
-    if 1:  # Change to '0' to stop  showing the heading
+    if 0:  # Change to '0' to stop  showing the heading
         outputString += "\t# HEADING %5.2f  tiltCompensatedHeading %5.2f #" % (
             heading, tiltCompensatedHeading)
 
-    if 1:  # Change to '0' to stop  showing the angles from the Kalman filter
+    if 0:  # Change to '0' to stop  showing the angles from the Kalman filter
         outputString += "# kalmanX %5.2f   kalmanY %5.2f #" % (
             kalmanX, kalmanY)
 
@@ -403,24 +412,48 @@ while True:
     yG = (ACCx * 0.244) / 1000
     xG = (ACCy * 0.244) / 1000
     zG = (ACCz * 0.244) / 1000
-    outputString += "##### X = %fG  ##### Y =   %fG  ##### Z =  %fG  #####  " % (
-        yG, xG, zG)
+    # outputString += "##### X = %fG  ##### Y =   %fG  ##### Z =  %fG  #####
+    # " % ( yG, xG, zG)
 
+    # code for tilt recognition
     isForwardPush = yG < -0.08
     isUpwardLift = zG > 1.1
-    isForwardTilt = 0 < gyroXangle and gyroXangle < 70
 
     if isIdle:
-        outputString += 'idle\t'
-    if isForwardTilt:
-        outputString += 'tilting forward\t'
-    if isForwardPush:
-        outputString += 'forward push\t'
-    if isUpwardLift:
-        outputString += 'upward lift\t'
+        gyro_x_angle = 0  # reset gyro angles
+        gyro_y_angle = 0
+        gyro_z_angle = 0
 
-    assert(len(kVals) == 5)
-    print(outputString)
+    #assert(len(kVals) == 5)
 
+    # code to send to pc using UDP
+    # Retrieved from
+    # https://stackoverflow.com/questions/64642122/how-to-send-real-time-sensor-data-to-pc-from-raspberry-pi-zero
+
+    # Create a UDP socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    host, port = '172.17.105.11', 65000
+    server_address = (host, port)
+
+    # check if need to calibrate
+    #calibrateString = "False"
+    #message, address = sock.recvfrom(4096)
+    #calibrateString = message.decode()
+    #print(calibrateString + '\n')
+
+    # info to send
+    IMU_dict = {
+        "x_gyro": gyro_x_angle,
+        "y_gyro": gyro_y_angle,
+        "z_gyro": gyro_z_angle,
+        "is_idle": isIdle,
+        "is_pushing": isForwardPush,
+    }
+    message = json.dumps(IMU_dict)
+    message = str.encode(message)
+    sock.sendto(message, server_address)
+
+    # print(IMU_dict)
     # slow program down a bit, makes the output more readable
     time.sleep(0.03)
