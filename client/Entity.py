@@ -34,7 +34,10 @@ class Entity:
         if current_level in range(self.num_z_levels):
             self.z = current_level
         else:
-            raise Exception("level invalid")
+            raise Exception(
+                "level invalid:",
+                current_level,
+                type(current_level))
 
     def set_image(self, image_path):
         self.image_path = image_path

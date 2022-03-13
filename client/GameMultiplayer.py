@@ -221,7 +221,10 @@ class GameMultiplayer:
             for opponent_ranger in self.opponent_rangers:
                 if opponent_ranger not in opponent_dict:
                     opponent = Player(
-                        self.screen_width, self.screen_height, self.db, self.num_z_levels)
+                        self.screen_width,
+                        self.screen_height,
+                        self.db,
+                        self.num_z_levels)
                     opponent_dict[opponent_ranger] = opponent
             # Show and update coordinates of Ranger Opponents
             for opp in opponent_dict:
@@ -245,3 +248,5 @@ class GameMultiplayer:
 
             # update display
             pygame.display.update()
+        pygame.quit()
+        quit()

@@ -41,8 +41,9 @@ class Ranger(Entity):
             self.frames_clicking += self.delta_laser_width
 
             # only fire once per click
-            if self.frames_clicking < (self.max_laser_width - self.min_laser_width) \
-                    and self.current_laser_width == self.max_laser_width:
+            if self.frames_clicking < (
+                    self.max_laser_width -
+                    self.min_laser_width) and self.current_laser_width == self.max_laser_width:
                 play_laser_sound()
                 self.laser_is_deadly = True
 
