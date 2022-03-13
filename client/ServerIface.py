@@ -129,7 +129,8 @@ class ServerIface:
                 self.host_enemies.append(new_enemy)
 
             for enemy in self.host_enemies:
-                enemy.update_coordinates(data["enemies"][enemy.id]['x'], data["enemies"][enemy.id]['y'])
+                enemy.update_coordinates(
+                    data["enemies"][enemy.id]['x'], data["enemies"][enemy.id]['y'])
 
     def connect(self, room_id, is_host):
         event_name = "joinNewRoom" if is_host else "joinExistingRoom"

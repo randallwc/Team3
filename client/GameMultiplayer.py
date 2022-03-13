@@ -71,7 +71,11 @@ class GameMultiplayer:
             sky_path, self.screen_width, self.screen_height)
         self.spawn_counter = self.max_spawn_counter
         self.db = DatabaseIface()
-        self.player = Player(screen_width, screen_height, self.db, self.num_z_levels)
+        self.player = Player(
+            screen_width,
+            screen_height,
+            self.db,
+            self.num_z_levels)
 
     def add_enemy(self, enemy: MultiplayerEnemy):
         self.enemies.append(enemy)
