@@ -9,9 +9,9 @@ from MultiplayerEnemy import *
 class ServerIface:
     def __init__(self, username):
         self.socket = socketio.Client()
-        #Localhost
-        #self.socket.connect('http://localhost:8000')
-        #Production
+        # Localhost
+        # self.socket.connect('http://localhost:8000')
+        # Production
         self.socket.connect('https://skydangerranger.herokuapp.com/')
         self.server_enemies = None
         self.is_host = False

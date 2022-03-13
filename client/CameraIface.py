@@ -34,5 +34,7 @@ class CameraIface:
 
     def get_level(self):
         level = self.num_levels - \
-            (self.num_levels / self.camera_height * self.get_object_position()[1])
+            (self.num_levels /
+             self.camera_height *
+             self.get_object_position()[1])
         return int(level)

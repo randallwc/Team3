@@ -142,7 +142,7 @@ class CameraIface:
                 True)
             self.x, self.y, self.w, self.h = cv2.boundingRect(approx)
             cv2.rectangle(frame, (self.x, self.y), (self.x +
-                          self.w, self.y + self.h), (0, 255, 0), 4)
+                                                    self.w, self.y + self.h), (0, 255, 0), 4)
             self.is_visible = True
         else:
             self.is_visible = False
