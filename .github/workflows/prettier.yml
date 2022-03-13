@@ -13,4 +13,4 @@ jobs:
       - name: Prettify
         uses: creyD/prettier_action@v4.2
         with:
-          prettier_options: --write --tab-width 4 --ignore-path ./github/* .
+          prettier_options: --write --tab-width 4 --ignore-path .github/* .
