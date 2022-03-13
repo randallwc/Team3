@@ -16,38 +16,28 @@
 #    http://ozzmaker.com/
 
 
+import datetime
+import json
+import math
+import socket
 import sys
 import time
-import math
+
 import IMU
-import datetime
-import os
-import csv
-
-import paho.mqtt.client as mqtt
-import numpy as np
-import time
-
-import socket
-import json
-from time import sleep
-from struct import pack
-
 
 RAD_TO_DEG = 57.29578
 M_PI = 3.14159265358979323846
 # [deg/s/LSB]  If you change the dps for gyro, you need to update this value accordingly
 G_GAIN = 0.070
-AA = 0.40              # Complementary filter constant
-MAG_LPF_FACTOR = 0.4    # Low pass filter constant magnetometer
-ACC_LPF_FACTOR = 0.4    # Low pass filter constant for accelerometer
+AA = 0.40  # Complementary filter constant
+MAG_LPF_FACTOR = 0.4  # Low pass filter constant magnetometer
+ACC_LPF_FACTOR = 0.4  # Low pass filter constant for accelerometer
 # Median filter table size for accelerometer. Higher = smoother but a
 # longer delay
 ACC_MEDIANTABLESIZE = 9
 # Median filter table size for magnetometer. Higher = smoother but a
 # longer delay
 MAG_MEDIANTABLESIZE = 9
-
 
 ################# Compass Calibration values ############
 # Use calibrateBerryIMU.py to get calibration values
@@ -60,7 +50,6 @@ magZmin = 0
 magXmax = 0
 magYmax = 0
 magZmax = 0
-
 
 '''
 Here is an example:
@@ -183,7 +172,6 @@ oldZAccRawValue = 0
 
 a = datetime.datetime.now()
 
-
 # Setup the tables for the mdeian filter. Fill them all with '1' so we
 # dont get devide by zero error
 acc_medianTable1X = [1] * ACC_MEDIANTABLESIZE
@@ -200,11 +188,10 @@ mag_medianTable2Y = [1] * MAG_MEDIANTABLESIZE
 mag_medianTable2Z = [1] * MAG_MEDIANTABLESIZE
 
 IMU.detectIMU()  # Detect if BerryIMU is connected.
-if(IMU.BerryIMUversion == 99):
+if IMU.BerryIMUversion == 99:
     print(" No BerryIMU found... exiting ")
     sys.exit()
 IMU.initIMU()  # Initialise the accelerometer, gyroscope and compass
-
 
 kVals = [0, 0, 0, 0, 0]
 
@@ -230,7 +217,7 @@ while True:
     b = datetime.datetime.now() - a
     a = datetime.datetime.now()
     LP = b.microseconds / (1000000 * 1.0)
-    outputString = "Loop Time %5.2f " % (LP)
+    outputString = "Loop Time %5.2f " % LP
 
     ###############################################
     #### Apply low pass filter ####
@@ -360,18 +347,18 @@ while True:
     # calculations
 
     # X compensation
-    if(IMU.BerryIMUversion == 1 or IMU.BerryIMUversion == 3):  # LSM9DS0 and (LSM6DSL & LIS2MDL)
+    if IMU.BerryIMUversion == 1 or IMU.BerryIMUversion == 3:  # LSM9DS0 and (LSM6DSL & LIS2MDL)
         magXcomp = MAGx * math.cos(pitch) + MAGz * math.sin(pitch)
     else:  # LSM9DS1
         magXcomp = MAGx * math.cos(pitch) - MAGz * math.sin(pitch)
 
     # Y compensation
-    if(IMU.BerryIMUversion == 1 or IMU.BerryIMUversion == 3):  # LSM9DS0 and (LSM6DSL & LIS2MDL)
+    if IMU.BerryIMUversion == 1 or IMU.BerryIMUversion == 3:  # LSM9DS0 and (LSM6DSL & LIS2MDL)
         magYcomp = MAGx * math.sin(roll) * math.sin(pitch) + MAGy * \
-            math.cos(roll) - MAGz * math.sin(roll) * math.cos(pitch)
+                   math.cos(roll) - MAGz * math.sin(roll) * math.cos(pitch)
     else:  # LSM9DS1
         magYcomp = MAGx * math.sin(roll) * math.sin(pitch) + MAGy * \
-            math.cos(roll) + MAGz * math.sin(roll) * math.cos(pitch)
+                   math.cos(roll) + MAGz * math.sin(roll) * math.cos(pitch)
 
     # Calculate tilt compensated heading
     tiltCompensatedHeading = 180 * math.atan2(magYcomp, magXcomp) / M_PI
@@ -424,7 +411,7 @@ while True:
         gyro_y_angle = 0
         gyro_z_angle = 0
 
-    #assert(len(kVals) == 5)
+    # assert(len(kVals) == 5)
 
     # code to send to pc using UDP
     # Retrieved from
@@ -437,10 +424,10 @@ while True:
     server_address = (host, port)
 
     # check if need to calibrate
-    #calibrateString = "False"
-    #message, address = sock.recvfrom(4096)
-    #calibrateString = message.decode()
-    #print(calibrateString + '\n')
+    # calibrateString = "False"
+    # message, address = sock.recvfrom(4096)
+    # calibrateString = message.decode()
+    # print(calibrateString + '\n')
 
     # info to send
     IMU_dict = {

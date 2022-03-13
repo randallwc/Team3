@@ -1,10 +1,10 @@
 from random import randrange
-import Entity
-import Sounds
-import pygame
+
+from Entity import *
+from Sounds import *
 
 
-class MultiplayerEnemy(Entity.Entity):
+class MultiplayerEnemy(Entity):
     def __init__(self, x, y, z, num_z_levels, enemy_type,
                  enemy_info, id, health=1, image_dimensions=(100, 100)):
         self.enemy_info = enemy_info
@@ -23,11 +23,13 @@ class MultiplayerEnemy(Entity.Entity):
     def get_good_enemies(self):
         def is_good(key):
             return self.enemy_info[key]['is_good']
+
         return list(filter(is_good, self.enemy_info))
 
     def get_bad_enemies(self):
         def is_bad(key):
             return not self.enemy_info[key]['is_good']
+
         return list(filter(is_bad, self.enemy_info))
 
     def get_image_path(self):
@@ -48,7 +50,7 @@ class MultiplayerEnemy(Entity.Entity):
 
     def play_death_sound(self):
         if self.health <= 0:
-            Sounds.play_sound(self.get_death_sound())
+            play_sound(self.get_death_sound())
 
     def handle_death(self):
         self.play_death_sound()

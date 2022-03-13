@@ -1,6 +1,8 @@
 import json
 import socket
 
+from Exceptions import *
+
 
 # TODO -- create this class
 class ImuIface:
@@ -19,7 +21,7 @@ class ImuIface:
         self.IMU_dict = {}
 
     def calibrate(self, is_calibrating: bool):
-        return Exceptions.NotImplementedException
+        return NotImplementedException
 
     def get_imu_info(self):
         # places info from IMU into dictionary IMU_dict

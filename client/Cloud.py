@@ -1,8 +1,9 @@
 from random import randrange
-import Entity
+
+from Entity import *
 
 
-class Cloud(Entity.Entity):
+class Cloud(Entity):
     def __init__(self, x, y, z, num_z_levels,
                  image_path, speed=None, max_speed=10):
         super().__init__(x, y, z, num_z_levels, image_path)

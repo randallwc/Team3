@@ -1,13 +1,11 @@
-import pygame
-
-import Entity
-import Paths
-import Sounds
+from Entity import *
+from Paths import *
+from Sounds import *
 
 
-class Ranger(Entity.Entity):
+class Ranger(Entity):
     def __init__(self, x, y, z, num_z_levels, screen_width,
-                 screen_height, image_path=Paths.ranger_path):
+                 screen_height, image_path=ranger_path):
         super().__init__(x, y, z, num_z_levels, image_path)
         self.delta_laser_width = 1
         self.max_laser_width = 20
@@ -45,7 +43,7 @@ class Ranger(Entity.Entity):
             # only fire once per click
             if self.frames_clicking < (self.max_laser_width - self.min_laser_width) \
                     and self.current_laser_width == self.max_laser_width:
-                Sounds.play_laser_sound()
+                play_laser_sound()
                 self.laser_is_deadly = True
 
             # display red laser
