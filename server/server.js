@@ -54,7 +54,7 @@ let routes = require("./routes/routes");
 app.use("/api/", routes);
 
 /////////////// DB initialization
-let URI; // will be updated once deployed
+let URI = `mongodb+srv://${process.env.DBUSERNAME}:${process.env.DBPASSWORD}@skydangerrangerdb.ozahe.mongodb.net/${process.env.DBNAME}?retryWrites=true&w=majority`
 // Connect to database
 mongoose.connect(process.env.DBLOCALURI || URI, {
     useNewUrlParser: true,
@@ -73,7 +73,7 @@ let sessionData = session({
     resave: true,
     saveUninitialized: true,
     store: mongoStore.create({
-        mongoUrl: process.env.DBLOCALURI,
+        mongoUrl: process.env.DBLOCALURI || URI,
     }),
 });
 app.use(sessionData);

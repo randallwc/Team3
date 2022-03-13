@@ -9,7 +9,10 @@ from MultiplayerEnemy import *
 class ServerIface:
     def __init__(self, username):
         self.socket = socketio.Client()
-        self.socket.connect('http://localhost:8000')
+        #Localhost
+        #self.socket.connect('http://localhost:8000')
+        #Production
+        self.socket.connect('https://skydangerranger.herokuapp.com/')
         self.server_enemies = None
         self.is_host = False
         self.room_id = ''
