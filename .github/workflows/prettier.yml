@@ -1,8 +1,8 @@
 name: Format code
 
 on:
-pull_request:
-  branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   prettier:
