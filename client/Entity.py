@@ -73,4 +73,4 @@ class Entity:
         self.rect = self.shape.get_rect()
 
     def get_coordinates(self):
-        return (self.x, self.y, self.z)
+        return self.x, self.y, self.z

@@ -1,16 +1,11 @@
-from random import randrange, choice
+from random import choice
 
-import pygame
-
-import Cloud
-import Controller
-import DatabaseIface
-import Enemy
-import MultiplayerSocket
-import Network
-import Paths
-import Player
-import ScreenManager
+from Cloud import *
+from Controller import *
+from Enemy import *
+from MultiplayerSocket import *
+from Player import *
+from ScreenManager import *
 
 
 class Game:
@@ -18,18 +13,18 @@ class Game:
                  window_title='Sky Danger Ranger'):
         # pygame initialization
         pygame.init()
-        ScreenManager.show_mouse(True)
+        show_mouse(True)
         pygame.display.set_caption(window_title)
         pygame.display.set_icon(
-            pygame.image.load(Paths.ranger_path)
+            pygame.image.load(ranger_path)
         )
 
         # member variables
         self.enemy_info = {
             'jc': {
                 'is_good': False,
-                'death_sound_path': Paths.jc_death_sound_path,
-                'image_path': Paths.jc_path,
+                'death_sound_path': jc_death_sound_path,
+                'image_path': jc_path,
                 'max_time_alive': 1000,
                 'x_speed': randrange(1, 4, 1),
                 'y_speed': randrange(50, 100, 1),
@@ -37,8 +32,8 @@ class Game:
             },
             'cow': {
                 'is_good': True,
-                'death_sound_path': Paths.friendly_fire_sound_path,
-                'image_path': Paths.cow_path,
+                'death_sound_path': friendly_fire_sound_path,
+                'image_path': cow_path,
                 'max_time_alive': 1000,
                 'x_speed': randrange(1, 4, 1),
                 'y_speed': randrange(50, 100, 1),
@@ -46,8 +41,8 @@ class Game:
             },
             'ricky': {
                 'is_good': False,
-                'death_sound_path': Paths.ricky_death_sound_path,
-                'image_path': Paths.ricky_path,
+                'death_sound_path': ricky_death_sound_path,
+                'image_path': ricky_path,
                 'max_time_alive': 1000,
                 'x_speed': randrange(1, 4, 1),
                 'y_speed': randrange(50, 100, 1),
@@ -56,7 +51,7 @@ class Game:
             'david': {
                 'is_good': False,
                 'death_sound_path': None,
-                'image_path': Paths.david_path,
+                'image_path': david_path,
                 'max_time_alive': 1000,
                 'x_speed': randrange(1, 4, 1),
                 'y_speed': randrange(50, 100, 1),
@@ -64,8 +59,8 @@ class Game:
             },
             'anton': {
                 'is_good': False,
-                'death_sound_path': Paths.anton_death_sound_path,
-                'image_path': Paths.anton_path,
+                'death_sound_path': anton_death_sound_path,
+                'image_path': anton_path,
                 'max_time_alive': 1000,
                 'x_speed': randrange(1, 4, 1),
                 'y_speed': randrange(50, 100, 1),
@@ -73,8 +68,8 @@ class Game:
             },
             'armando': {
                 'is_good': True,
-                'death_sound_path': Paths.friendly_fire_sound_path,
-                'image_path': Paths.armando_path,
+                'death_sound_path': friendly_fire_sound_path,
+                'image_path': armando_path,
                 'max_time_alive': 1000,
                 'x_speed': randrange(1, 4, 1),
                 'y_speed': randrange(50, 100, 1),
@@ -82,8 +77,8 @@ class Game:
             },
             'david2': {
                 'is_good': False,
-                'death_sound_path': Paths.david2_death_sound_path,
-                'image_path': Paths.david2_path,
+                'death_sound_path': david2_death_sound_path,
+                'image_path': david2_path,
                 'max_time_alive': 1000,
                 'x_speed': 20,
                 'y_speed': randrange(50, 100, 1),
@@ -97,21 +92,19 @@ class Game:
         self.enemy_types = list(self.enemy_info.keys())
         self.frame_rate = 60
         self.max_spawn_counter = 100
-        self.network = Network.Network()
         self.num_clouds = 10
         self.num_z_levels = 3
         self.opponent_rangers = []
         self.screen_height = screen_height
         self.screen_width = screen_width
 
-        self.controller = Controller.Controller(self.network)
-        self.screen_manager = ScreenManager.ScreenManager(
-            Paths.sky_path, self.screen_width, self.screen_height)
+        self.controller = Controller()
+        self.screen_manager = ScreenManager(
+            sky_path, self.screen_width, self.screen_height)
         self.spawn_counter = self.max_spawn_counter
-        self.db = DatabaseIface.DatabaseIface(self.network)
-        self.multiplayer_socket = MultiplayerSocket.MultiplayerSocket(
-            self.network)
-        self.player = Player.Player(
+        self.db = DatabaseIface()
+        self.multiplayer_socket = MultiplayerSocket()
+        self.player = Player(
             screen_width,
             screen_height,
             self.db,
@@ -122,12 +115,12 @@ class Game:
         for _ in range(self.num_clouds):
             screen_x, screen_y = self.screen_manager.screen_dimensions
             self.clouds.append(
-                Cloud.Cloud(
+                Cloud(
                     randrange(0, screen_x, 1),
                     randrange(0, screen_y, 1),
                     0,
                     self.num_z_levels,
-                    Paths.cloud_path
+                    cloud_path
                 )
             )
 
@@ -158,7 +151,7 @@ class Game:
                 # reset spawn countdown timer
                 self.spawn_counter = self.max_spawn_counter
                 self.enemies.append(
-                    Enemy.Enemy(
+                    Enemy(
                         randrange(
                             0,
                             self.screen_width,

@@ -1,16 +1,11 @@
-from random import randrange, choice
-import Cloud
-import Controller
-import DatabaseIface
-import MultiplayerEnemy
-import MultiplayerSocket
-import Network
-import OpponentRanger
-import Paths
-import Player
-import ScreenManager
-import pygame
-import Server
+from random import choice
+
+from Cloud import *
+from Controller import *
+from OpponentRanger import *
+from Player import *
+from ScreenManager import *
+from ServerIface import *
 
 
 class GameMultiplayer:
@@ -18,44 +13,46 @@ class GameMultiplayer:
                  window_title='Sky Danger Ranger'):
 
         # Ask user if they want to join game or create new one
-        # 0 is create new game, 1 is join new game
+        # 0 is created new game, 1 is join new game
+        self.enemy_types = None
+        self.enemy_info = None
         mp_game_mode = None
         while mp_game_mode != '0' and mp_game_mode != '1':
             mp_game_mode = input(
                 "Would you like to join an existing game(0) or create a new game(1)?: ")
-            roomID = ""
+            room_id = ""
             if mp_game_mode == '0':
-                roomID = input(
+                room_id = input(
                     "What is the room ID that you'd like to join?: ")
             elif mp_game_mode == '1':
-                roomID = input("Pick a room ID for everyone to join!: ")
-            roomIDStripped = "".join(roomID.split())
+                room_id = input("Pick a room ID for everyone to join!: ")
+            room_id_stripped = "".join(room_id.split())
 
             username = input(
                 "What username would you like to use? One word only plz: ")
-            usernameStripped = "".join(username.split())
-            self.username = usernameStripped
+            username_stripped = "".join(username.split())
+            self.username = username_stripped
 
-            self.isHost = True if mp_game_mode == '1' else False
-            self.roomID = roomIDStripped
+            self.is_host = True if mp_game_mode == '1' else False
+            self.room_id = room_id_stripped
             print(
                 "Multiplayer game mode(isHost):",
-                self.isHost,
-                "roomID",
-                roomIDStripped)
+                self.is_host,
+                "room_id",
+                room_id_stripped)
 
         # pygame initialization
         pygame.init()
-        ScreenManager.show_mouse(True)
+        show_mouse(True)
         pygame.display.set_caption(window_title)
         pygame.display.set_icon(
-            pygame.image.load(Paths.ranger_path)
+            pygame.image.load(ranger_path)
         )
 
         # Server setup
-        self.server = Server.Server(self.username)
-        self.server.fetchEnemies()  # Make socket call to fetch and set enemy types
-        self.server.connect(self.roomID, self.isHost)  # connect to room
+        self.server = ServerIface(self.username)
+        self.server.fetch_enemies()  # Make socket call to fetch and set enemy types
+        self.server.connect(self.room_id, self.is_host)  # connect to room
         self.enemy_id_count = 0
 
         self.clock = pygame.time.Clock()
@@ -63,25 +60,18 @@ class GameMultiplayer:
         self.enemies = []
         self.frame_rate = 60
         self.max_spawn_counter = 100
-        self.network = Network.Network()
         self.num_clouds = 8
-        self.num_z_levels = 3
+        self.num_z_levels = 1
         self.opponent_rangers = []
         self.screen_height = screen_height
         self.screen_width = screen_width
 
-        self.controller = Controller.Controller(self.network)
-        self.screen_manager = ScreenManager.ScreenManager(
-            Paths.sky_path, self.screen_width, self.screen_height)
+        self.controller = Controller()
+        self.screen_manager = ScreenManager(
+            sky_path, self.screen_width, self.screen_height)
         self.spawn_counter = self.max_spawn_counter
-        self.db = DatabaseIface.DatabaseIface(self.network)
-        self.multiplayer_socket = MultiplayerSocket.MultiplayerSocket(
-            self.network)
-        self.player = Player.Player(
-            screen_width,
-            screen_height,
-            self.db,
-            self.num_z_levels)
+        self.db = DatabaseIface()
+        self.player = Player(screen_width, screen_height, self.db, self.num_z_levels)
 
     def add_enemy(self, enemy: MultiplayerEnemy):
         self.enemies.append(enemy)
@@ -94,20 +84,20 @@ class GameMultiplayer:
 
     def run(self):
         # Did here so self.server.serverEnemies is not null,
-        # tried it in init & didnt work
-        self.enemy_info = self.server.serverEnemies
+        # tried it in init & didn't work
+        self.enemy_info = self.server.server_enemies
         self.enemy_types = list(self.enemy_info.keys())
 
         # create clouds
         for _ in range(self.num_clouds):
             screen_x, screen_y = self.screen_manager.screen_dimensions
             self.add_cloud(
-                Cloud.Cloud(
+                Cloud(
                     randrange(0, screen_x, 1),
                     randrange(0, screen_y, 1),
                     0,
                     self.num_z_levels,
-                    Paths.cloud_path
+                    cloud_path
                 )
             )
 
@@ -132,10 +122,10 @@ class GameMultiplayer:
             # spawn an enemy every self.max_spawn_counter frames
             if self.spawn_counter <= 0:
                 # If you are host, you can spawn new enemies
-                if self.server.isHost:
+                if self.server.is_host:
                     self.spawn_counter = self.max_spawn_counter
                     current_enemy_type = choice(self.enemy_types)
-                    new_enemy = MultiplayerEnemy.MultiplayerEnemy(
+                    new_enemy = MultiplayerEnemy(
                         randrange(
                             0,
                             self.screen_width,
@@ -166,7 +156,7 @@ class GameMultiplayer:
             # update ranger coordinates
             self.player.ranger.update_coordinates(x, y)
             # update server coordinates
-            self.server.sendLocation(x, y, self.player.ranger.z)
+            self.server.send_location(x, y, self.player.ranger.z)
 
             # show laser
             self.player.ranger.fire(
@@ -183,9 +173,9 @@ class GameMultiplayer:
                 enemy.countdown_time_alive()
                 enemy.step(self.screen_manager.screen_dimensions)
                 # Update server on where enemy stepped
-                enemy_coords = enemy.get_coordinates()
-                self.server.update_enemy_coords(
-                    enemy.id, enemy_coords[0], enemy_coords[1])
+                enemy_coordinates = enemy.get_coordinates()
+                self.server.update_enemy_coordinates(
+                    enemy.id, enemy_coordinates[0], enemy_coordinates[1])
                 if enemy.should_display:
                     # detect laser hits
                     if self.player.ranger.laser_is_deadly and self.player.ranger.x in enemy.get_x_hitbox():
@@ -195,7 +185,7 @@ class GameMultiplayer:
                 else:
                     # remove dead and timed out enemies
                     self.enemies.remove(enemy)
-                    if self.server.isHost:
+                    if self.server.is_host:
                         self.server.remove_enemy_from_server(enemy.id)
 
             for enemy in self.server.host_enemies:
@@ -226,15 +216,15 @@ class GameMultiplayer:
             opponent_dict = {}
             for opponent_ranger in self.opponent_rangers:
                 if opponent_ranger not in opponent_dict:
-                    opponent = Player.Player(
-                        self.screen_width, self.screen_height, self.db)
+                    opponent = Player(
+                        self.screen_width, self.screen_height, self.db, self.num_z_levels)
                     opponent_dict[opponent_ranger] = opponent
-            # Show and update coords of Ranger Opponents
+            # Show and update coordinates of Ranger Opponents
             for opp in opponent_dict:
                 try:
-                    coords = self.server.opponent_ranger_coordinates[opp]
+                    coordinates = self.server.opponent_ranger_coordinates[opp]
                     opponent_dict[opp].ranger.update_coordinates(
-                        coords[0], coords[1])
+                        coordinates[0], coordinates[1])
                     opponent_dict[opp].ranger.show(self.screen_manager.surface)
 
                 except BaseException:
@@ -243,7 +233,7 @@ class GameMultiplayer:
                     continue
 
             # uncomment this to print out all opponent rangers' socketIDs
-            #print('list of opponent rangers',self.server.opponent_rangers)
+            # print('list of opponent rangers',self.server.opponent_rangers)
             ################################################
 
             # show current score

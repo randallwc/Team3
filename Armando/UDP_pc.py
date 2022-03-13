@@ -1,6 +1,4 @@
 import socket
-import sys
-from struct import unpack
 
 # Create a UDP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -16,7 +14,7 @@ while True:
     # Wait for message
     message, address = sock.recvfrom(4096)
 
-    #print(f'Received {len(message)} bytes:')
-    #x = unpack('3f', message)
+    # print(f'Received {len(message)} bytes:')
+    # x = unpack('3f', message)
     x = message.decode()
     print(x)

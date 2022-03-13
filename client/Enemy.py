@@ -1,10 +1,8 @@
-import pygame
-
-import Entity
-import Sounds
+from Entity import *
+from Sounds import *
 
 
-class Enemy(Entity.Entity):
+class Enemy(Entity):
     def __init__(self, x, y, z, num_z_levels, enemy_type,
                  enemy_info, health=1, image_dimensions=(100, 100)):
         self.enemy_info = enemy_info
@@ -62,7 +60,7 @@ class Enemy(Entity.Entity):
     def play_death_sound(self):
         if self.health <= 0:
             if self.get_death_sound():
-                Sounds.play_sound(self.get_death_sound())
+                play_sound(self.get_death_sound())
 
     def handle_death(self):
         self.play_death_sound()

@@ -1,20 +1,19 @@
-import Exceptions
 import socketio
-import json
-import Paths
-import MultiplayerEnemy
+
+from MultiplayerEnemy import *
+
 
 # TODO -- create this class or decide on whether or not to delete it
 
 
-class Server:
+class ServerIface:
     def __init__(self, username):
         self.socket = socketio.Client()
         self.socket.connect('http://localhost:8000')
-        self.serverEnemies = None
-        self.isHost = False
-        self.roomID = ''
-        self.socketID = ''
+        self.server_enemies = None
+        self.is_host = False
+        self.room_id = ''
+        self.socket_id = ''
         self.opponent_rangers = []
         self.opponent_ranger_coordinates = {}
         self.username = username
@@ -23,59 +22,60 @@ class Server:
         # everyone else uses host's enemies
         self.host_enemies = []
 
-        self.idMapping = {
+        self.id_mapping = {
             'jc': {
-                'death_sound_path': Paths.jc_death_sound_path,
-                'image_path': Paths.jc_path
+                'death_sound_path': jc_death_sound_path,
+                'image_path': jc_path
             },
             'cow': {
-                'death_sound_path': Paths.friendly_fire_sound_path,
-                'image_path': Paths.cow_path
+                'death_sound_path': friendly_fire_sound_path,
+                'image_path': cow_path
             },
             'ricky': {
-                'death_sound_path': Paths.ricky_death_sound_path,
-                'image_path': Paths.ricky_path
+                'death_sound_path': ricky_death_sound_path,
+                'image_path': ricky_path
             },
             'david': {
-                'death_sound_path': Paths.wrong_answer_sound_path,
-                'image_path': Paths.david_path
+                'death_sound_path': wrong_answer_sound_path,
+                'image_path': david_path
             },
             'anton': {
-                'death_sound_path': Paths.anton_death_sound_path,
-                'image_path': Paths.anton_path
+                'death_sound_path': anton_death_sound_path,
+                'image_path': anton_path
             },
             'armando': {
-                'death_sound_path': Paths.friendly_fire_sound_path,
-                'image_path': Paths.armando_path
+                'death_sound_path': friendly_fire_sound_path,
+                'image_path': armando_path
             },
             'david2': {
-                'death_sound_path': Paths.david2_death_sound_path,
-                'image_path': Paths.david2_path
+                'death_sound_path': david2_death_sound_path,
+                'image_path': david2_path
             },
         }
 
         @self.socket.on("WelcomeClient")
         def on_welcome(data):
             print("Server: ", data['message'])
-            self.socketID = data['socketID']
+            print("Socket ID: ", data['socketID'])
+            self.socket_id = data['socketID']
 
         @self.socket.on("enemyInfoToClient")
-        def setEnemiesFromServer(data):
+        def set_enemies_from_server(data):
             for enemy in data:
-                data[enemy]["death_sound_path"] = self.idMapping[enemy]["death_sound_path"]
-                data[enemy]["image_path"] = self.idMapping[enemy]["image_path"]
-            self.serverEnemies = data
+                data[enemy]["death_sound_path"] = self.id_mapping[enemy]["death_sound_path"]
+                data[enemy]["image_path"] = self.id_mapping[enemy]["image_path"]
+            self.server_enemies = data
 
         @self.socket.on("serverSendingOpponentRangersInGame")
-        def setOpponentRangers(data):
+        def set_opponent_rangers(data):
             opponent_rangers = []
             for ranger in data["list"]:
-                if ranger != self.socketID:
+                if ranger != self.socket_id:
                     opponent_rangers.append(ranger)
             self.opponent_rangers = opponent_rangers
 
         @self.socket.on("updateOpponentRangerCoordinates")
-        def updateOpponentRangerCoordinates(data):
+        def update_opponent_ranger_coordinates(data):
             # set coordinates of opponent rangers
             self.opponent_ranger_coordinates[data["socketID"]] = (
                 data['x'], data['y'], data['z'])
@@ -92,11 +92,11 @@ class Server:
             # find which enemies on local version are no longer on server
             # version & remove them
             new_enemies = []
-            # do this in reverse so we don't skip any on deleting
+            # do this in reverse, so we don't skip any on deleting
             i = len(self.host_enemies) - 1
             while i >= 0:
                 curr_enemy = self.host_enemies[i]
-                #print(curr_enemy.id, data["enemies"].keys(), 'bees')
+                # print(curr_enemy.id, data["enemies"].keys(), 'bees')
                 if curr_enemy.id not in data["enemies"]:
                     self.host_enemies.pop(i)
                 i -= 1
@@ -114,45 +114,35 @@ class Server:
 
             # all existing ids have been removed
             for new_enemy_id in host_enemy_ids:
-                enem_data = data["enemies"][new_enemy_id]
+                enemy_data = data["enemies"][new_enemy_id]
 
                 # new enemy
-                new_enemy = MultiplayerEnemy.MultiplayerEnemy(
-                    enem_data['x'],
-                    enem_data['y'],
-                    enem_data['z'],
-                    enem_data['num_z_levels'],
-                    enem_data['enemy_type'],
-                    self.serverEnemies,
+                new_enemy = MultiplayerEnemy(
+                    enemy_data['x'],
+                    enemy_data['y'],
+                    enemy_data['z'],
+                    enemy_data['num_z_levels'],
+                    enemy_data['enemy_type'],
+                    self.server_enemies,
                     new_enemy_id
                 )
                 self.host_enemies.append(new_enemy)
 
             for enemy in self.host_enemies:
-                enemy.update_coordinates(
-                    data["enemies"][enemy.id]['x'], data["enemies"][enemy.id]['y'])
+                enemy.update_coordinates(data["enemies"][enemy.id]['x'], data["enemies"][enemy.id]['y'])
 
-    def connect(self, roomID, isHost):
-        eventName = "joinNewRoom" if isHost else "joinExistingRoom"
-        self.isHost = isHost
-        self.roomID = roomID
-        self.socket.emit(eventName, {
-            'roomID': roomID
+    def connect(self, room_id, is_host):
+        event_name = "joinNewRoom" if is_host else "joinExistingRoom"
+        self.is_host = is_host
+        self.room_id = room_id
+        self.socket.emit(event_name, {
+            'roomID': room_id
         })
 
-    def disconnect(self):
-        raise Exceptions.NotImplementedException
-
-    def location(self):
-        raise Exceptions.NotImplementedException
-
-    def listen(self):
-        raise Exceptions.NotImplementedException
-
-    def fetchEnemies(self):
+    def fetch_enemies(self):
         self.socket.emit('fetchEnemies')
 
-    def sendLocation(self, x, y, z):
+    def send_location(self, x, y, z):
         self.socket.emit("updateMyCoordinates", {
             'x': x,
             'y': y,
@@ -166,12 +156,12 @@ class Server:
         self.socket.emit('fetchAllEntities')
 
     def append_new_enemy_to_server(self, enemy):
-        if self.isHost:
-            coords = enemy.get_coordinates()
+        if self.is_host:
+            coordinates = enemy.get_coordinates()
             stripped_enemy = {
-                'x': coords[0],
-                'y': coords[1],
-                'z': coords[2],
+                'x': coordinates[0],
+                'y': coordinates[1],
+                'z': coordinates[2],
                 'id': enemy.id,
                 'enemy_type': enemy.enemy_type,
                 'health': enemy.health,
@@ -179,8 +169,8 @@ class Server:
             }
             self.socket.emit('hostAppendingNewEnemy', stripped_enemy)
 
-    def update_enemy_coords(self, id, x, y):
-        if self.isHost:
+    def update_enemy_coordinates(self, id, x, y):
+        if self.is_host:
             self.socket.emit("hostUpdatingEnemyCoordinates", {
                 'id': id,
                 'x': x,

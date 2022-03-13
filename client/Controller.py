@@ -1,18 +1,15 @@
 import pygame
 
-import CameraIface
-import Exceptions
-import ImuIface
-import Network
-import VoiceIface
+from CameraIface import *
+from VoiceIface import *
 
 
 class Controller:
-    def __init__(self, network: Network):
+    def __init__(self):
         self.current_z = None
         # self.xy_axis = ImuIface.ImuIface()
-        self.z_axis = CameraIface.CameraIface(100, 100)
-        self.voice = VoiceIface.VoiceIface()
+        self.z_axis = CameraIface(100, 100)
+        self.voice = VoiceIface()
         self.pressing_down_level = False
         self.pressing_up_level = False
 
@@ -84,7 +81,7 @@ class Controller:
         return self.current_z
 
     def get_current_state(self):
-        return Exceptions.NotImplementedException
+        return NotImplementedException
 
     def is_moving(self):
         return any(pygame.key.get_pressed())

@@ -1,5 +1,6 @@
 import pygame
-import Paths
+
+from Paths import *
 
 
 def play_sound(file_path):
@@ -7,7 +8,7 @@ def play_sound(file_path):
 
 
 def play_laser_sound():
-    play_sound(Paths.laser_sound_path)
+    play_sound(laser_sound_path)
 
 
 def play_music(file_path):
