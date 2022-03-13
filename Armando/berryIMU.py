@@ -347,18 +347,20 @@ while True:
     # calculations
 
     # X compensation
-    if IMU.BerryIMUversion == 1 or IMU.BerryIMUversion == 3:  # LSM9DS0 and (LSM6DSL & LIS2MDL)
+    # LSM9DS0 and (LSM6DSL & LIS2MDL)
+    if IMU.BerryIMUversion == 1 or IMU.BerryIMUversion == 3:
         magXcomp = MAGx * math.cos(pitch) + MAGz * math.sin(pitch)
     else:  # LSM9DS1
         magXcomp = MAGx * math.cos(pitch) - MAGz * math.sin(pitch)
 
     # Y compensation
-    if IMU.BerryIMUversion == 1 or IMU.BerryIMUversion == 3:  # LSM9DS0 and (LSM6DSL & LIS2MDL)
+    # LSM9DS0 and (LSM6DSL & LIS2MDL)
+    if IMU.BerryIMUversion == 1 or IMU.BerryIMUversion == 3:
         magYcomp = MAGx * math.sin(roll) * math.sin(pitch) + MAGy * \
-                   math.cos(roll) - MAGz * math.sin(roll) * math.cos(pitch)
+            math.cos(roll) - MAGz * math.sin(roll) * math.cos(pitch)
     else:  # LSM9DS1
         magYcomp = MAGx * math.sin(roll) * math.sin(pitch) + MAGy * \
-                   math.cos(roll) + MAGz * math.sin(roll) * math.cos(pitch)
+            math.cos(roll) + MAGz * math.sin(roll) * math.cos(pitch)
 
     # Calculate tilt compensated heading
     tiltCompensatedHeading = 180 * math.atan2(magYcomp, magXcomp) / M_PI

@@ -71,7 +71,11 @@ class GameMultiplayer:
             sky_path, self.screen_width, self.screen_height)
         self.spawn_counter = self.max_spawn_counter
         self.db = DatabaseIface()
-        self.player = Player(screen_width, screen_height, self.db, self.num_z_levels)
+        self.player = Player(
+            screen_width,
+            screen_height,
+            self.db,
+            self.num_z_levels)
 
     def add_enemy(self, enemy: MultiplayerEnemy):
         self.enemies.append(enemy)
@@ -217,7 +221,10 @@ class GameMultiplayer:
             for opponent_ranger in self.opponent_rangers:
                 if opponent_ranger not in opponent_dict:
                     opponent = Player(
-                        self.screen_width, self.screen_height, self.db, self.num_z_levels)
+                        self.screen_width,
+                        self.screen_height,
+                        self.db,
+                        self.num_z_levels)
                     opponent_dict[opponent_ranger] = opponent
             # Show and update coordinates of Ranger Opponents
             for opp in opponent_dict:
@@ -241,3 +248,5 @@ class GameMultiplayer:
 
             # update display
             pygame.display.update()
+        pygame.quit()
+        quit()

@@ -98,7 +98,7 @@ class Game:
         self.screen_height = screen_height
         self.screen_width = screen_width
 
-        self.controller = Controller()
+        self.controller = Controller(self.num_z_levels)
         self.screen_manager = ScreenManager(
             sky_path, self.screen_width, self.screen_height)
         self.spawn_counter = self.max_spawn_counter
@@ -182,8 +182,7 @@ class Game:
             # update z axis
             self.player.ranger.set_level(
                 self.controller.get_z(
-                    self.player.ranger.z,
-                    self.num_z_levels))
+                    self.player.ranger.z))
 
             # show laser
             self.player.ranger.fire(

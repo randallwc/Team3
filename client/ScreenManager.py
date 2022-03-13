@@ -27,7 +27,10 @@ class ScreenManager:
         background_color = (255, 255, 255)
         font = pygame.font.SysFont('Comic Sans', 20)
         rendered_font = font.render(
-            f'score: {current_score}', True, foreground_color, background_color)
+            f'score: {current_score}',
+            True,
+            foreground_color,
+            background_color)
         self.surface.blit(
             rendered_font,
             (self.screen_dimensions[0] - 100,
@@ -80,5 +83,5 @@ class ScreenManager:
                     f'{num_enemies_on_level(enemies, i)}', True, number_color)
                 text_x = line_x + 10
                 text_y = line_bottom[1] - rendered_font.get_height() // 2 - \
-                         line_length * (i / (num_z_levels - 1))
+                    line_length * (i / (num_z_levels - 1))
                 self.surface.blit(rendered_font, (text_x, text_y))
