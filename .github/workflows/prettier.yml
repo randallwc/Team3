@@ -1,9 +1,5 @@
 name: Format code
-
-on:
-  pull_request:
-    branches: [main]
-
+on: push
 jobs:
   prettier:
     runs-on: ubuntu-latest

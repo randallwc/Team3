@@ -7,6 +7,7 @@
 You will need to install **_npm_** (node package manager) and **_nodejs_**. Check the **_package.json_** file to see which version to download.
 
 E.g.
+
 ```bash
 engines: {
     "node": "12.16.3",
@@ -18,13 +19,16 @@ Go to https://nodejs.org/en/download/ and download the version specified in **_p
 I would suggest finding a tutorial or Youtube video online on how to install **_npm_** and **_nodejs_** to see a visual example
 
 ## Checking If You Already Have NodeJS and npm
+
 Confirm that NodeJS and npm were installed correctly with the correct version by running:
+
 ```bash
 node -v
 npm -v
 ```
 
 ## Installing all dependencies
+
 If you just cloned this project, you must have NodeJS and NPM installed beforehand, from the base of the repository, run:
 
 ```bash
@@ -43,7 +47,7 @@ Without them, the application won't work fully.
 
 For the purpose of this project, say we want to install a new module (e.g. express)
 
-Always pass in **_--save_** flag 
+Always pass in **_--save_** flag
 
 If the package/module just makes development easier but not necessarily needed to host the application, (like **_nodemon_**) then pass in **_--save-dev_** flag
 
@@ -72,6 +76,7 @@ mkdir localDB
 ```
 
 then, run the following command to run DB from terminal (USE YOUR OWN PATH)
+
 ```bash
 sudo mongod --dbpath <absolute_path_you_chose>
 ```
@@ -81,6 +86,7 @@ sudo mongod --dbpath <absolute_path_you_chose>
 ```bash
 sudo mongod --dbpath /Users/jcrios/Documents/School/ECE180/UCLASeniorProject/Team3/server/localDB
 ```
+
 > Feel free to make an alias, thats what I did
 
 # Troubleshooting
