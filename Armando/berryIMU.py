@@ -226,7 +226,7 @@ publisher.on_connect = on_connect
 publisher.on_disconnect = on_disconnect
 publisher.on_message = on_message
 # TODO -- maybe try
-#publisher.connect(server)
+# publisher.connect(server)
 # because maybe the async is causing the message buildup
 publisher.connect_async(server)
 publisher.loop_start()
