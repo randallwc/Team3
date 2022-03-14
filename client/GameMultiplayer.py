@@ -17,10 +17,12 @@ class GameMultiplayer:
         self.voice = VoiceIface()
         self.enemy_types = None
         self.enemy_info = None
-        self.use_voice = input('do you want to use voice? (yes or no) ').lower() == 'yes'
+        self.use_voice = input(
+            'do you want to use voice? (yes or no) ').lower() == 'yes'
         asking = True
         while asking:
-            print("Would you like to join an existing game(join) or create a new game(create)?: ")
+            print(
+                "Would you like to join an existing game(join) or create a new game(create)?: ")
             if self.use_voice:
                 self.is_host = self.voice.find_word('create')
             else:
@@ -41,7 +43,13 @@ class GameMultiplayer:
                 username = input()
             self.username = "_".join(username.split())
             self.room_id = "".join(room_id.split())
-            print("is host:", self.is_host, "room id", self.room_id, "username", self.username)
+            print(
+                "is host:",
+                self.is_host,
+                "room id",
+                self.room_id,
+                "username",
+                self.username)
             if self.room_id and self.username:
                 asking = False
             else:
@@ -50,7 +58,8 @@ class GameMultiplayer:
         # pygame initialization
         pygame.init()
         show_mouse(True)
-        pygame.display.set_caption(window_title + self.room_id + ':' + self.username)
+        pygame.display.set_caption(
+            window_title + self.room_id + ':' + self.username)
         pygame.display.set_icon(
             pygame.image.load(ranger_path)
         )
