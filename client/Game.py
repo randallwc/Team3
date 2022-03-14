@@ -248,5 +248,7 @@ class Game:
             # update display
             pygame.display.update()
 
+        print('quitting')
+        self.controller.disconnect()
         pygame.quit()
         quit()

@@ -183,3 +183,6 @@ class ServerIface:
 
     def remove_enemy_from_server(self, id):
         self.socket.emit('removeEnemy', {"id": id})
+
+    def disconnect(self):
+        self.socket.disconnect()

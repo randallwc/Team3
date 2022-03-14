@@ -89,3 +89,6 @@ class Controller:
 
     def is_moving(self):
         return any(pygame.key.get_pressed())
+
+    def disconnect(self):
+        self.xy_axis.client.disconnect()

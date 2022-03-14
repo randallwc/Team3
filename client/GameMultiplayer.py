@@ -249,5 +249,9 @@ class GameMultiplayer:
 
             # update display
             pygame.display.update()
+
+        print('quitting')
+        self.server.disconnect()
+        self.controller.disconnect()
         pygame.quit()
         quit()
