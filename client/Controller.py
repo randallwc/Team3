@@ -41,11 +41,11 @@ class Controller:
     def get_direction(self):
         keys = pygame.key.get_pressed()
         return {
-            'up': keys[pygame.K_UP] or keys[pygame.K_w] or self.xy_axis.is_forward_tilt,
-            'down': keys[pygame.K_DOWN] or keys[pygame.K_s] or self.xy_axis.is_backward_tilt,
-            'left': keys[pygame.K_LEFT] or keys[pygame.K_a] or self.xy_axis.is_left_tilt,
-            'right': keys[pygame.K_RIGHT] or keys[pygame.K_d] or self.xy_axis.is_right_tilt,
-            'space': keys[pygame.K_SPACE] or self.xy_axis.is_pushing,
+            'up': keys[pygame.K_UP] or keys[pygame.K_w],
+            'down': keys[pygame.K_DOWN] or keys[pygame.K_s],
+            'left': keys[pygame.K_LEFT] or keys[pygame.K_a],
+            'right': keys[pygame.K_RIGHT] or keys[pygame.K_d],
+            'space': keys[pygame.K_SPACE] or self.xy_axis.is_pushing or self.xy_axis.is_pushing,
             'down_level': keys[pygame.K_q],
             'up_level': keys[pygame.K_e],
         }
@@ -83,9 +83,6 @@ class Controller:
         #     self.current_z = num_z_levels - 1
         self.current_z = self.z_axis.get_level()
         return self.current_z
-
-    def get_current_state(self):
-        return NotImplementedException
 
     def is_moving(self):
         return any(pygame.key.get_pressed())
