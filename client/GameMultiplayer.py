@@ -66,7 +66,7 @@ class GameMultiplayer:
         self.screen_height = screen_height
         self.screen_width = screen_width
 
-        self.controller = Controller()
+        self.controller = Controller(self.num_z_levels)
         self.screen_manager = ScreenManager(
             sky_path, self.screen_width, self.screen_height)
         self.spawn_counter = self.max_spawn_counter
@@ -233,6 +233,7 @@ class GameMultiplayer:
                     opponent_dict[opp].ranger.update_coordinates(
                         coordinates[0], coordinates[1])
                     opponent_dict[opp].ranger.show(self.screen_manager.surface)
+                    # opponent_dict[opp].ranger.fire(opponent_dict[opp].is_firing, self.screen_manager.surface)
 
                 except BaseException:
                     # for when opponent_ranger_coordinates is not yet updated,
