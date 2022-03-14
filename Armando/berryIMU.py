@@ -195,8 +195,11 @@ if IMU.BerryIMUversion == 99:
 IMU.initIMU()  # Initialise the accelerometer, gyroscope and compass
 
 # mqtt callbacks
+
+
 def on_connect(client, userdata, flags, rc):
     print('on connect', rc)
+
 
 def on_disconnect(client, userdata, rc):
     if rc != 0:
@@ -206,8 +209,15 @@ def on_disconnect(client, userdata, rc):
         print('expected disconnect')
         sys.exit(0)
 
+
 def on_message(client, userdata, message):
-    print('Received message: "' + str(message.payload) + '" on topic "' + message.topic + '" with QoS ' + str(message.qos))
+    print('Received message: "' +
+          str(message.payload) +
+          '" on topic "' +
+          message.topic +
+          '" with QoS ' +
+          str(message.qos))
+
 
 server = 'test.mosquitto.org'
 room = 'team3/controller/will'
@@ -224,7 +234,7 @@ qos = 0
 
 kVals = [0, 0, 0, 0, 0]
 
-print(server,room)
+print(server, room)
 print('begin looping')
 while True:
 
