@@ -22,6 +22,7 @@ import math
 import socket
 import sys
 import time
+import paho.mqtt.client as mqtt
 
 import IMU
 
@@ -193,8 +194,38 @@ if IMU.BerryIMUversion == 99:
     sys.exit()
 IMU.initIMU()  # Initialise the accelerometer, gyroscope and compass
 
+# mqtt callbacks
+def on_connect(client, userdata, flags, rc):
+    print('on connect', rc)
+
+def on_disconnect(client, userdata, rc):
+    if rc != 0:
+        print('unexpected disconnect')
+        sys.exit(1)
+    else:
+        print('expected disconnect')
+        sys.exit(0)
+
+def on_message(client, userdata, message):
+    print('Received message: "' + str(message.payload) + '" on topic "' + message.topic + '" with QoS ' + str(message.qos))
+
+server = 'test.mosquitto.org'
+room = 'team3/controller/will'
+publisher = mqtt.Client()
+publisher.on_connect = on_connect
+publisher.on_disconnect = on_disconnect
+publisher.on_message = on_message
+# TODO -- maybe try
+# publisher.connect(server)
+# because maybe the async is causing the message buildup
+publisher.connect_async(server)
+publisher.loop_start()
+qos = 0
+
 kVals = [0, 0, 0, 0, 0]
 
+print(server,room)
+print('begin looping')
 while True:
 
     # Read the accelerometer,gyroscope and magnetometer values
@@ -415,16 +446,6 @@ while True:
 
     # assert(len(kVals) == 5)
 
-    # code to send to pc using UDP
-    # Retrieved from
-    # https://stackoverflow.com/questions/64642122/how-to-send-real-time-sensor-data-to-pc-from-raspberry-pi-zero
-
-    # Create a UDP socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-    host, port = '172.17.105.11', 65000
-    server_address = (host, port)
-
     # check if need to calibrate
     # calibrateString = "False"
     # message, address = sock.recvfrom(4096)
@@ -439,10 +460,12 @@ while True:
         "is_idle": isIdle,
         "is_pushing": isForwardPush,
     }
-    message = json.dumps(IMU_dict)
-    message = str.encode(message)
-    sock.sendto(message, server_address)
+    # print(IMU_dict)
+    publisher.publish(room, str.encode(json.dumps(IMU_dict)), qos=qos)
+    # message = json.dumps(IMU_dict)
+    # message = str.encode(message)
+    # sock.sendto(message, server_address)
 
     # print(IMU_dict)
     # slow program down a bit, makes the output more readable
-    time.sleep(0.03)
+    # time.sleep(0.25)
