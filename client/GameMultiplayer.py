@@ -10,41 +10,47 @@ from ServerIface import *
 
 class GameMultiplayer:
     def __init__(self, screen_width=1280, screen_height=720,
-                 window_title='Sky Danger Ranger'):
+                 window_title='Sky Danger Ranger - '):
 
         # Ask user if they want to join game or create new one
         # 0 is created new game, 1 is join new game
+        self.voice = VoiceIface()
         self.enemy_types = None
         self.enemy_info = None
-        mp_game_mode = None
-        while mp_game_mode != '0' and mp_game_mode != '1':
-            mp_game_mode = input(
-                "Would you like to join an existing game(0) or create a new game(1)?: ")
-            room_id = ""
-            if mp_game_mode == '0':
-                room_id = input(
-                    "What is the room ID that you'd like to join?: ")
-            elif mp_game_mode == '1':
-                room_id = input("Pick a room ID for everyone to join!: ")
-            room_id_stripped = "".join(room_id.split())
-
-            username = input(
-                "What username would you like to use? One word only plz: ")
-            username_stripped = "".join(username.split())
-            self.username = username_stripped
-
-            self.is_host = True if mp_game_mode == '1' else False
-            self.room_id = room_id_stripped
-            print(
-                "Multiplayer game mode(isHost):",
-                self.is_host,
-                "room_id",
-                room_id_stripped)
+        self.use_voice = input('do you want to use voice? (yes or no) ').lower() == 'yes'
+        asking = True
+        while asking:
+            print("Would you like to join an existing game(join) or create a new game(create)?: ")
+            if self.use_voice:
+                self.is_host = self.voice.find_word('create')
+            else:
+                self.is_host = ''.join(input()).lower() == 'create'
+            if self.is_host:
+                room_id_question = "Pick a room ID for everyone to join!: "
+            else:
+                room_id_question = "What is the room ID that you'd like to join?: "
+            print(room_id_question)
+            if self.use_voice:
+                room_id = self.voice.listen()
+            else:
+                room_id = input()
+            print("What username would you like to use?")
+            if self.use_voice:
+                username = self.voice.listen()
+            else:
+                username = input()
+            self.username = "_".join(username.split())
+            self.room_id = "".join(room_id.split())
+            print("is host:", self.is_host, "room id", self.room_id, "username", self.username)
+            if self.room_id and self.username:
+                asking = False
+            else:
+                print('try that again')
 
         # pygame initialization
         pygame.init()
         show_mouse(True)
-        pygame.display.set_caption(window_title)
+        pygame.display.set_caption(window_title + self.room_id + ':' + self.username)
         pygame.display.set_icon(
             pygame.image.load(ranger_path)
         )
