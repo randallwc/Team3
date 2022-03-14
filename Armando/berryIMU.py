@@ -226,7 +226,7 @@ publisher.on_connect = on_connect
 publisher.on_disconnect = on_disconnect
 publisher.on_message = on_message
 # TODO -- maybe try
-# publisher.connect(server)
+#publisher.connect(server)
 # because maybe the async is causing the message buildup
 publisher.connect_async(server)
 publisher.loop_start()
@@ -236,6 +236,9 @@ kVals = [0, 0, 0, 0, 0]
 
 print(server, room)
 print('begin looping')
+
+previous_is_pushing = False
+
 while True:
 
     # Read the accelerometer,gyroscope and magnetometer values
@@ -446,13 +449,14 @@ while True:
     # " % ( yG, xG, zG)
 
     # code for tilt recognition
-    isForwardPush = yG < -0.08
-    isUpwardLift = zG > 1.1
+    isForwardPush = zG < 0.8 and xG > 0.2
+    #isUpwardLift = zG > 1.1
 
     if isIdle:
         gyro_x_angle = 0  # reset gyro angles
         gyro_y_angle = 0
         gyro_z_angle = 0
+        is_forward_push = False
 
     # assert(len(kVals) == 5)
 
@@ -471,7 +475,9 @@ while True:
         "is_pushing": isForwardPush,
     }
     # print(IMU_dict)
-    publisher.publish(room, str.encode(json.dumps(IMU_dict)), qos=qos)
+    if previous_is_pushing != is_forward_push:
+        publisher.publish(room, str.encode(json.dumps(IMU_dict)), qos=qos)
+        previous_is_pushing = is_forward_push
     # message = json.dumps(IMU_dict)
     # message = str.encode(message)
     # sock.sendto(message, server_address)
