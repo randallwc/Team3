@@ -1,20 +1,19 @@
 import matplotlib.pyplot as plt
-import csv
 import pandas as pd
 
-#data = pd.read_csv('forward_tilt.csv')
-#data = pd.read_csv('backwards_tilt.csv')
-#data = pd.read_csv('right_tilt.csv')
-#data = pd.read_csv('left_tilt.csv')
-#data = pd.read_csv('forward_right_tilt.csv')
-#data = pd.read_csv('forward_left_tilt.csv')
-#data = pd.read_csv('backwards_right_tilt.csv')
-#data = pd.read_csv('backwards_left_tilt.csv')
+# data = pd.read_csv('forward_tilt.csv')
+# data = pd.read_csv('backwards_tilt.csv')
+# data = pd.read_csv('right_tilt.csv')
+# data = pd.read_csv('left_tilt.csv')
+# data = pd.read_csv('forward_right_tilt.csv')
+# data = pd.read_csv('forward_left_tilt.csv')
+# data = pd.read_csv('backwards_right_tilt.csv')
+# data = pd.read_csv('backwards_left_tilt.csv')
 
 data = pd.read_csv('forward_tilt_gyro.csv')
-#data = pd.read_csv('right_tilt_gyro.csv')
-#data = pd.read_csv('left_tilt_gyro.csv')
-#data = pd.read_csv('back_tilt_gyro.csv')
+# data = pd.read_csv('right_tilt_gyro.csv')
+# data = pd.read_csv('left_tilt_gyro.csv')
+# data = pd.read_csv('back_tilt_gyro.csv')
 
 
 x = range(len(data['xG']))

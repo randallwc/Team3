@@ -16,38 +16,29 @@
 #    http://ozzmaker.com/
 
 
+import datetime
+import json
+import math
+import socket
 import sys
 import time
-import math
-import IMU
-import datetime
-import os
-import csv
-
 import paho.mqtt.client as mqtt
-import numpy as np
-import time
 
-import socket
-import json
-from time import sleep
-from struct import pack
-
+import IMU
 
 RAD_TO_DEG = 57.29578
 M_PI = 3.14159265358979323846
 # [deg/s/LSB]  If you change the dps for gyro, you need to update this value accordingly
 G_GAIN = 0.070
-AA = 0.40              # Complementary filter constant
-MAG_LPF_FACTOR = 0.4    # Low pass filter constant magnetometer
-ACC_LPF_FACTOR = 0.4    # Low pass filter constant for accelerometer
+AA = 0.40  # Complementary filter constant
+MAG_LPF_FACTOR = 0.4  # Low pass filter constant magnetometer
+ACC_LPF_FACTOR = 0.4  # Low pass filter constant for accelerometer
 # Median filter table size for accelerometer. Higher = smoother but a
 # longer delay
 ACC_MEDIANTABLESIZE = 9
 # Median filter table size for magnetometer. Higher = smoother but a
 # longer delay
 MAG_MEDIANTABLESIZE = 9
-
 
 ################# Compass Calibration values ############
 # Use calibrateBerryIMU.py to get calibration values
@@ -60,7 +51,6 @@ magZmin = 0
 magXmax = 0
 magYmax = 0
 magZmax = 0
-
 
 '''
 Here is an example:
@@ -165,9 +155,9 @@ def kalmanFilterX(accAngle, gyroRate, DT):
     return KFangleX
 
 
-gyroXangle = 0.0
-gyroYangle = 0.0
-gyroZangle = 0.0
+gyro_x_angle = 0.0
+gyro_y_angle = 0.0
+gyro_z_angle = 0.0
 CFangleX = 0.0
 CFangleY = 0.0
 CFangleXFiltered = 0.0
@@ -182,7 +172,6 @@ oldYAccRawValue = 0
 oldZAccRawValue = 0
 
 a = datetime.datetime.now()
-
 
 # Setup the tables for the mdeian filter. Fill them all with '1' so we
 # dont get devide by zero error
@@ -200,13 +189,55 @@ mag_medianTable2Y = [1] * MAG_MEDIANTABLESIZE
 mag_medianTable2Z = [1] * MAG_MEDIANTABLESIZE
 
 IMU.detectIMU()  # Detect if BerryIMU is connected.
-if(IMU.BerryIMUversion == 99):
+if IMU.BerryIMUversion == 99:
     print(" No BerryIMU found... exiting ")
     sys.exit()
 IMU.initIMU()  # Initialise the accelerometer, gyroscope and compass
 
+# mqtt callbacks
+
+
+def on_connect(client, userdata, flags, rc):
+    print('on connect', rc)
+
+
+def on_disconnect(client, userdata, rc):
+    if rc != 0:
+        print('unexpected disconnect')
+        sys.exit(1)
+    else:
+        print('expected disconnect')
+        sys.exit(0)
+
+
+def on_message(client, userdata, message):
+    print('Received message: "' +
+          str(message.payload) +
+          '" on topic "' +
+          message.topic +
+          '" with QoS ' +
+          str(message.qos))
+
+
+server = 'test.mosquitto.org'
+room = 'team3/controller/will'
+publisher = mqtt.Client()
+publisher.on_connect = on_connect
+publisher.on_disconnect = on_disconnect
+publisher.on_message = on_message
+# TODO -- maybe try
+# publisher.connect(server)
+# because maybe the async is causing the message buildup
+publisher.connect_async(server)
+publisher.loop_start()
+qos = 0
 
 kVals = [0, 0, 0, 0, 0]
+
+print(server, room)
+print('begin looping')
+
+previous_is_pushing = False
 
 while True:
 
@@ -230,7 +261,7 @@ while True:
     b = datetime.datetime.now() - a
     a = datetime.datetime.now()
     LP = b.microseconds / (1000000 * 1.0)
-    outputString = "Loop Time %5.2f " % (LP)
+    outputString = "Loop Time %5.2f " % LP
 
     ###############################################
     #### Apply low pass filter ####
@@ -313,9 +344,9 @@ while True:
     rate_gyr_z = GYRz * G_GAIN
 
     # Calculate the angles from the gyro.
-    gyroXangle += rate_gyr_x * LP
-    gyroYangle += rate_gyr_y * LP
-    gyroZangle += rate_gyr_z * LP
+    gyro_x_angle += rate_gyr_x * LP
+    gyro_y_angle += rate_gyr_y * LP
+    gyro_z_angle += rate_gyr_z * LP
 
     # Convert Accelerometer values to degrees
     AccXangle = (math.atan2(ACCy, ACCz) * RAD_TO_DEG)
@@ -360,13 +391,15 @@ while True:
     # calculations
 
     # X compensation
-    if(IMU.BerryIMUversion == 1 or IMU.BerryIMUversion == 3):  # LSM9DS0 and (LSM6DSL & LIS2MDL)
+    # LSM9DS0 and (LSM6DSL & LIS2MDL)
+    if IMU.BerryIMUversion == 1 or IMU.BerryIMUversion == 3:
         magXcomp = MAGx * math.cos(pitch) + MAGz * math.sin(pitch)
     else:  # LSM9DS1
         magXcomp = MAGx * math.cos(pitch) - MAGz * math.sin(pitch)
 
     # Y compensation
-    if(IMU.BerryIMUversion == 1 or IMU.BerryIMUversion == 3):  # LSM9DS0 and (LSM6DSL & LIS2MDL)
+    # LSM9DS0 and (LSM6DSL & LIS2MDL)
+    if IMU.BerryIMUversion == 1 or IMU.BerryIMUversion == 3:
         magYcomp = MAGx * math.sin(roll) * math.sin(pitch) + MAGy * \
             math.cos(roll) - MAGz * math.sin(roll) * math.cos(pitch)
     else:  # LSM9DS1
@@ -387,7 +420,7 @@ while True:
 
     if 0:  # Change to '0' to stop  showing the angles from the gyro
         outputString += "\t# GRYX Angle %5.2f  GYRY Angle %5.2f  GYRZ Angle %5.2f # " % (
-            gyroXangle, gyroYangle, gyroZangle)
+            gyro_x_angle, gyro_y_angle, gyro_z_angle)
 
     if 0:  # Change to '0' to stop  showing the angles from the complementary filter
         outputString += "\t#  CFangleX Angle %5.2f   CFangleY Angle %5.2f  #" % (
@@ -416,44 +449,39 @@ while True:
     # " % ( yG, xG, zG)
 
     # code for tilt recognition
-    isForwardPush = yG < -0.08
-    isUpwardLift = zG > 1.1
+    isForwardPush = zG < 0.8 and xG > 0.2
+    #isUpwardLift = zG > 1.1
 
     if isIdle:
-        gyroXangle = 0  # reset gyro angles
-        gyroYangle = 0
-        gyroZangle = 0
+        gyro_x_angle = 0  # reset gyro angles
+        gyro_y_angle = 0
+        gyro_z_angle = 0
+        is_forward_push = False
 
-    #assert(len(kVals) == 5)
-
-    # code to send to pc using UDP
-    # Retrieved from
-    # https://stackoverflow.com/questions/64642122/how-to-send-real-time-sensor-data-to-pc-from-raspberry-pi-zero
-
-    # Create a UDP socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-    host, port = '172.20.10.2', 65000
-    server_address = (host, port)
+    # assert(len(kVals) == 5)
 
     # check if need to calibrate
-    #calibrateString = "False"
-    #message, address = sock.recvfrom(4096)
-    #calibrateString = message.decode()
-    #print(calibrateString + '\n')
+    # calibrateString = "False"
+    # message, address = sock.recvfrom(4096)
+    # calibrateString = message.decode()
+    # print(calibrateString + '\n')
 
     # info to send
     IMU_dict = {
-        "x_gyro": gyroXangle,
-        "y_gyro": gyroYangle,
-        "z_gyro": gyroZangle,
+        "x_gyro": gyro_x_angle,
+        "y_gyro": gyro_y_angle,
+        "z_gyro": gyro_z_angle,
         "is_idle": isIdle,
         "is_pushing": isForwardPush,
     }
-    message = json.dumps(IMU_dict)
-    message = str.encode(message)
-    sock.sendto(message, server_address)
+    # print(IMU_dict)
+    if previous_is_pushing != is_forward_push:
+        publisher.publish(room, str.encode(json.dumps(IMU_dict)), qos=qos)
+        previous_is_pushing = is_forward_push
+    # message = json.dumps(IMU_dict)
+    # message = str.encode(message)
+    # sock.sendto(message, server_address)
 
-    print(IMU_dict)
+    # print(IMU_dict)
     # slow program down a bit, makes the output more readable
-    time.sleep(0.03)
+    # time.sleep(0.25)

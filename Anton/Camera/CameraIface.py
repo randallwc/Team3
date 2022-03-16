@@ -52,8 +52,8 @@ class CameraIface:
             if not ret:
                 print("failed to grab frame")
                 running = False
-            cv2.rectangle(frame, (self.xBoxMin - 3, self.yBoxMin - 3), (self.xBoxMax + 2, self.yBoxMax + 2),
-                          (0, 255, 0), 4)
+            cv2.rectangle(frame, (self.xBoxMin - 3, self.yBoxMin - 3),
+                          (self.xBoxMax + 2, self.yBoxMax + 2), (0, 255, 0), 4)
             cv2.imshow("Calibration", frame)
 
             k = cv2.waitKey(1)
