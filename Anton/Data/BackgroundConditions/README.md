@@ -1,5 +1,5 @@
 -Camera calibration tested around Westwood in 8 different places:
-  DeNeve, Dykstra, JustBoba, Strathmore Apartments (Kitchen, Living Room, Bedroom, Stairs), Taco Bell
+DeNeve, Dykstra, JustBoba, Strathmore Apartments (Kitchen, Living Room, Bedroom, Stairs), Taco Bell
 
 -Image sets include calibration picture, screenshot of entire feed during calibration, and screenshot of entire feed during tracking
 
