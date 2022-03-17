@@ -1,3 +1,0 @@
-1. Request they choose a ball that they think is distinct from the background
-2. Ask them to fill the box/go through calibration
-3. Check accuracy
