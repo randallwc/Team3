@@ -1,21 +1,22 @@
 -Testing how well newcomers calibrate for the first time.
 
 -Total of 8 test subjects:
->Arlette Gonzalez
+
+> Arlette Gonzalez
 >
->Bennett
+> Bennett
 >
->Brent Arakaki
+> Brent Arakaki
 >
->Eugene Hwang
+> Eugene Hwang
 >
->Genesis Qu
+> Genesis Qu
 >
->Nico
+> Nico
 >
->Ricky Ma
+> Ricky Ma
 >
->Vivian Zuo
+> Vivian Zuo
 
 -Subjects are asked to "fill" the entire green box with the ball. I press SPACE for them to take the picture. Observe the results.
 
