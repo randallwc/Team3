@@ -13,3 +13,5 @@ Sources:
 > K-Means Clustering in OpenCV: https://docs.opencv.org/4.x/d1/d5c/tutorial_py_kmeans_opencv.html
 >
 > Calibration Step: https://stackoverflow.com/questions/34588464/python-how-to-capture-image-from-webcam-on-click-using-opencv
+
+If the object you wish to track does NOT entirely fill up the box, then the calibration will not work as efficiently. Calibration bases everything off the image taken, so if the lighting changes suddenly, tracking may work unexpectedly. Because of its sensitivity, we may just switch over to a pre-existing library _dlib_ and adapt those to our desired features.
