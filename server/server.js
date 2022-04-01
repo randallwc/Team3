@@ -248,10 +248,12 @@ const listenForJoiningExistingRoom = (socket, roomTracker) => {
         if (!!roomTracker[request.room_id]) {
             socket.join(request.room_id);
             roomTracker[request.room_id].list.push(socket.id);
-            socket.broadcast.to(request.room_id).emit("new_player_joined_room", {
-                room_id: request.room_id,
-                socket_id: socket.id,
-            });
+            socket.broadcast
+                .to(request.room_id)
+                .emit("new_player_joined_room", {
+                    room_id: request.room_id,
+                    socket_id: socket.id,
+                });
             socket.handshake.session.roomID = request.room_id;
             console.log("After Joining existing room", roomTracker);
             socket.handshake.session.save();
