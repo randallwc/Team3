@@ -32,7 +32,10 @@ const server = http.createServer(app);
 const cors = require("cors");
 
 // initializing socket.io
-const io = require("socket.io")(server);
+const io = require("socket.io")(server, {
+    pingTimeout: 40000,
+    pingInterval: 30000
+});
 
 // Example database object that we save message from client into database
 const SimpleObject = require("./models/simple");
