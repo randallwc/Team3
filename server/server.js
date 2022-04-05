@@ -33,8 +33,8 @@ const cors = require("cors");
 
 // initializing socket.io
 const io = require("socket.io")(server, {
-    pingTimeout: 100000,
-    maxHttpBufferSize: 1e8,
+    pingTimeout: 200000,
+    maxHttpBufferSize: 1e9,
     // pingInterval: 30000
 });
 
