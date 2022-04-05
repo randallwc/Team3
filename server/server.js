@@ -305,7 +305,7 @@ const listenForUpdatingCoordinatesAndMetadata = (socket) => {
             x: request?.x,
             y: request?.y,
             z: request?.z,
-            is_firing: request?.is_firing
+            is_firing: request?.is_firing,
         };
 
         socket.broadcast
@@ -315,7 +315,7 @@ const listenForUpdatingCoordinatesAndMetadata = (socket) => {
                 y: request?.y,
                 z: request?.z,
                 socket_id: socket.id,
-                is_firing: request?.is_firing
+                is_firing: request?.is_firing,
             });
     });
 };
