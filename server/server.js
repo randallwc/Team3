@@ -33,9 +33,9 @@ const cors = require("cors");
 
 // initializing socket.io
 const io = require("socket.io")(server, {
-    pingTimeout: 200000,
+    pingTimeout: 300000,
     maxHttpBufferSize: 1e9,
-    pingInterval: 70000
+    //pingInterval: 70000
 });
 
 // Example database object that we save message from client into database
@@ -350,7 +350,7 @@ const listenForClientMessageToDB = (socket) => {
 
 const listenForDisconnection = (socket, roomTracker) => {
     socket.on("disconnect", (reason) => {
-        console.log(`Client with the following id has connected: ${socket.id}`);
+        console.log(`Client with the following id has disconnected: ${socket.id}`);
         console.log(`Was in room:`, socket.handshake.session?.roomID);
         console.log(`Reason:`, reason);
 
