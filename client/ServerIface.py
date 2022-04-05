@@ -10,9 +10,9 @@ class ServerIface:
     def __init__(self, username):
         self.socket = socketio.Client()
         # Localhost
-        # self.socket.connect('http://localhost:8000')
+        self.socket.connect('http://localhost:8000')
         # Production
-        self.socket.connect('https://skydangerranger.herokuapp.com/')
+        # self.socket.connect('https://skydangerranger.herokuapp.com/')
         self.server_enemies = None
         self.is_host = False
         self.room_id = ''
@@ -81,7 +81,11 @@ class ServerIface:
         def update_opponent_ranger_coordinates(data):
             # set coordinates of opponent rangers
             self.opponent_ranger_coordinates[data["socket_id"]] = (
-                data['x'], data['y'], data['z'])
+                    data['x'],
+                    data['y'],
+                    data['z'],
+                    data['is_firing']
+                )
 
         @self.socket.on("all_entities_to_client")
         def receiving_all_entities(data):
@@ -146,14 +150,15 @@ class ServerIface:
     def fetch_enemies(self):
         self.socket.emit('fetch_enemies')
 
-    def send_location(self, x, y, z):
-        self.socket.emit("update_my_coordinates", {
+    def send_location_and_meta(self, x, y, z, is_firing):
+        self.socket.emit("update_my_coordinates_and_meta", {
             'x': x,
             'y': y,
-            'z': z
+            'z': z,
+            'is_firing': is_firing
         })
 
-    def fetchRangerOpponents(self):
+    def fetch_ranger_opponents(self):
         self.socket.emit("fetch_opponent_rangers")
 
     def fetch_all_entities(self):

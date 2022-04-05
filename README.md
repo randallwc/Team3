@@ -6,9 +6,10 @@
 
 # Requirements
 
--   python3
--   pygame `python3 -m pip install -U pygame`
--   socketio `pip3 install "python-socketio"`
+- python3
+- pygame `python3 -m pip install -U pygame`
+- socketio `pip3 install "python-socketio"`
+- speechrecognition `conda install -c conda-forge speechrecognition`
 
 # Sources
 
