@@ -160,7 +160,7 @@ io.on("connection", (socket) => {
 
     //// Handle Rangers
     // Ranger updates coordinates
-    listenForUpdatingCoordinates(socket);
+    listenForUpdatingCoordinatesAndMetadata(socket);
 
     //// Send opponent rangers to everyone in room
     listenForFetchingOpponentRangers(socket, roomTracker);
@@ -297,14 +297,15 @@ const listenForFetchingOpponentRangers = (socket, roomTracker) => {
     });
 };
 
-const listenForUpdatingCoordinates = (socket) => {
+const listenForUpdatingCoordinatesAndMetadata = (socket) => {
     // Should also take into account health
-    socket.on("update_my_coordinates", (request) => {
-        // console.log(`ID: ${socket.id} ${request?.x} ${request?.y}`);
+    socket.on("update_my_coordinates_and_meta", (request) => {
+        // console.log(`ID: ${socket.id} ${request?.x} ${request?.y}, ${request?.is_firing}`);
         rangerCoordinatesTracker[socket.id] = {
             x: request?.x,
             y: request?.y,
             z: request?.z,
+            is_firing: request?.is_firing,
         };
 
         socket.broadcast
@@ -314,6 +315,7 @@ const listenForUpdatingCoordinates = (socket) => {
                 y: request?.y,
                 z: request?.z,
                 socket_id: socket.id,
+                is_firing: request?.is_firing,
             });
     });
 };
