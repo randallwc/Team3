@@ -35,7 +35,7 @@ const cors = require("cors");
 const io = require("socket.io")(server, {
     pingTimeout: 300000,
     maxHttpBufferSize: 1e6,
-    //pingInterval: 70000
+    pingInterval: 70000
 });
 
 // Example database object that we save message from client into database
