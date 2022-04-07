@@ -16,7 +16,9 @@ class CameraIface:
         self.line_width = 3
         self.counter_max = 60
         self.counter = self.counter_max
-        self.previous_center = (self.camera_width//2,self.camera_height//2)
+        self.previous_center = (
+            self.camera_width // 2,
+            self.camera_height // 2)
 
     def get_object_position(self):
         # only run every self.counter frames
