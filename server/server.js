@@ -162,10 +162,9 @@ io.on("connection", (socket) => {
 
     //// Handle Rangers
     // Ranger updates coordinates
-    // listenForUpdatingCoordinatesAndMetadata(socket);
-
+    listenForUpdatingCoordinatesAndMetadata(socket);
     //// Send opponent rangers to everyone in room
-    // listenForFetchingOpponentRangers(socket, roomTracker);
+    listenForFetchingOpponentRangers(socket, roomTracker);
 });
 
 //////////////////////////////////////////////////////////
