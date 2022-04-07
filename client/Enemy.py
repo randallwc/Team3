@@ -66,13 +66,13 @@ class Enemy(Entity):
         self.play_death_sound()
         return 1 if self.enemy_type in self.bad_enemies else -1
 
-    def show(self, surface: pygame.surface):
+    def show(self, surface: pygame.surface.Surface):
         super().show(surface)
         self.time_alive_countdown -= 1
         if self.time_alive_countdown <= 0 or self.health <= 0:
             self.should_display = False
 
-    def show_diff_level(self, surface: pygame.surface, is_above):
+    def show_diff_level(self, surface: pygame.surface.Surface, is_above):
         if is_above:
             self.shape.set_alpha(255 // 2)
             text = 'above'

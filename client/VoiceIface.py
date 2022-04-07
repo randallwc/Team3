@@ -16,9 +16,9 @@ class VoiceIface:
             print('listening... ', end='', flush=True)
             audio = self.recognizer.listen(source, timeout=self.timeout)
             print('processing... ')
-        out = None
+        out = ''
         try:
-            out = self.recognizer.recognize_google(audio)
+            out = str(self.recognizer.recognize_google(audio))
             print(out)
         except sr.UnknownValueError:
             print('saying not recognized')

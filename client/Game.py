@@ -124,6 +124,9 @@ class Game:
                 )
             )
 
+        # start music
+        play_music(background_music_path)
+
         # game loop
         running = True
         while running:
@@ -242,6 +245,9 @@ class Game:
             # show current level minimap
             self.screen_manager.render_level(
                 self.player.ranger.z, self.num_z_levels, self.enemies)
+
+            # show fps
+            self.screen_manager.render_fps(round(self.clock.get_fps()))
 
             # TODO -- show current health
 

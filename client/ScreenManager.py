@@ -85,3 +85,14 @@ class ScreenManager:
                 text_y = line_bottom[1] - rendered_font.get_height() // 2 - \
                     line_length * (i / (num_z_levels - 1))
                 self.surface.blit(rendered_font, (text_x, text_y))
+
+    def render_fps(self, fps: int):
+        foreground_color = (0, 0, 0)
+        background_color = (255, 255, 255)
+        font = pygame.font.SysFont('Comic Sans', 20)
+        rendered_font = font.render(
+            f'fps: {fps}',
+            True,
+            foreground_color,
+            background_color)
+        self.surface.blit(rendered_font, (10, 10))
