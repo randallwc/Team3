@@ -21,8 +21,8 @@ class Player:
         )
         # TODO -- pull down scores from DatabaseIface
         self.scores = database.get_highscores()
-        self.min_speed = 5
-        self.max_speed = 20
+        self.min_speed = 5.0
+        self.max_speed = 20.0
         self.speed = self.min_speed
         self.acceleration = 1.1
 

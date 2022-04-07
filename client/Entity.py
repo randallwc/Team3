@@ -54,12 +54,12 @@ class Entity:
         self.rect.width = self.shape.get_width()
         self.rect.height = self.shape.get_height()
 
-    def show(self, surface: pygame.surface):
+    def show(self, surface: pygame.surface.Surface):
         self.update_coordinates(self.x, self.y)
         surface.blit(self.shape, (self.left, self.top))
         # self.show_rect(surface)
 
-    def show_rect(self, surface: pygame.surface, color=white):
+    def show_rect(self, surface: pygame.surface.Surface, color=white):
         for i in range(4):
             pygame.draw.rect(
                 surface,
