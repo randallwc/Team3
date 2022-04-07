@@ -175,7 +175,8 @@ class GameMultiplayer:
             # update ranger coordinates
             self.player.ranger.update_coordinates(x, y)
             # update server coordinates
-            self.server.send_location(x, y, self.player.ranger.z)
+            self.server.send_location_and_meta(
+                x, y, self.player.ranger.z, self.controller.is_firing())
 
             # show laser
             self.player.ranger.fire(
@@ -228,7 +229,7 @@ class GameMultiplayer:
             ################################################
             # Handle opponent rangers
             ################################################
-            self.server.fetchRangerOpponents()
+            self.server.fetch_ranger_opponents()
             self.opponent_rangers = self.server.opponent_rangers
 
             # Update Ranger Opponents list
@@ -244,11 +245,16 @@ class GameMultiplayer:
             # Show and update coordinates of Ranger Opponents
             for opp in opponent_dict:
                 try:
-                    coordinates = self.server.opponent_ranger_coordinates[opp]
+                    coordinates_and_meta = self.server.opponent_ranger_coordinates[opp]
                     opponent_dict[opp].ranger.update_coordinates(
-                        coordinates[0], coordinates[1])
+                        coordinates_and_meta[0],
+                        coordinates_and_meta[1]
+                    )
+                    opponent_dict[opp].ranger.fire(
+                        coordinates_and_meta[3],
+                        self.screen_manager.surface
+                    )
                     opponent_dict[opp].ranger.show(self.screen_manager.surface)
-                    # opponent_dict[opp].ranger.fire(opponent_dict[opp].is_firing, self.screen_manager.surface)
 
                 except BaseException:
                     # for when opponent_ranger_coordinates is not yet updated,

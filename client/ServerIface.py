@@ -10,9 +10,9 @@ class ServerIface:
     def __init__(self, username):
         self.socket = socketio.Client()
         # Localhost
-        # self.socket.connect('http://localhost:8000')
+        self.socket.connect('http://localhost:8000')
         # Production
-        self.socket.connect('https://skydangerranger.herokuapp.com/')
+        # self.socket.connect('https://skydangerranger.herokuapp.com/')
         self.server_enemies = None
         self.is_host = False
         self.room_id = ''
@@ -56,20 +56,20 @@ class ServerIface:
             },
         }
 
-        @self.socket.on("WelcomeClient")
+        @self.socket.on("welcome_client")
         def on_welcome(data):
             print("Server: ", data['message'])
-            print("Socket ID: ", data['socketID'])
-            self.socket_id = data['socketID']
+            print("Socket ID: ", data['socket_id'])
+            self.socket_id = data['socket_id']
 
-        @self.socket.on("enemyInfoToClient")
+        @self.socket.on("enemy_info_to_client")
         def set_enemies_from_server(data):
             for enemy in data:
                 data[enemy]["death_sound_path"] = self.id_mapping[enemy]["death_sound_path"]
                 data[enemy]["image_path"] = self.id_mapping[enemy]["image_path"]
             self.server_enemies = data
 
-        @self.socket.on("serverSendingOpponentRangersInGame")
+        @self.socket.on("server_sending_opponent_rangers_in_game")
         def set_opponent_rangers(data):
             opponent_rangers = []
             for ranger in data["list"]:
@@ -77,13 +77,17 @@ class ServerIface:
                     opponent_rangers.append(ranger)
             self.opponent_rangers = opponent_rangers
 
-        @self.socket.on("updateOpponentRangerCoordinates")
+        @self.socket.on("update_opponent_ranger_coordinates")
         def update_opponent_ranger_coordinates(data):
             # set coordinates of opponent rangers
-            self.opponent_ranger_coordinates[data["socketID"]] = (
-                data['x'], data['y'], data['z'])
+            self.opponent_ranger_coordinates[data["socket_id"]] = (
+                data['x'],
+                data['y'],
+                data['z'],
+                data['is_firing']
+            )
 
-        @self.socket.on("allEntitiesToClient")
+        @self.socket.on("all_entities_to_client")
         def receiving_all_entities(data):
             # HANDLING ENEMIES
             # two steps
@@ -136,28 +140,29 @@ class ServerIface:
                     data["enemies"][enemy.id]['x'], data["enemies"][enemy.id]['y'])
 
     def connect(self, room_id, is_host):
-        event_name = "joinNewRoom" if is_host else "joinExistingRoom"
+        event_name = "join_new_room" if is_host else "join_existing_room"
         self.is_host = is_host
         self.room_id = room_id
         self.socket.emit(event_name, {
-            'roomID': room_id
+            'room_id': room_id
         })
 
     def fetch_enemies(self):
-        self.socket.emit('fetchEnemies')
+        self.socket.emit('fetch_enemies')
 
-    def send_location(self, x, y, z):
-        self.socket.emit("updateMyCoordinates", {
+    def send_location_and_meta(self, x, y, z, is_firing):
+        self.socket.emit("update_my_coordinates_and_meta", {
             'x': x,
             'y': y,
-            'z': z
+            'z': z,
+            'is_firing': is_firing
         })
 
-    def fetchRangerOpponents(self):
-        self.socket.emit("fetchOpponentRangers")
+    def fetch_ranger_opponents(self):
+        self.socket.emit("fetch_opponent_rangers")
 
     def fetch_all_entities(self):
-        self.socket.emit('fetchAllEntities')
+        self.socket.emit('fetch_all_entities')
 
     def append_new_enemy_to_server(self, enemy):
         if self.is_host:
@@ -171,18 +176,18 @@ class ServerIface:
                 'health': enemy.health,
                 'num_z_levels': enemy.num_z_levels
             }
-            self.socket.emit('hostAppendingNewEnemy', stripped_enemy)
+            self.socket.emit('host_appending_new_enemy', stripped_enemy)
 
     def update_enemy_coordinates(self, id, x, y):
         if self.is_host:
-            self.socket.emit("hostUpdatingEnemyCoordinates", {
+            self.socket.emit("host_updating_enemy_coordinates", {
                 'id': id,
                 'x': x,
                 'y': y
             })
 
     def remove_enemy_from_server(self, id):
-        self.socket.emit('removeEnemy', {"id": id})
+        self.socket.emit('remove_enemy', {"id": id})
 
     def disconnect(self):
         self.socket.disconnect()
