@@ -141,8 +141,6 @@ const enemy_info = {
 
 // main socket.io stuff
 io.on("connection", (socket) => {
-    //// When client joins, emit message
-    emitWelcome(socket);
 
     //// Fetching types of enemies
     listenForEnemyTypesFetched(socket);
@@ -183,7 +181,6 @@ const emitWelcome = (socket) => {
 
 const listenForEnemyTypesFetched = (socket) => {
     socket.on("fetch_enemies", (request) => {
-        console.log('high scool kids', enemy_info, 'binfo')
         socket.emit("enemy_info_to_client", enemy_info);
     });
 };
@@ -195,7 +192,7 @@ const roomToEnemyList = {};
 const listenForAppendingEnemyByHost = (socket) => {
     socket.on("host_appending_new_enemy", (request) => {
         if (
-            roomTracker[socket.handshake.session.roomID]["host"] === socket.id
+            roomTracker[socket.handshake.session.roomID]["host"] === socket.handshake.session.timeUserID
         ) {
             let id = request.id;
             if (!roomToEnemyList[socket.handshake.session.roomID]) {
@@ -226,7 +223,7 @@ const listenForUpdatingEnemyCoordsByHost = (socket) => {
 
     socket.on("host_updating_enemy_coordinates", (request) => {
         if (
-            roomTracker[socket.handshake.session.roomID]["host"] === socket.id
+            roomTracker[socket.handshake.session.roomID]["host"] === socket.handshake.session.timeUserID
         ) {
             let enemyList = roomToEnemyList[socket.handshake.session.roomID];
             if (!!enemyList[request.id]) {
@@ -252,16 +249,30 @@ const listenForJoiningExistingRoom = (socket, roomTracker) => {
         console.log("Before Joining existing room", roomTracker);
         if (!!roomTracker[request.room_id]) {
             socket.join(request.room_id);
-            roomTracker[request.room_id].list.push(socket.id);
+            roomTracker[request.room_id].list.push(request.time_user_id);
             socket.broadcast
                 .to(request.room_id)
                 .emit("new_player_joined_room", {
                     room_id: request.room_id,
                     socket_id: socket.id,
                 });
-            socket.handshake.session.roomID = request.room_id;
+
             console.log("After Joining existing room", roomTracker);
+
+            // Room ID
+            socket.handshake.session.roomID = request.room_id;
+            // User ID unique to each client
+            socket.handshake.session.userID = request.user_id;
+            // Unique UUID to append to user ID
+            socket.handshake.session.epochTime = request.epoch_time;
+            //Concatinated userID and UUID
+            socket.handshake.session.timeUserID = request.time_user_id;
+            // Username picked by player
+            socket.handshake.session.username = request.username;
+
             socket.handshake.session.save();
+
+            emitWelcome(socket);
         }
     });
 };
@@ -270,16 +281,30 @@ const listenForJoiningNewRoom = (socket, roomTracker) => {
     socket.on("join_new_room", (request) => {
         console.log("ID joining:", socket.id);
         console.log("Before new room", roomTracker);
+
         if (!roomTracker[request.room_id]) {
             socket.join(request.room_id);
             roomTracker[request.room_id] = {
-                list: [socket.id],
-                host: socket.id,
+                list: [request.time_user_id],
+                host: request.time_user_id,
             };
 
             console.log("After new room", roomTracker);
+
+            // Room ID
             socket.handshake.session.roomID = request.room_id;
+            // User ID unique to each client
+            socket.handshake.session.userID = request.user_id;
+            // Unique UUID to append to user ID
+            socket.handshake.session.epochTime = request.epoch_time;
+            //Concatinated userID and UUID
+            socket.handshake.session.timeUserID = request.time_user_id;
+            // Username picked by player
+            socket.handshake.session.username = request.username;
+
             socket.handshake.session.save();
+
+            emitWelcome(socket);
         }
     });
 };
@@ -306,7 +331,7 @@ const listenForUpdatingCoordinatesAndMetadata = (socket) => {
     // Should also take into account health
     socket.on("update_my_coordinates_and_meta", (request) => {
         // console.log(`ID: ${socket.id} ${request?.x} ${request?.y}, ${request?.is_firing}`);
-        rangerCoordinatesTracker[socket.id] = {
+        rangerCoordinatesTracker[socket.handshake.session.timeUserID] = {
             x: request?.x,
             y: request?.y,
             z: request?.z,
@@ -320,7 +345,8 @@ const listenForUpdatingCoordinatesAndMetadata = (socket) => {
                 y: request?.y,
                 z: request?.z,
                 socket_id: socket.id,
-                is_firing: request?.is_firing
+                is_firing: request?.is_firing,
+                time_user_id: socket.handshake.session.timeUserID
             });
     });
 };
@@ -350,7 +376,7 @@ const listenForClientMessageToDB = (socket) => {
 
 const listenForDisconnection = (socket, roomTracker) => {
     socket.on("disconnect", (reason) => {
-        console.log(`Client with the following id has disconnected: ${socket.id}`);
+        console.log(`Client with the following id has disconnected: ${socket.id}, userID: ${socket.handshake.session.timeUserID}`);
         console.log(`Was in room:`, socket.handshake.session?.roomID);
         console.log(`Reason:`, reason);
 
@@ -360,7 +386,7 @@ const listenForDisconnection = (socket, roomTracker) => {
 
         for (let i = 0; i < roomLength; i++) {
             // remove person from list of players in room
-            if (list[i] === socket.id) {
+            if (list[i] === socket.handshake.session.timeUserID) {
                 list.splice(i, 1);
             }
         }

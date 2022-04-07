@@ -1,5 +1,7 @@
 import socketio
-
+import uuid
+import time
+from random import choice
 from MultiplayerEnemy import *
 
 
@@ -13,46 +15,91 @@ class ServerIface:
         self.socket.connect('http://localhost:8000')
         # Production
         # self.socket.connect('https://skydangerranger.herokuapp.com/')
-        self.server_enemies = None
         self.is_host = False
         self.room_id = ''
         self.socket_id = ''
+        self.user_id = ''
+        self.epoch_time = ''
+        self.time_user_id = ''
+        self.username = username
+
         self.opponent_rangers = []
         self.opponent_ranger_coordinates = {}
-        self.username = username
 
         # Will be all enemies spawned on host
         # everyone else uses host's enemies
         self.host_enemies = []
 
-        self.id_mapping = {
+        self.enemy_info = {
             'jc': {
+                'is_good': False,
                 'death_sound_path': jc_death_sound_path,
-                'image_path': jc_path
+                'image_path': jc_path,
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right']),
+                'speed': randrange(1, 4, 1)
             },
             'cow': {
+                'is_good': True,
                 'death_sound_path': friendly_fire_sound_path,
-                'image_path': cow_path
+                'image_path': cow_path,
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right']),
+                'speed': randrange(1, 4, 1)
             },
             'ricky': {
+                'is_good': False,
                 'death_sound_path': ricky_death_sound_path,
-                'image_path': ricky_path
+                'image_path': ricky_path,
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right']),
+                'speed': randrange(1, 4, 1)
             },
             'david': {
-                'death_sound_path': wrong_answer_sound_path,
-                'image_path': david_path
+                'is_good': False,
+                'death_sound_path': david2_death_sound_path,
+                'image_path': david_path,
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right']),
+                'speed': randrange(1, 4, 1)
             },
             'anton': {
+                'is_good': False,
                 'death_sound_path': anton_death_sound_path,
-                'image_path': anton_path
+                'image_path': anton_path,
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right']),
+                'speed': randrange(1, 4, 1)
             },
             'armando': {
+                'is_good': True,
                 'death_sound_path': friendly_fire_sound_path,
-                'image_path': armando_path
+                'image_path': armando_path,
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right']),
+                'speed': randrange(1, 4, 1)
             },
             'david2': {
+                'is_good': False,
                 'death_sound_path': david2_death_sound_path,
-                'image_path': david2_path
+                'image_path': david2_path,
+                'max_time_alive': 1000,
+                'x_speed': 20,
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right']),
+                'speed': randrange(1, 4, 1)
             },
         }
 
@@ -62,25 +109,19 @@ class ServerIface:
             print("Socket ID: ", data['socket_id'])
             self.socket_id = data['socket_id']
 
-        @self.socket.on("enemy_info_to_client")
-        def set_enemies_from_server(data):
-            for enemy in data:
-                data[enemy]["death_sound_path"] = self.id_mapping[enemy]["death_sound_path"]
-                data[enemy]["image_path"] = self.id_mapping[enemy]["image_path"]
-            self.server_enemies = data
-
         @self.socket.on("server_sending_opponent_rangers_in_game")
         def set_opponent_rangers(data):
             opponent_rangers = []
             for ranger in data["list"]:
-                if ranger != self.socket_id:
+                # if ranger in list is not current user
+                if ranger != self.time_user_id:
                     opponent_rangers.append(ranger)
             self.opponent_rangers = opponent_rangers
 
         @self.socket.on("update_opponent_ranger_coordinates")
         def update_opponent_ranger_coordinates(data):
             # set coordinates of opponent rangers
-            self.opponent_ranger_coordinates[data["socket_id"]] = (
+            self.opponent_ranger_coordinates[data["time_user_id"]] = (
                     data['x'],
                     data['y'],
                     data['z'],
@@ -130,7 +171,7 @@ class ServerIface:
                     enemy_data['z'],
                     enemy_data['num_z_levels'],
                     enemy_data['enemy_type'],
-                    self.server_enemies,
+                    self.enemy_info,
                     new_enemy_id
                 )
                 self.host_enemies.append(new_enemy)
@@ -143,26 +184,37 @@ class ServerIface:
         event_name = "join_new_room" if is_host else "join_existing_room"
         self.is_host = is_host
         self.room_id = room_id
+        self.epoch_time = int(time.time())
+        self.user_id = uuid.getnode()
+        # concatinating for local testing, so user id is still unique
+        self.time_user_id = self.epoch_time + self.user_id
+
         self.socket.emit(event_name, {
-            'room_id': room_id
+            'room_id': room_id,
+            'user_id': self.user_id,
+            'epoch_time': self.epoch_time,
+            'time_user_id': self.time_user_id, # epoch_time + user_id
+            'username': 'dummyusername'
         })
 
     def fetch_enemies(self):
         self.socket.emit('fetch_enemies')
 
     def send_location_and_meta(self, x, y, z, is_firing):
-        self.socket.emit("update_my_coordinates_and_meta", {
-            'x': x,
-            'y': y,
-            'z': z,
-            'is_firing': is_firing
-        })
+        if self.socket.connected:
+            self.socket.emit("update_my_coordinates_and_meta", {
+                'x': x,
+                'y': y,
+                'z': z,
+                'is_firing': is_firing
+            })
 
     def fetch_ranger_opponents(self):
         self.socket.emit("fetch_opponent_rangers")
 
     def fetch_all_entities(self):
-        self.socket.emit('fetch_all_entities')
+        if self.socket.connected:
+            self.socket.emit('fetch_all_entities')
 
     def append_new_enemy_to_server(self, enemy):
         if self.is_host:
