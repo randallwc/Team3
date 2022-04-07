@@ -65,26 +65,26 @@ class Controller:
         if is_face:
             self.current_z = self.z_axis.get_level()
         else:
-             assert (0 <= current_z < self.num_z_levels)
-             self.current_z = current_z
-             if self.get_direction()['down_level']:
-                 if not self.pressing_down_level:
-                     self.pressing_down_level = True
-                     self.current_z -= 1
-             else:
-                 self.pressing_down_level = False
+            assert (0 <= current_z < self.num_z_levels)
+            self.current_z = current_z
+            if self.get_direction()['down_level']:
+                if not self.pressing_down_level:
+                    self.pressing_down_level = True
+                    self.current_z -= 1
+            else:
+                self.pressing_down_level = False
 
-             if self.get_direction()['up_level']:
-                 if not self.pressing_up_level:
-                     self.pressing_up_level = True
-                     self.current_z += 1
-             else:
-                 self.pressing_up_level = False
+            if self.get_direction()['up_level']:
+                if not self.pressing_up_level:
+                    self.pressing_up_level = True
+                    self.current_z += 1
+            else:
+                self.pressing_up_level = False
 
-             if self.current_z < 0:
-                 self.current_z = 0
-             elif self.current_z >= self.num_z_levels:
-                 self.current_z = self.num_z_levels - 1
+            if self.current_z < 0:
+                self.current_z = 0
+            elif self.current_z >= self.num_z_levels:
+                self.current_z = self.num_z_levels - 1
         return self.current_z
 
     def is_moving(self):
