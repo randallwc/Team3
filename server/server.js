@@ -143,29 +143,29 @@ const enemy_info = {
 io.on("connection", (socket) => {
 
     //// Fetching types of enemies
-    listenForEnemyTypesFetched(socket);
+    // listenForEnemyTypesFetched(socket);
 
     //// Joining rooms
     listenForJoiningNewRoom(socket, roomTracker);
     listenForJoiningExistingRoom(socket, roomTracker);
 
     //// Fetch all entities
-    listenForFetchingAllEntities(socket);
+    // listenForFetchingAllEntities(socket);
 
     //// Handle Enemies
-    listenForAppendingEnemyByHost(socket);
-    listenForEnemyRemoved(socket);
-    listenForUpdatingEnemyCoordsByHost(socket);
+    // listenForAppendingEnemyByHost(socket);
+    // listenForEnemyRemoved(socket);
+    // listenForUpdatingEnemyCoordsByHost(socket);
 
     //// Client disconnects
     listenForDisconnection(socket, roomTracker);
 
     //// Handle Rangers
     // Ranger updates coordinates
-    listenForUpdatingCoordinatesAndMetadata(socket);
+    // listenForUpdatingCoordinatesAndMetadata(socket);
 
     //// Send opponent rangers to everyone in room
-    listenForFetchingOpponentRangers(socket, roomTracker);
+    // listenForFetchingOpponentRangers(socket, roomTracker);
 });
 
 //////////////////////////////////////////////////////////
