@@ -1,6 +1,6 @@
 from random import randrange
 
-from Entity import *
+from Entity import Entity
 
 
 class Cloud(Entity):

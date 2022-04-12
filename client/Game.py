@@ -1,11 +1,21 @@
-from random import choice
+import sys
+from random import choice, randrange
 
-from Cloud import *
-from Controller import *
-from Enemy import *
-from MultiplayerSocket import *
-from Player import *
-from ScreenManager import *
+import pygame
+
+from Cloud import Cloud
+from Controller import Controller
+from DatabaseIface import DatabaseIface
+from Enemy import Enemy
+from MultiplayerSocket import MultiplayerSocket
+from Paths import (anton_death_sound_path, anton_path, armando_path,
+                   background_music_path, cloud_path, cow_path,
+                   david2_death_sound_path, david2_path, david_path,
+                   friendly_fire_sound_path, jc_death_sound_path, jc_path,
+                   ranger_path, ricky_death_sound_path, ricky_path, sky_path)
+from Player import Player
+from ScreenManager import ScreenManager, show_mouse
+from Sounds import play_music
 
 
 class Game:
@@ -257,4 +267,4 @@ class Game:
         print('quitting')
         self.controller.disconnect()
         pygame.quit()
-        quit()
+        sys.exit()

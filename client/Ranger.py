@@ -1,6 +1,8 @@
-from Entity import *
-from Paths import *
-from Sounds import *
+import pygame
+
+from Entity import Entity
+from Paths import ranger_path
+from Sounds import play_laser_sound
 
 
 class Ranger(Entity):

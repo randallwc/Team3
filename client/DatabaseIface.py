@@ -1,4 +1,4 @@
-from Exceptions import *
+from Exceptions import NotImplementedException
 
 
 # TODO -- create this class
