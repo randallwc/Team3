@@ -25,8 +25,7 @@ class CameraIface:
         if self.counter > 0:
             self.counter -= 1
             return self.previous_center
-        else:
-            self.counter = self.counter_max
+        self.counter = self.counter_max
 
         # find face in screen
         _, img = self.cam.read()

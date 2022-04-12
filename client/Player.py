@@ -1,6 +1,7 @@
-from DatabaseIface import *
-from Ranger import *
-from Sounds import *
+from DatabaseIface import DatabaseIface
+from Paths import point_gain_sound_path, point_loss_sound_path
+from Ranger import Ranger
+from Sounds import play_sound
 
 
 class Player:

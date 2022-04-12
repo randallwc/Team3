@@ -30,15 +30,13 @@ class VoiceIface:
         phrase = self.listen()
         word = ''
         if phrase:
-            word = phrase.split(' ')[-1]
+            word = phrase.rsplit(' ', maxsplit=1)[-1]
         if word:
             return word
-        else:
-            return None
+        return None
 
     def find_word(self, word: str):
         phrase = self.listen().lower()
         if phrase:
             return word.lower() in phrase.split(' ')
-        else:
-            return False
+        return False

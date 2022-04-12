@@ -1,5 +1,5 @@
-from Entity import *
-from Paths import *
+from Entity import Entity
+from Paths import opponent_path
 
 
 # TODO -- create this class

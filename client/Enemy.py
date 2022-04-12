@@ -1,5 +1,7 @@
-from Entity import *
-from Sounds import *
+import pygame
+
+from Entity import Entity
+from Sounds import play_sound
 
 
 class Enemy(Entity):

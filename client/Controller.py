@@ -1,8 +1,8 @@
 import pygame
 
-from CameraIface import *
-from ImuIface import *
-from VoiceIface import *
+from CameraIface import CameraIface
+from ImuIface import ImuIface
+from VoiceIface import VoiceIface
 
 
 class Controller:
@@ -17,8 +17,7 @@ class Controller:
 
     def get_xy(self, screen_width, screen_height, x, y, speed, max_speed):
         # return self.get_xy_mouse()
-        if speed > max_speed:
-            speed = max_speed
+        speed = min(speed, max_speed)
         x += speed * int(self.get_direction()['right'])
         x -= speed * int(self.get_direction()['left'])
         y += speed * int(self.get_direction()['down'])
@@ -35,7 +34,8 @@ class Controller:
             y = 0
         return int(x), int(y)
 
-    def get_xy_mouse(self):
+    @staticmethod
+    def get_xy_mouse():
         return pygame.mouse.get_pos()
 
     def get_direction(self):
@@ -50,7 +50,8 @@ class Controller:
             'up_level': keys[pygame.K_e],
         }
 
-    def get_mouse(self):
+    @staticmethod
+    def get_mouse():
         return {
             'left_click': pygame.mouse.get_pressed()[0],
             'right_click': pygame.mouse.get_pressed()[1],
@@ -65,7 +66,7 @@ class Controller:
         if is_face:
             self.current_z = self.z_axis.get_level()
         else:
-            assert (0 <= current_z < self.num_z_levels)
+            assert 0 <= current_z < self.num_z_levels
             self.current_z = current_z
             if self.get_direction()['down_level']:
                 if not self.pressing_down_level:
@@ -87,7 +88,8 @@ class Controller:
                 self.current_z = self.num_z_levels - 1
         return self.current_z
 
-    def is_moving(self):
+    @staticmethod
+    def is_moving():
         return any(pygame.key.get_pressed())
 
     def disconnect(self):
