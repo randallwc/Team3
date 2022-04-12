@@ -1,4 +1,4 @@
-from GameMultiplayer import *
+from GameMultiplayer import GameMultiplayer
 
 if __name__ == '__main__':
     game = GameMultiplayer()

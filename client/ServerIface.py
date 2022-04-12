@@ -1,7 +1,10 @@
 import socketio
 
-from MultiplayerEnemy import *
-
+from MultiplayerEnemy import MultiplayerEnemy
+from Paths import (anton_death_sound_path, anton_path, armando_path, cow_path,
+                   david2_death_sound_path, david2_path, david_path,
+                   friendly_fire_sound_path, jc_death_sound_path, jc_path,
+                   ricky_death_sound_path, ricky_path, wrong_answer_sound_path)
 
 # TODO -- create this class or decide on whether or not to delete it
 
@@ -98,7 +101,6 @@ class ServerIface:
             # remove old enemies
             # find which enemies on local version are no longer on server
             # version & remove them
-            new_enemies = []
             # do this in reverse, so we don't skip any on deleting
             i = len(self.host_enemies) - 1
             while i >= 0:
@@ -178,16 +180,16 @@ class ServerIface:
             }
             self.socket.emit('host_appending_new_enemy', stripped_enemy)
 
-    def update_enemy_coordinates(self, id, x, y):
+    def update_enemy_coordinates(self, enemy_id, x, y):
         if self.is_host:
             self.socket.emit("host_updating_enemy_coordinates", {
-                'id': id,
+                'id': enemy_id,
                 'x': x,
                 'y': y
             })
 
-    def remove_enemy_from_server(self, id):
-        self.socket.emit('remove_enemy', {"id": id})
+    def remove_enemy_from_server(self, enemy_id):
+        self.socket.emit('remove_enemy', {"id": enemy_id})
 
     def disconnect(self):
         self.socket.disconnect()

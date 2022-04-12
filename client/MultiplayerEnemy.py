@@ -1,12 +1,14 @@
 from random import randrange
 
-from Entity import *
-from Sounds import *
+import pygame
+
+from Entity import Entity
+from Sounds import play_sound
 
 
 class MultiplayerEnemy(Entity):
     def __init__(self, x, y, z, num_z_levels, enemy_type,
-                 enemy_info, id, health=1, image_dimensions=(100, 100)):
+                 enemy_info, enemy_id, health=1, image_dimensions=(100, 100)):
         self.enemy_info = enemy_info
         self.enemy_type = enemy_type
         self.health = health
@@ -16,7 +18,7 @@ class MultiplayerEnemy(Entity):
         self.image_path = self.get_image_path()
         self.time_alive_countdown = self.get_max_time_alive()
         self.speed = self.get_speed()
-        self.id = id
+        self.id = enemy_id
 
         super().__init__(x, y, z, num_z_levels, self.image_path, image_dimensions)
 
@@ -56,7 +58,7 @@ class MultiplayerEnemy(Entity):
         self.play_death_sound()
         return 1 if self.enemy_type in self.bad_enemies else -1
 
-    def show(self, surface: pygame.surface):
+    def show(self, surface: pygame.surface.Surface):
         super().show(surface)
         self.time_alive_countdown -= 1
         if self.time_alive_countdown <= 0:

@@ -1,11 +1,18 @@
-from random import choice
+import sys
+from random import choice, randrange
 
-from Cloud import *
-from Controller import *
-from OpponentRanger import *
-from Player import *
-from ScreenManager import *
-from ServerIface import *
+import pygame
+
+from Cloud import Cloud
+from Controller import Controller
+from DatabaseIface import DatabaseIface
+from MultiplayerEnemy import MultiplayerEnemy
+from OpponentRanger import OpponentRanger
+from Paths import cloud_path, ranger_path, sky_path
+from Player import Player
+from ScreenManager import ScreenManager, show_mouse
+from ServerIface import ServerIface
+from VoiceIface import VoiceIface
 
 
 class GameMultiplayer:
@@ -198,7 +205,8 @@ class GameMultiplayer:
                     enemy.id, enemy_coordinates[0], enemy_coordinates[1])
                 if enemy.should_display:
                     # detect laser hits
-                    if self.player.ranger.laser_is_deadly and self.player.ranger.x in enemy.get_x_hitbox():
+                    if self.player.ranger.laser_is_deadly \
+                            and self.player.ranger.x in enemy.get_x_hitbox():
                         damage = 1
                         enemy.got_hit(damage)
                         self.player.current_score += enemy.handle_death()
@@ -214,7 +222,8 @@ class GameMultiplayer:
                 # Update server on where enemy stepped
                 if enemy.should_display:
                     # detect laser hits
-                    if self.player.ranger.laser_is_deadly and self.player.ranger.x in enemy.get_x_hitbox():
+                    if self.player.ranger.laser_is_deadly and \
+                            self.player.ranger.x in enemy.get_x_hitbox():
                         damage = 1
                         enemy.got_hit(damage)
                         self.player.current_score += enemy.handle_death()
@@ -275,4 +284,4 @@ class GameMultiplayer:
         self.server.disconnect()
         self.controller.disconnect()
         pygame.quit()
-        quit()
+        sys.exit()
