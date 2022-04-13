@@ -153,7 +153,7 @@ io.on("connection", (socket) => {
     // listenForFetchingAllEntities(socket);
 
     //// Handle Enemies
-    // listenForAppendingEnemyByHost(socket);
+    listenForAppendingEnemyByHost(socket);
     // listenForEnemyRemoved(socket);
     // listenForUpdatingEnemyCoordsByHost(socket);
 
