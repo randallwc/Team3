@@ -154,7 +154,7 @@ io.on("connection", (socket) => {
 
     //// Handle Enemies
     listenForAppendingEnemyByHost(socket);
-    // listenForEnemyRemoved(socket);
+    listenForEnemyRemoved(socket);
     // listenForUpdatingEnemyCoordsByHost(socket);
 
     //// Client disconnects
