@@ -318,7 +318,8 @@ const listenForFetchingOpponentRangers = (socket, roomTracker) => {
     socket.on("fetch_opponent_rangers", (request) => {
         const roomID = socket.handshake.session?.roomID;
         if (!!roomID) {
-            io.to(roomID).emit(
+            // to individual socketID, only the person who requested
+            io.to(socket.id).emit(
                 "server_sending_opponent_rangers_in_game",
                 roomTracker[roomID]
             );
@@ -337,8 +338,8 @@ const listenForUpdatingCoordinatesAndMetadata = (socket) => {
             is_firing: request?.is_firing
         };
 
-        socket.broadcast
-            .to(socket.handshake.session.roomID)
+        // all except sender
+        socket.to(socket.handshake.session.roomID)
             .emit("update_opponent_ranger_coordinates", {
                 x: request?.x,
                 y: request?.y,
