@@ -150,7 +150,7 @@ io.on("connection", (socket) => {
     listenForJoiningExistingRoom(socket, roomTracker);
 
     //// Fetch all entities
-    // listenForFetchingAllEntities(socket);
+    listenForFetchingAllEnemies(socket);
 
     //// Handle Enemies
     listenForAppendingEnemyByHost(socket);
@@ -171,7 +171,7 @@ io.on("connection", (socket) => {
 // Setup Calls
 //////////////////////////////////////////////////////////
 const emitWelcome = (socket) => {
-    socket.emit("welcome_client", {
+    io.to(socket.id).emit("welcome_client", {
         message:
             "Welcome to sky danger ranger! we're glad to have you here. It's gonna be a ride!",
         socket_id: socket.id,
@@ -190,6 +190,7 @@ const listenForEnemyTypesFetched = (socket) => {
 const roomToEnemyList = {};
 const listenForAppendingEnemyByHost = (socket) => {
     socket.on("host_appending_new_enemy", (request) => {
+        // ensure person sending is the host
         if (
             roomTracker[socket.handshake.session.roomID]["host"] === socket.handshake.session.timeUserID
         ) {
@@ -393,27 +394,21 @@ const listenForDisconnection = (socket, roomTracker) => {
     });
 };
 
-//TODO
-const listenForFetchingAllEntities = (socket) => {
-    const { roomID } = socket.handshake.session;
-
-    socket.on("fetch_all_entities", (request) => {
+const listenForFetchingAllEnemies = (socket) => {
+    socket.on("fetch_all_enemies", (request) => {
         if (!!socket.handshake.session.roomID) {
             // Get Enemies
             let enemies = roomToEnemyList[socket.handshake.session.roomID];
             if (!enemies) {
-                socket.emit("all_entities_to_client", {
+                io.to(socket.id).emit("all_entities_to_client", {
                     enemies: {},
                 });
             } else {
-                socket.emit("all_entities_to_client", {
+                io.to(socket.id).emit("all_entities_to_client", {
                     enemies: enemies,
                 });
             }
 
-            //TODO Get rangers
-            // let opponent_rangers = roomTracker[socket.handshake.session.roomID]["list"];
-            // Didn't work as easy when Done here
         }
     });
 };
