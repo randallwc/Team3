@@ -192,7 +192,7 @@ const listenForAppendingEnemyByHost = (socket) => {
     socket.on("host_appending_new_enemy", (request) => {
         // ensure person sending is the host
         if (
-            roomTracker[socket.handshake.session.roomID]["host"] === socket.handshake.session.timeUserID
+            !!roomTracker[socket.handshake.session.roomID] && roomTracker[socket.handshake.session.roomID]["host"] === socket.handshake.session.timeUserID
         ) {
             let id = request.id;
             if (!roomToEnemyList[socket.handshake.session.roomID]) {
