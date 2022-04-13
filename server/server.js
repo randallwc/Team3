@@ -34,8 +34,9 @@ const cors = require("cors");
 // initializing socket.io
 const io = require("socket.io")(server, {
     pingTimeout: 300000,
-    maxHttpBufferSize: 1e6,
-    pingInterval: 70000
+    maxHttpBufferSize: 1e7,
+    pingInterval: 70000,
+    transports: ['websocket']
 });
 
 // Example database object that we save message from client into database
