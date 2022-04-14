@@ -133,7 +133,7 @@ class Game:
         self.screen_manager.render_background()
 
         # render 1/2 clouds
-        for cloud in self.clouds[:len(self.clouds)//2]:
+        for cloud in self.clouds[:len(self.clouds) // 2]:
             cloud.show(self.screen_manager.surface)
             cloud.loop_around(self.screen_width, self.screen_height)
 
@@ -141,7 +141,7 @@ class Game:
         self.screen_manager.show_logo()
 
         # render 1/2 clouds
-        for cloud in self.clouds[len(self.clouds)//2:]:
+        for cloud in self.clouds[len(self.clouds) // 2:]:
             cloud.show(self.screen_manager.surface)
             cloud.loop_around(self.screen_width, self.screen_height)
 
@@ -150,8 +150,8 @@ class Game:
         # display buttons and update state
         if self.screen_manager.button(
                 'Start Game',
-                self.screen_height//2,
-                self.screen_width//2,
+                self.screen_height // 2,
+                self.screen_width // 2,
                 dark_blue,
                 light_blue):
             self.game_state = 'play'
@@ -159,8 +159,8 @@ class Game:
         # multiplayer button
         if self.screen_manager.button(
                 'Multiplayer',
-                self.screen_height//2 + 100,
-                self.screen_width//2,
+                self.screen_height // 2 + 100,
+                self.screen_width // 2,
                 dark_blue,
                 light_blue):
             self.game_state = 'multiplayer'
@@ -170,14 +170,13 @@ class Game:
         camera_active = dark_blue
         if self.screen_manager.button(
                 f'Toggle Camera {"off" if self.use_camera else "on"}',
-                self.screen_height//2 + 200,
-                self.screen_width//2,
+                self.screen_height // 2 + 200,
+                self.screen_width // 2,
                 camera_active,
                 camera_inactive) and self.mousedown:
             self.use_camera = not self.use_camera
             self.controller.use_face = self.use_camera
             camera_active, camera_inactive = camera_inactive, camera_active
-
 
         # update display
         pygame.display.update()

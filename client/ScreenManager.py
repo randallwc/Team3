@@ -110,7 +110,8 @@ class ScreenManager:
             (self.screen_dimensions[0] // 2 - logo_width // 2,
              100 + logo_height // 2))
 
-    def button(self, message, top, left, hover_color, default_color, padding=30, radius=10):
+    def button(self, message, top, left, hover_color,
+               default_color, padding=30, radius=10):
         font_color = (255, 255, 255)
         font_size = 20
 
@@ -126,7 +127,7 @@ class ScreenManager:
         width = font_width + padding
         height = font_height + padding
 
-        rect = pygame.Rect(left - width//2, top - height//2, width, height)
+        rect = pygame.Rect(left - width // 2, top - height // 2, width, height)
         x, y = pygame.mouse.get_pos()
         is_pressed = pygame.mouse.get_pressed()[0]
         is_colliding = rect.collidepoint(x, y)
@@ -137,11 +138,12 @@ class ScreenManager:
             color = default_color
 
         # render box
-        rect = pygame.draw.rect(self.surface, color, rect, border_radius=radius)
+        rect = pygame.draw.rect(
+            self.surface, color, rect, border_radius=radius)
 
         # place text
-        font_left = rect.centerx - font_width//2
-        font_top = rect.centery - font_height//2
+        font_left = rect.centerx - font_width // 2
+        font_top = rect.centery - font_height // 2
         # render text
         self.surface.blit(rendered_font, (font_left, font_top))
         return clicked
