@@ -139,7 +139,6 @@ class GameMultiplayer:
 
         # Server setup
         self.server = ServerIface(self.username)
-        self.server.fetch_enemies()  # Make socket call to fetch and set enemy types
         self.server.connect(self.room_id, self.is_host)  # connect to room
         self.enemy_id_count = 0
 
@@ -254,15 +253,15 @@ class GameMultiplayer:
             ################################################
             # Handle enemies
             ################################################
-            self.server.fetch_all_entities()
+            # self.server.fetch_all_enemies()
             # display all enemies
             for enemy in self.enemies:
                 enemy.countdown_time_alive()
                 enemy.step(self.screen_manager.screen_dimensions)
                 # Update server on where enemy stepped
                 enemy_coordinates = enemy.get_coordinates()
-                self.server.update_enemy_coordinates(
-                    enemy.id, enemy_coordinates[0], enemy_coordinates[1])
+                #self.server.update_enemy_coordinates(
+                #    enemy.id, enemy_coordinates[0], enemy_coordinates[1])
                 if enemy.should_display:
                     # detect laser hits
                     if self.player.ranger.laser_is_deadly and self.player.ranger.x in enemy.get_x_hitbox():
@@ -273,7 +272,9 @@ class GameMultiplayer:
                     # remove dead and timed out enemies
                     self.enemies.remove(enemy)
                     if self.server.is_host:
-                        self.server.remove_enemy_from_server(enemy.id)
+                        #for host
+                        #self.server.remove_enemy_from_server(enemy.id)
+                        continue
 
             for enemy in self.server.host_enemies:
                 enemy.show(self.screen_manager.surface)
@@ -287,7 +288,8 @@ class GameMultiplayer:
                         self.player.current_score += enemy.handle_death()
                 else:
                     # Not only host, if you hit it, you can remove it
-                    self.server.remove_enemy_from_server(enemy.id)
+                    #self.server.remove_enemy_from_server(enemy.id)
+                    continue
             ################################################
 
             # show ranger
@@ -296,7 +298,9 @@ class GameMultiplayer:
             ################################################
             # Handle opponent rangers
             ################################################
+            # the action
             self.server.fetch_ranger_opponents()
+            # reaction to the action
             self.opponent_rangers = self.server.opponent_rangers
 
             # Update Ranger Opponents list

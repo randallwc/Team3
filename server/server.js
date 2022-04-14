@@ -151,7 +151,7 @@ io.on("connection", (socket) => {
     listenForJoiningExistingRoom(socket, roomTracker);
 
     //// Fetch all entities
-    listenForFetchingAllEnemies(socket);
+    listenForFetchingAllEnemies(socket); // remove replace with setinterval
 
     //// Handle Enemies
     listenForAppendingEnemyByHost(socket);
@@ -165,7 +165,7 @@ io.on("connection", (socket) => {
     // Ranger updates coordinates
     listenForUpdatingCoordinatesAndMetadata(socket);
     //// Send opponent rangers to everyone in room
-    listenForFetchingOpponentRangers(socket, roomTracker);
+    listenForFetchingOpponentRangers(socket, roomTracker);// remove replace with setinterval
 });
 
 //////////////////////////////////////////////////////////

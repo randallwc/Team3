@@ -14,7 +14,7 @@ class ServerIface:
         # Localhost
         self.socket.connect('http://localhost:8000')
         # Production
-        # self.socket.connect('https://skydangerranger.herokuapp.com/')
+        # self.socket.connect('https://skydangerranger.herokuapp.com/', transports=['websocket'])
         self.is_host = False
         self.room_id = ''
         self.socket_id = ''
@@ -26,9 +26,19 @@ class ServerIface:
         self.opponent_rangers = []
         self.opponent_ranger_coordinates = {}
 
+        #modulo counters to throttle socket messages
+        self.send_location_counter = 0
+        self.fetch_rangers_modulo_counter = 0
+        self.set_opponent_rangers_modulo_counter = 0
+        self.fetch_all_enemies_modulo_counter = 0
+
+        # so we only update if changes are made
+        self.curr_metadata = [] # x, y, z, is_firing
+
         # Will be all enemies spawned on host
         # everyone else uses host's enemies
         self.host_enemies = []
+        self.host_enemies_dict = {}
 
         self.enemy_info = {
             'jc': {
@@ -130,11 +140,18 @@ class ServerIface:
 
         @self.socket.on("all_entities_to_client")
         def receiving_all_entities(data):
+            # performs not that good when lots of enemies
+
             # HANDLING ENEMIES
             # two steps
             # 1: remove old enemies
             # 2: add new enemies
             # 3 update coordinates of existing entities
+
+            #try removing all from dict
+            #then adding all to dict
+
+            self.host_enemies_dict = {}
 
             # remove old enemies
             # find which enemies on local version are no longer on server
@@ -197,11 +214,17 @@ class ServerIface:
             'username': 'dummyusername'
         })
 
-    def fetch_enemies(self):
-        self.socket.emit('fetch_enemies')
-
     def send_location_and_meta(self, x, y, z, is_firing):
-        if self.socket.connected:
+        # modulo counter
+        self.send_location_counter += 1
+        # on initial load, or a change occurred
+        change_occurred = len(self.curr_metadata) == 0 or (self.curr_metadata[0] != x or self.curr_metadata[1] != y or self.curr_metadata[2] != z or self.curr_metadata[3] != is_firing)
+
+        if self.socket.connected and self.send_location_counter % 5 == 0 and change_occurred:
+            #update local coordinates so we know what previous coordinates were
+            self.curr_metadata = [x, y, z, is_firing]
+
+            # transmit to server
             self.socket.emit("update_my_coordinates_and_meta", {
                 'x': x,
                 'y': y,
@@ -210,14 +233,19 @@ class ServerIface:
             })
 
     def fetch_ranger_opponents(self):
-        self.socket.emit("fetch_opponent_rangers")
+        self.fetch_rangers_modulo_counter += 1
+        # to save bandwidth, only fetch rangers every 100 epochs
+        # similar to loading into game
+        if self.fetch_rangers_modulo_counter % 100 == 0 and self.socket.connected:
+            self.socket.emit("fetch_opponent_rangers")
 
-    def fetch_all_entities(self):
-        if self.socket.connected:
-            self.socket.emit('fetch_all_entities')
+    def fetch_all_enemies(self):
+        self.fetch_all_enemies_modulo_counter += 1
+        if self.socket.connected and self.fetch_all_enemies_modulo_counter % 10 == 0:
+            self.socket.emit('fetch_all_enemies')
 
     def append_new_enemy_to_server(self, enemy):
-        if self.is_host:
+        if self.is_host and self.socket.connected:
             coordinates = enemy.get_coordinates()
             stripped_enemy = {
                 'x': coordinates[0],
