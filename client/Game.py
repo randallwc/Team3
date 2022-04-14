@@ -108,6 +108,11 @@ class Game:
         self.screen_height = screen_height
         self.screen_width = screen_width
 
+        self.game_state = 'start'  # in ['start', 'play', 'multiplayer']
+        self.use_camera = True
+        self.mouseup = False
+        self.mousedown = False
+
         self.controller = Controller(self.num_z_levels)
         self.screen_manager = ScreenManager(
             sky_path, self.screen_width, self.screen_height)
@@ -119,6 +124,185 @@ class Game:
             screen_height,
             self.db,
             self.num_z_levels)
+
+    def start_screen(self):
+        # tick clock
+        self.clock.tick(self.frame_rate)
+
+        # display background
+        self.screen_manager.render_background()
+
+        # render 1/2 clouds
+        for cloud in self.clouds[:len(self.clouds)//2]:
+            cloud.show(self.screen_manager.surface)
+            cloud.loop_around(self.screen_width, self.screen_height)
+
+        # show logo
+        self.screen_manager.show_logo()
+
+        # render 1/2 clouds
+        for cloud in self.clouds[len(self.clouds)//2:]:
+            cloud.show(self.screen_manager.surface)
+            cloud.loop_around(self.screen_width, self.screen_height)
+
+        dark_blue = (0, 50, 255)
+        light_blue = (0, 100, 255)
+        # display buttons and update state
+        if self.screen_manager.button(
+                'Start Game',
+                self.screen_height//2,
+                self.screen_width//2,
+                dark_blue,
+                light_blue):
+            self.game_state = 'play'
+
+        # multiplayer button
+        if self.screen_manager.button(
+                'Multiplayer',
+                self.screen_height//2 + 100,
+                self.screen_width//2,
+                dark_blue,
+                light_blue):
+            self.game_state = 'multiplayer'
+
+        # camera toggle
+        camera_inactive = light_blue
+        camera_active = dark_blue
+        if self.screen_manager.button(
+                f'Toggle Camera {"off" if self.use_camera else "on"}',
+                self.screen_height//2 + 200,
+                self.screen_width//2,
+                camera_active,
+                camera_inactive) and self.mousedown:
+            self.use_camera = not self.use_camera
+            self.controller.use_face = self.use_camera
+            camera_active, camera_inactive = camera_inactive, camera_active
+
+
+        # update display
+        pygame.display.update()
+
+    def play(self):
+        self.clock.tick(self.frame_rate)
+        self.screen_manager.render_background()
+
+        # decrement the countdown until spawning new enemy
+        self.spawn_counter -= 1
+
+        # render clouds
+        for cloud in self.clouds:
+            cloud.show(self.screen_manager.surface)
+            cloud.loop_around(self.screen_width, self.screen_height)
+
+        # spawn an enemy every self.max_spawn_counter frames
+        if self.spawn_counter <= 0 and len(
+                self.enemies) < self.max_num_enemies:
+            # reset spawn countdown timer
+            self.spawn_counter = self.max_spawn_counter
+            self.enemies.append(
+                Enemy(
+                    randrange(
+                        0,
+                        self.screen_width,
+                        1),
+                    100,
+                    randrange(0, self.num_z_levels, 1),
+                    self.num_z_levels,
+                    choice(self.enemy_types),
+                    self.enemy_info)
+            )
+
+        # ranger movement
+        x, y = self.controller.get_xy(
+            self.screen_width, self.screen_width,
+            self.player.ranger.x, self.player.ranger.y,
+            self.player.speed, self.player.max_speed
+        )
+
+        # movement acceleration
+        if self.controller.is_moving():
+            # gradually increase speed when holding down key
+            self.player.speed *= self.player.acceleration
+        else:
+            # reset speed
+            self.player.speed = self.player.min_speed
+        # update ranger coordinates
+        self.player.ranger.update_coordinates(x, y)
+        # update z axis
+        self.player.ranger.set_level(
+            self.controller.get_z(
+                self.player.ranger.z))
+
+        # show laser
+        self.player.ranger.fire(
+            self.controller.is_firing(),
+            self.screen_manager.surface
+        )
+
+        # display all enemies
+        for enemy in self.enemies:
+            enemy.step(self.screen_manager.screen_dimensions)
+            # do logic on enemies in same level
+            if enemy.z == self.player.ranger.z:
+                # TODO -- move this into a game function
+                if pygame.Rect.colliderect(
+                        enemy.rect, self.player.ranger.rect):
+                    if enemy.enemy_type in enemy.bad_enemies:
+                        # TODO -- lower health instead of points
+                        self.player.handle_point_change(-1)
+                        # TODO -- remove enemy
+                    if enemy.enemy_type in enemy.good_enemies:
+                        # TODO -- get back health if you pick up a good
+                        # enemy
+                        self.player.handle_point_change(1)
+                        enemy.health = 0
+                enemy.show(self.screen_manager.surface)
+
+                # detect laser hits
+                # TODO -- move this into a game function
+                if enemy.should_display \
+                        and self.player.ranger.laser_is_deadly \
+                        and self.player.ranger.x in enemy.get_x_hitbox() \
+                        and self.player.ranger.y > enemy.y \
+                        and self.player.ranger.z == enemy.z:
+                    damage = 1
+                    enemy.got_hit(damage)
+                    self.player.handle_point_change(enemy.handle_death())
+            else:
+                # display enemies on other levels
+                is_above = enemy.z > self.player.ranger.z
+                enemy.show_diff_level(
+                    self.screen_manager.surface, is_above)
+
+            # remove dead and timed out enemies
+            if not enemy.should_display:
+                self.enemies.remove(enemy)
+
+        # show ranger
+        self.player.ranger.show(self.screen_manager.surface)
+
+        # TODO -- if multiplayer then ...
+        # TODO -- loop through opponent rangers and display each one.
+        # TODO -- post all data to the multiplayer socket
+
+        # show current score
+        self.screen_manager.render_score(self.player.current_score)
+
+        # show current level minimap
+        self.screen_manager.render_level(
+            self.player.ranger.z, self.num_z_levels, self.enemies)
+
+        # show fps
+        self.screen_manager.render_fps(round(self.clock.get_fps()))
+
+        # TODO -- show current health
+
+        # update display
+        pygame.display.update()
+
+        # TODO -- might not need this but it is placeholder for now
+        # updage game state
+        self.game_state = 'play'
 
     def run(self):
         # create clouds
@@ -141,128 +325,27 @@ class Game:
         running = True
         while running:
             # event handler
+            self.mouseup = False
+            self.mousedown = False
             for event in pygame.event.get():
                 # check for window close
                 if event.type == pygame.QUIT:
                     running = False
                     break
+                if event.type == pygame.MOUSEBUTTONUP:
+                    self.mouseup = True
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    self.mousedown = True
 
-            self.clock.tick(self.frame_rate)
-            self.screen_manager.render_background()
-
-            # decrement the countdown until spawning new enemy
-            self.spawn_counter -= 1
-
-            # render each cloud
-            for cloud in self.clouds:
-                cloud.show(self.screen_manager.surface)
-                cloud.loop_around(self.screen_width, self.screen_height)
-
-            # spawn an enemy every self.max_spawn_counter frames
-            if self.spawn_counter <= 0 and len(
-                    self.enemies) < self.max_num_enemies:
-                # reset spawn countdown timer
-                self.spawn_counter = self.max_spawn_counter
-                self.enemies.append(
-                    Enemy(
-                        randrange(
-                            0,
-                            self.screen_width,
-                            1),
-                        100,
-                        randrange(0, self.num_z_levels, 1),
-                        self.num_z_levels,
-                        choice(self.enemy_types),
-                        self.enemy_info)
-                )
-
-            # ranger movement
-            x, y = self.controller.get_xy(
-                self.screen_width, self.screen_width,
-                self.player.ranger.x, self.player.ranger.y,
-                self.player.speed, self.player.max_speed
-            )
-
-            # movement acceleration
-            if self.controller.is_moving():
-                # gradually increase speed when holding down key
-                self.player.speed *= self.player.acceleration
+            # game states
+            if self.game_state == 'start':
+                self.start_screen()
+            elif self.game_state == 'play':
+                self.play()
             else:
-                # reset speed
-                self.player.speed = self.player.min_speed
-            # update ranger coordinates
-            self.player.ranger.update_coordinates(x, y)
-            # update z axis
-            self.player.ranger.set_level(
-                self.controller.get_z(
-                    self.player.ranger.z))
-
-            # show laser
-            self.player.ranger.fire(
-                self.controller.is_firing(),
-                self.screen_manager.surface
-            )
-
-            # display all enemies
-            for enemy in self.enemies:
-                enemy.step(self.screen_manager.screen_dimensions)
-                # do logic on enemies in same level
-                if enemy.z == self.player.ranger.z:
-                    # TODO -- move this into a game function
-                    if pygame.Rect.colliderect(
-                            enemy.rect, self.player.ranger.rect):
-                        if enemy.enemy_type in enemy.bad_enemies:
-                            # TODO -- lower health instead of points
-                            self.player.handle_point_change(-1)
-                            # TODO -- remove enemy
-                        if enemy.enemy_type in enemy.good_enemies:
-                            # TODO -- get back health if you pick up a good
-                            # enemy
-                            self.player.handle_point_change(1)
-                            enemy.health = 0
-                    enemy.show(self.screen_manager.surface)
-
-                    # detect laser hits
-                    # TODO -- move this into a game function
-                    if enemy.should_display \
-                            and self.player.ranger.laser_is_deadly \
-                            and self.player.ranger.x in enemy.get_x_hitbox() \
-                            and self.player.ranger.y > enemy.y \
-                            and self.player.ranger.z == enemy.z:
-                        damage = 1
-                        enemy.got_hit(damage)
-                        self.player.handle_point_change(enemy.handle_death())
-                else:
-                    # display enemies on other levels
-                    is_above = enemy.z > self.player.ranger.z
-                    enemy.show_diff_level(
-                        self.screen_manager.surface, is_above)
-
-                # remove dead and timed out enemies
-                if not enemy.should_display:
-                    self.enemies.remove(enemy)
-
-            # show ranger
-            self.player.ranger.show(self.screen_manager.surface)
-
-            # TODO -- if multiplayer then ...
-            # TODO -- loop through opponent rangers and display each one.
-            # TODO -- post all data to the multiplayer socket
-
-            # show current score
-            self.screen_manager.render_score(self.player.current_score)
-
-            # show current level minimap
-            self.screen_manager.render_level(
-                self.player.ranger.z, self.num_z_levels, self.enemies)
-
-            # show fps
-            self.screen_manager.render_fps(round(self.clock.get_fps()))
-
-            # TODO -- show current health
-
-            # update display
-            pygame.display.update()
+                # multiplayer code?
+                print('multiplayer not integrated')
+                sys.exit(1)
 
         print('quitting')
         self.controller.disconnect()

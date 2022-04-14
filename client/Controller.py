@@ -8,6 +8,8 @@ from VoiceIface import VoiceIface
 class Controller:
     def __init__(self, num_z_levels):
         self.num_z_levels = num_z_levels
+
+        self.use_face = True
         self.current_z = None
         self.xy_axis = ImuIface()
         self.z_axis = CameraIface(self.num_z_levels)
@@ -62,8 +64,7 @@ class Controller:
         return self.get_direction()['space']
 
     def get_z(self, current_z: int):
-        is_face = True
-        if is_face:
+        if self.use_face:
             self.current_z = self.z_axis.get_level()
         else:
             assert 0 <= current_z < self.num_z_levels

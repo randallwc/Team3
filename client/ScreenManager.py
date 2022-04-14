@@ -2,6 +2,8 @@ import math
 
 import pygame
 
+from Paths import logo_path
+
 
 def show_mouse(is_visible: bool):
     pygame.mouse.set_visible(is_visible)
@@ -19,8 +21,8 @@ class ScreenManager:
         self.background_image_path = image_path
         self.pygame_loaded_background = pygame.image.load(image_path)
 
-    def render_background(self):
-        self.surface.blit(self.pygame_loaded_background, (0, 0))
+    def render_background(self, color=(0, 191, 255)):
+        self.surface.fill(color)
 
     def render_score(self, current_score: int):
         foreground_color = (0, 0, 0)
@@ -96,3 +98,50 @@ class ScreenManager:
             foreground_color,
             background_color)
         self.surface.blit(rendered_font, (10, 10))
+
+    def show_logo(self):
+        rendered_logo = pygame.image.load(logo_path)
+        rendered_logo = pygame.transform.rotozoom(rendered_logo, 0, 0.5)
+        rendered_logo_rect = rendered_logo.get_rect()
+        logo_height = rendered_logo_rect.height
+        logo_width = rendered_logo_rect.width
+        self.surface.blit(
+            rendered_logo,
+            (self.screen_dimensions[0] // 2 - logo_width // 2,
+             100 + logo_height // 2))
+
+    def button(self, message, top, left, hover_color, default_color, padding=30, radius=10):
+        font_color = (255, 255, 255)
+        font_size = 20
+
+        # create text object
+        font = pygame.font.SysFont('Comic Sans', font_size)
+        rendered_font = font.render(message, True, font_color)
+        rendered_font.get_rect()
+        # size text
+        font_width = rendered_font.get_width()
+        font_height = rendered_font.get_height()
+
+        # size box
+        width = font_width + padding
+        height = font_height + padding
+
+        rect = pygame.Rect(left - width//2, top - height//2, width, height)
+        x, y = pygame.mouse.get_pos()
+        is_pressed = pygame.mouse.get_pressed()[0]
+        is_colliding = rect.collidepoint(x, y)
+        clicked = is_pressed and is_colliding
+        if is_colliding:
+            color = hover_color
+        else:
+            color = default_color
+
+        # render box
+        rect = pygame.draw.rect(self.surface, color, rect, border_radius=radius)
+
+        # place text
+        font_left = rect.centerx - font_width//2
+        font_top = rect.centery - font_height//2
+        # render text
+        self.surface.blit(rendered_font, (font_left, font_top))
+        return clicked
