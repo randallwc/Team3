@@ -19,11 +19,84 @@ class GameMultiplayer:
     def __init__(self, screen_width=1280, screen_height=720,
                  window_title='Sky Danger Ranger - '):
 
+        # member variables
+        self.enemy_info = {
+            'jc': {
+                'is_good': False,
+                'death_sound_path': jc_death_sound_path,
+                'image_path': jc_path,
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right']),
+                'speed': randrange(1, 4, 1)
+            },
+            'cow': {
+                'is_good': True,
+                'death_sound_path': friendly_fire_sound_path,
+                'image_path': cow_path,
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right']),
+                'speed': randrange(1, 4, 1)
+            },
+            'ricky': {
+                'is_good': False,
+                'death_sound_path': ricky_death_sound_path,
+                'image_path': ricky_path,
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right']),
+                'speed': randrange(1, 4, 1)
+            },
+            'david': {
+                'is_good': False,
+                'death_sound_path': david2_death_sound_path,
+                'image_path': david_path,
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right']),
+                'speed': randrange(1, 4, 1)
+            },
+            'anton': {
+                'is_good': False,
+                'death_sound_path': anton_death_sound_path,
+                'image_path': anton_path,
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right']),
+                'speed': randrange(1, 4, 1)
+            },
+            'armando': {
+                'is_good': True,
+                'death_sound_path': friendly_fire_sound_path,
+                'image_path': armando_path,
+                'max_time_alive': 1000,
+                'x_speed': randrange(1, 4, 1),
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right']),
+                'speed': randrange(1, 4, 1)
+            },
+            'david2': {
+                'is_good': False,
+                'death_sound_path': david2_death_sound_path,
+                'image_path': david2_path,
+                'max_time_alive': 1000,
+                'x_speed': 20,
+                'y_speed': randrange(50, 100, 1),
+                'direction': choice(['left', 'right']),
+                'speed': randrange(1, 4, 1)
+            },
+        }
+
         # Ask user if they want to join game or create new one
         # 0 is created new game, 1 is join new game
         self.voice = VoiceIface()
-        self.enemy_types = None
-        self.enemy_info = None
+        self.enemy_types = list(self.enemy_info.keys())
         self.use_voice = input(
             'do you want to use voice? (yes or no) ').lower() == 'yes'
         asking = True
@@ -73,7 +146,6 @@ class GameMultiplayer:
 
         # Server setup
         self.server = ServerIface(self.username)
-        self.server.fetch_enemies()  # Make socket call to fetch and set enemy types
         self.server.connect(self.room_id, self.is_host)  # connect to room
         self.enemy_id_count = 0
 
@@ -109,11 +181,6 @@ class GameMultiplayer:
         self.clouds.append(cloud)
 
     def run(self):
-        # Did here so self.server.serverEnemies is not null,
-        # tried it in init & didn't work
-        self.enemy_info = self.server.server_enemies
-        self.enemy_types = list(self.enemy_info.keys())
-
         # create clouds
         for _ in range(self.num_clouds):
             screen_x, screen_y = self.screen_manager.screen_dimensions
@@ -194,15 +261,15 @@ class GameMultiplayer:
             ################################################
             # Handle enemies
             ################################################
-            self.server.fetch_all_entities()
+            # self.server.fetch_all_enemies()
             # display all enemies
             for enemy in self.enemies:
                 enemy.countdown_time_alive()
                 enemy.step(self.screen_manager.screen_dimensions)
                 # Update server on where enemy stepped
                 enemy_coordinates = enemy.get_coordinates()
-                self.server.update_enemy_coordinates(
-                    enemy.id, enemy_coordinates[0], enemy_coordinates[1])
+                #self.server.update_enemy_coordinates(
+                #    enemy.id, enemy_coordinates[0], enemy_coordinates[1])
                 if enemy.should_display:
                     # detect laser hits
                     if self.player.ranger.laser_is_deadly \
@@ -214,7 +281,9 @@ class GameMultiplayer:
                     # remove dead and timed out enemies
                     self.enemies.remove(enemy)
                     if self.server.is_host:
-                        self.server.remove_enemy_from_server(enemy.id)
+                        #for host
+                        #self.server.remove_enemy_from_server(enemy.id)
+                        continue
 
             for enemy in self.server.host_enemies:
                 enemy.show(self.screen_manager.surface)
@@ -229,7 +298,8 @@ class GameMultiplayer:
                         self.player.current_score += enemy.handle_death()
                 else:
                     # Not only host, if you hit it, you can remove it
-                    self.server.remove_enemy_from_server(enemy.id)
+                    #self.server.remove_enemy_from_server(enemy.id)
+                    continue
             ################################################
 
             # show ranger
@@ -238,11 +308,13 @@ class GameMultiplayer:
             ################################################
             # Handle opponent rangers
             ################################################
+            # the action
             self.server.fetch_ranger_opponents()
+            # reaction to the action
             self.opponent_rangers = self.server.opponent_rangers
 
             # Update Ranger Opponents list
-            opponent_dict = {}
+            opponent_dict = {} #Here so when ranger disconnects, they unspawn
             for opponent_ranger in self.opponent_rangers:
                 if opponent_ranger not in opponent_dict:
                     opponent = Player(
