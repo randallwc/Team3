@@ -194,6 +194,9 @@ const listenForAppendingEnemyByHost = (socket) => {
                 roomToEnemyList[socket.handshake.session.roomID] = {};
             }
             roomToEnemyList[socket.handshake.session.roomID][id] = request;
+
+            socket.in(socket.handshake.session.roomID).emit('new_host_appended_enemy', request)
+
         }
     });
 };
@@ -206,30 +209,6 @@ const listenForEnemyRemoved = (socket) => {
     });
 };
 
-const listenForUpdatingEnemyCoordsByHost = (socket) => {
-    // Assuming enemies don't change levels
-    // Expects request in the form of
-    // req = {
-    //     'id':id,
-    //     'x':x,
-    //     'y':y,
-    // }
-
-    socket.on("host_updating_enemy_coordinates", (request) => {
-        if (
-            roomTracker[socket.handshake.session.roomID]["host"] === socket.handshake.session.timeUserID
-        ) {
-            let enemyList = roomToEnemyList[socket.handshake.session.roomID];
-            if (!!enemyList[request.id]) {
-                // If enemy still exists in server
-                // Not sure what would potentially happen in high speed socket transmissions
-                enemyList[request.id]["x"] = request.x;
-                enemyList[request.id]["y"] = request.y;
-                // console.log(`Updating id: ${request.id} with coords: (${request.x}, ${request.y})`)
-            }
-        }
-    });
-};
 
 //////////////////////////////////////////////////////////
 // Handling Room Joining
