@@ -1,7 +1,7 @@
 import socketio
 import uuid
 import time
-from random import choice
+from random import choice, randrange
 from MultiplayerEnemy import MultiplayerEnemy
 from Paths import (anton_death_sound_path, anton_path, armando_path, cow_path,
                    david2_death_sound_path, david2_path, david_path,
@@ -15,9 +15,9 @@ class ServerIface:
     def __init__(self, username):
         self.socket = socketio.Client()
         # Localhost
-        self.socket.connect('http://localhost:8000')
+        self.socket.connect('http://localhost:8000', transports=['websocket'])
         # Production
-        # self.socket.connect('https://skydangerranger.herokuapp.com/', transports=['websocket'])
+        #self.socket.connect('https://skydangerranger.herokuapp.com/', transports=['websocket'])
         self.is_host = False
         self.room_id = ''
         self.socket_id = ''
@@ -42,79 +42,8 @@ class ServerIface:
         # everyone else uses host's enemies
         self.host_enemies = []
         self.host_enemies_dict = {}
-
-        self.enemy_info = {
-            'jc': {
-                'is_good': False,
-                'death_sound_path': jc_death_sound_path,
-                'image_path': jc_path,
-                'max_time_alive': 1000,
-                'x_speed': randrange(1, 4, 1),
-                'y_speed': randrange(50, 100, 1),
-                'direction': choice(['left', 'right']),
-                'speed': randrange(1, 4, 1)
-            },
-            'cow': {
-                'is_good': True,
-                'death_sound_path': friendly_fire_sound_path,
-                'image_path': cow_path,
-                'max_time_alive': 1000,
-                'x_speed': randrange(1, 4, 1),
-                'y_speed': randrange(50, 100, 1),
-                'direction': choice(['left', 'right']),
-                'speed': randrange(1, 4, 1)
-            },
-            'ricky': {
-                'is_good': False,
-                'death_sound_path': ricky_death_sound_path,
-                'image_path': ricky_path,
-                'max_time_alive': 1000,
-                'x_speed': randrange(1, 4, 1),
-                'y_speed': randrange(50, 100, 1),
-                'direction': choice(['left', 'right']),
-                'speed': randrange(1, 4, 1)
-            },
-            'david': {
-                'is_good': False,
-                'death_sound_path': david2_death_sound_path,
-                'image_path': david_path,
-                'max_time_alive': 1000,
-                'x_speed': randrange(1, 4, 1),
-                'y_speed': randrange(50, 100, 1),
-                'direction': choice(['left', 'right']),
-                'speed': randrange(1, 4, 1)
-            },
-            'anton': {
-                'is_good': False,
-                'death_sound_path': anton_death_sound_path,
-                'image_path': anton_path,
-                'max_time_alive': 1000,
-                'x_speed': randrange(1, 4, 1),
-                'y_speed': randrange(50, 100, 1),
-                'direction': choice(['left', 'right']),
-                'speed': randrange(1, 4, 1)
-            },
-            'armando': {
-                'is_good': True,
-                'death_sound_path': friendly_fire_sound_path,
-                'image_path': armando_path,
-                'max_time_alive': 1000,
-                'x_speed': randrange(1, 4, 1),
-                'y_speed': randrange(50, 100, 1),
-                'direction': choice(['left', 'right']),
-                'speed': randrange(1, 4, 1)
-            },
-            'david2': {
-                'is_good': False,
-                'death_sound_path': david2_death_sound_path,
-                'image_path': david2_path,
-                'max_time_alive': 1000,
-                'x_speed': 20,
-                'y_speed': randrange(50, 100, 1),
-                'direction': choice(['left', 'right']),
-                'speed': randrange(1, 4, 1)
-            },
-        }
+        self.awaiting_new_enemies = []
+        self.awaiting_enemy_despawn = {}
 
         @self.socket.on("welcome_client")
         def on_welcome(data):
@@ -141,63 +70,15 @@ class ServerIface:
                     data['is_firing']
                 )
 
-        @self.socket.on("all_entities_to_client")
-        def receiving_all_entities(data):
-            # performs not that good when lots of enemies
+        @self.socket.on("new_host_appended_enemy")
+        def append_new_server_enemy(data):
+            self.awaiting_new_enemies.append(data)
 
-            # HANDLING ENEMIES
-            # two steps
-            # 1: remove old enemies
-            # 2: add new enemies
-            # 3 update coordinates of existing entities
+        @self.socket.on('remove_enemy_from_client')
+        def remove_enemy_from_client(data):
+            enemy_id = data['id']
+            self.awaiting_enemy_despawn[enemy_id] = True
 
-            #try removing all from dict
-            #then adding all to dict
-
-            self.host_enemies_dict = {}
-
-            # remove old enemies
-            # find which enemies on local version are no longer on server
-            # version & remove them
-            # do this in reverse, so we don't skip any on deleting
-            i = len(self.host_enemies) - 1
-            while i >= 0:
-                curr_enemy = self.host_enemies[i]
-                # print(curr_enemy.id, data["enemies"].keys(), 'bees')
-                if curr_enemy.id not in data["enemies"]:
-                    self.host_enemies.pop(i)
-                i -= 1
-
-            # add new enemies
-            # find new opponents
-            # find enemy IDs in data["enemies"] that is not in host_enemies,
-            # add new enemy object
-            host_enemy_ids = list(data["enemies"].keys())
-            for enemy in self.host_enemies:
-                try:
-                    host_enemy_ids.remove(enemy.id)
-                except BaseException:
-                    continue
-
-            # all existing ids have been removed
-            for new_enemy_id in host_enemy_ids:
-                enemy_data = data["enemies"][new_enemy_id]
-
-                # new enemy
-                new_enemy = MultiplayerEnemy(
-                    enemy_data['x'],
-                    enemy_data['y'],
-                    enemy_data['z'],
-                    enemy_data['num_z_levels'],
-                    enemy_data['enemy_type'],
-                    self.enemy_info,
-                    new_enemy_id
-                )
-                self.host_enemies.append(new_enemy)
-
-            for enemy in self.host_enemies:
-                enemy.update_coordinates(
-                    data["enemies"][enemy.id]['x'], data["enemies"][enemy.id]['y'])
 
     def connect(self, room_id, is_host):
         event_name = "join_new_room" if is_host else "join_existing_room"
@@ -213,7 +94,7 @@ class ServerIface:
             'user_id': self.user_id,
             'epoch_time': self.epoch_time,
             'time_user_id': self.time_user_id, # epoch_time + user_id
-            'username': 'dummyusername'
+            'username': self.username
         })
 
     def send_location_and_meta(self, x, y, z, is_firing):
@@ -233,18 +114,6 @@ class ServerIface:
                 'z': z,
                 'is_firing': is_firing
             })
-
-    def fetch_ranger_opponents(self):
-        self.fetch_rangers_modulo_counter += 1
-        # to save bandwidth, only fetch rangers every 100 epochs
-        # similar to loading into game
-        if self.fetch_rangers_modulo_counter % 100 == 0 and self.socket.connected:
-            self.socket.emit("fetch_opponent_rangers")
-
-    def fetch_all_enemies(self):
-        self.fetch_all_enemies_modulo_counter += 1
-        if self.socket.connected and self.fetch_all_enemies_modulo_counter % 10 == 0:
-            self.socket.emit('fetch_all_enemies')
 
     def append_new_enemy_to_server(self, enemy):
         if self.is_host and self.socket.connected:

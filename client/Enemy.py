@@ -6,7 +6,7 @@ from Sounds import play_sound
 
 class Enemy(Entity):
     def __init__(self, x, y, z, num_z_levels, enemy_type,
-                 enemy_info, health=1, image_dimensions=(100, 100)):
+                 enemy_info, enemy_id = 1, health=1, image_dimensions=(100, 100)):
         self.enemy_info = enemy_info
         self.enemy_type = enemy_type
         self.health = health
@@ -19,6 +19,7 @@ class Enemy(Entity):
         self.x_speed = self.get_x_speed()
         self.y_speed = self.get_y_speed()
         self.current_direction = self.get_direction()
+        self.id = enemy_id # only used in multiplayer
 
         super().__init__(x, y, z, num_z_levels, self.image_path, image_dimensions)
 
