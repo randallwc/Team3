@@ -150,9 +150,6 @@ io.on("connection", (socket) => {
     listenForJoiningNewRoom(socket, roomTracker);
     listenForJoiningExistingRoom(socket, roomTracker);
 
-    //// Fetch all entities
-    listenForFetchingAllEnemies(socket); // remove replace with setinterval
-
     //// Handle Enemies
     listenForAppendingEnemyByHost(socket);
     listenForEnemyRemoved(socket);
@@ -164,8 +161,6 @@ io.on("connection", (socket) => {
     //// Handle Rangers
     // Ranger updates coordinates
     listenForUpdatingCoordinatesAndMetadata(socket);
-    //// Send opponent rangers to everyone in room
-    listenForFetchingOpponentRangers(socket, roomTracker);// remove replace with setinterval
 });
 
 //////////////////////////////////////////////////////////
@@ -177,13 +172,11 @@ const emitWelcome = (socket) => {
             "Welcome to sky danger ranger! we're glad to have you here. It's gonna be a ride!",
         socket_id: socket.id,
     });
+
+    setInterval(intervalSendOpponentRangers, 5000);
+    setInterval(intervalSendEnemies, 500)
 };
 
-const listenForEnemyTypesFetched = (socket) => {
-    socket.on("fetch_enemies", (request) => {
-        socket.emit("enemy_info_to_client", enemy_info);
-    });
-};
 
 //////////////////////////////////////////////////////////
 // Handling Enemies
@@ -316,18 +309,44 @@ const listenForJoiningNewRoom = (socket, roomTracker) => {
 // Coordinates of all rangers connected to server
 let rangerCoordinatesTracker = {};
 
-const listenForFetchingOpponentRangers = (socket, roomTracker) => {
-    socket.on("fetch_opponent_rangers", (request) => {
-        const roomID = socket.handshake.session?.roomID;
-        if (!!roomID) {
-            // to individual socketID, only the person who requested
-            io.to(socket.id).emit(
-                "server_sending_opponent_rangers_in_game",
-                roomTracker[roomID]
-            );
-        }
-    });
+const intervalSendOpponentRangers = () => {
+    // for each room, emit to clients in that room, who is in the room
+    for (const roomID in roomTracker){
+        emitOpponentRangers(roomID);
+    }
 };
+
+const intervalSendEnemies = () => {
+    for (const roomID in roomTracker){
+        emitAllEnemies(roomID);
+    }
+};
+
+const emitOpponentRangers = (roomID) => {
+    io.in(roomID).emit(
+        "server_sending_opponent_rangers_in_game",
+        roomTracker[roomID]
+    );
+};
+
+const emitAllEnemies = (roomID) => {
+
+    // Get Enemies
+    let enemies = roomToEnemyList[roomID];
+    if (!enemies) {
+        // to all clients in roomID
+        io.in(roomID).emit("all_entities_to_client", {
+            enemies: {},
+        });
+    } else {
+        // to all clients in roomID
+        io.in(roomID).emit("all_entities_to_client", {
+            enemies: enemies,
+        });
+    }
+};
+
+
 
 const listenForUpdatingCoordinatesAndMetadata = (socket) => {
     // Should also take into account health
@@ -395,24 +414,7 @@ const listenForDisconnection = (socket, roomTracker) => {
     });
 };
 
-const listenForFetchingAllEnemies = (socket) => {
-    socket.on("fetch_all_enemies", (request) => {
-        if (!!socket.handshake.session.roomID) {
-            // Get Enemies
-            let enemies = roomToEnemyList[socket.handshake.session.roomID];
-            if (!enemies) {
-                io.to(socket.id).emit("all_entities_to_client", {
-                    enemies: {},
-                });
-            } else {
-                io.to(socket.id).emit("all_entities_to_client", {
-                    enemies: enemies,
-                });
-            }
 
-        }
-    });
-};
 
 /*
  * Create Server
