@@ -29,14 +29,14 @@ class ServerIface:
         self.opponent_rangers = []
         self.opponent_ranger_coordinates = {}
 
-        #modulo counters to throttle socket messages
+        # modulo counters to throttle socket messages
         self.send_location_counter = 0
         self.fetch_rangers_modulo_counter = 0
         self.set_opponent_rangers_modulo_counter = 0
         self.fetch_all_enemies_modulo_counter = 0
 
         # so we only update if changes are made
-        self.curr_metadata = [] # x, y, z, is_firing
+        self.curr_metadata = []  # x, y, z, is_firing
 
         # Will be all enemies spawned on host
         # everyone else uses host's enemies
@@ -64,11 +64,11 @@ class ServerIface:
         def update_opponent_ranger_coordinates(data):
             # set coordinates of opponent rangers
             self.opponent_ranger_coordinates[data["time_user_id"]] = (
-                    data['x'],
-                    data['y'],
-                    data['z'],
-                    data['is_firing']
-                )
+                data['x'],
+                data['y'],
+                data['z'],
+                data['is_firing']
+            )
 
         @self.socket.on("new_host_appended_enemy")
         def append_new_server_enemy(data):
@@ -78,7 +78,6 @@ class ServerIface:
         def remove_enemy_from_client(data):
             enemy_id = data['id']
             self.awaiting_enemy_despawn[enemy_id] = True
-
 
     def connect(self, room_id, is_host):
         event_name = "join_new_room" if is_host else "join_existing_room"
@@ -93,7 +92,7 @@ class ServerIface:
             'room_id': room_id,
             'user_id': self.user_id,
             'epoch_time': self.epoch_time,
-            'time_user_id': self.time_user_id, # epoch_time + user_id
+            'time_user_id': self.time_user_id,  # epoch_time + user_id
             'username': self.username
         })
 
@@ -101,10 +100,13 @@ class ServerIface:
         # modulo counter
         self.send_location_counter += 1
         # on initial load, or a change occurred
-        change_occurred = len(self.curr_metadata) == 0 or (self.curr_metadata[0] != x or self.curr_metadata[1] != y or self.curr_metadata[2] != z or self.curr_metadata[3] != is_firing)
+        change_occurred = len(
+            self.curr_metadata) == 0 or (
+            self.curr_metadata[0] != x or self.curr_metadata[1] != y or self.curr_metadata[2] != z or self.curr_metadata[3] != is_firing)
 
         if self.socket.connected and self.send_location_counter % 5 == 0 and change_occurred:
-            #update local coordinates so we know what previous coordinates were
+            # update local coordinates so we know what previous coordinates
+            # were
             self.curr_metadata = [x, y, z, is_firing]
 
             # transmit to server
