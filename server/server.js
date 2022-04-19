@@ -36,7 +36,7 @@ const io = require("socket.io")(server, {
     pingTimeout: 300000,
     maxHttpBufferSize: 1e7,
     pingInterval: 70000,
-    transports: ['websocket']
+    transports: ["websocket"],
 });
 
 // Example database object that we save message from client into database
@@ -142,7 +142,6 @@ const enemy_info = {
 
 // main socket.io stuff
 io.on("connection", (socket) => {
-
     //// Fetching types of enemies
     // listenForEnemyTypesFetched(socket);
 
@@ -174,9 +173,8 @@ const emitWelcome = (socket) => {
     });
 
     setInterval(intervalSendOpponentRangers, 5000);
-    setInterval(intervalSendEnemies, 500)
+    setInterval(intervalSendEnemies, 500);
 };
-
 
 //////////////////////////////////////////////////////////
 // Handling Enemies
@@ -186,7 +184,9 @@ const listenForAppendingEnemyByHost = (socket) => {
     socket.on("host_appending_new_enemy", (request) => {
         // ensure person sending is the host
         if (
-            !!roomTracker[socket.handshake.session.roomID] && roomTracker[socket.handshake.session.roomID]["host"] === socket.handshake.session.timeUserID
+            !!roomTracker[socket.handshake.session.roomID] &&
+            roomTracker[socket.handshake.session.roomID]["host"] ===
+                socket.handshake.session.timeUserID
         ) {
             let id = request.id;
             if (!roomToEnemyList[socket.handshake.session.roomID]) {
@@ -195,8 +195,9 @@ const listenForAppendingEnemyByHost = (socket) => {
             }
             roomToEnemyList[socket.handshake.session.roomID][id] = request;
 
-            socket.in(socket.handshake.session.roomID).emit('new_host_appended_enemy', request)
-
+            socket
+                .in(socket.handshake.session.roomID)
+                .emit("new_host_appended_enemy", request);
         }
     });
 };
@@ -208,10 +209,11 @@ const listenForEnemyRemoved = (socket) => {
         delete enemyList[id];
 
         // to all clients except sender
-        socket.to(socket.handshake.session.roomID).emit('remove_enemy_from_client', request);
+        socket
+            .to(socket.handshake.session.roomID)
+            .emit("remove_enemy_from_client", request);
     });
 };
-
 
 //////////////////////////////////////////////////////////
 // Handling Room Joining
@@ -293,13 +295,13 @@ let rangerCoordinatesTracker = {};
 
 const intervalSendOpponentRangers = () => {
     // for each room, emit to clients in that room, who is in the room
-    for (const roomID in roomTracker){
+    for (const roomID in roomTracker) {
         emitOpponentRangers(roomID);
     }
 };
 
 const intervalSendEnemies = () => {
-    for (const roomID in roomTracker){
+    for (const roomID in roomTracker) {
         emitAllEnemies(roomID);
     }
 };
@@ -312,7 +314,6 @@ const emitOpponentRangers = (roomID) => {
 };
 
 const emitAllEnemies = (roomID) => {
-
     // Get Enemies
     let enemies = roomToEnemyList[roomID];
     if (!enemies) {
@@ -328,8 +329,6 @@ const emitAllEnemies = (roomID) => {
     }
 };
 
-
-
 const listenForUpdatingCoordinatesAndMetadata = (socket) => {
     // Should also take into account health
     socket.on("update_my_coordinates_and_meta", (request) => {
@@ -342,14 +341,15 @@ const listenForUpdatingCoordinatesAndMetadata = (socket) => {
         };
 
         // all except sender
-        socket.to(socket.handshake.session.roomID)
+        socket
+            .to(socket.handshake.session.roomID)
             .emit("update_opponent_ranger_coordinates", {
                 x: request?.x,
                 y: request?.y,
                 z: request?.z,
                 socket_id: socket.id,
                 is_firing: request?.is_firing,
-                time_user_id: socket.handshake.session.timeUserID
+                time_user_id: socket.handshake.session.timeUserID,
             });
     });
 };
@@ -379,7 +379,9 @@ const listenForClientMessageToDB = (socket) => {
 
 const listenForDisconnection = (socket, roomTracker) => {
     socket.on("disconnect", (reason) => {
-        console.log(`Client with the following id has disconnected: ${socket.id}, userID: ${socket.handshake.session.timeUserID}`);
+        console.log(
+            `Client with the following id has disconnected: ${socket.id}, userID: ${socket.handshake.session.timeUserID}`
+        );
         console.log(`Was in room:`, socket.handshake.session?.roomID);
         console.log(`Reason:`, reason);
 
@@ -395,8 +397,6 @@ const listenForDisconnection = (socket, roomTracker) => {
         }
     });
 };
-
-
 
 /*
  * Create Server
