@@ -312,13 +312,16 @@ class Game:
 
     def ask_player_info(self):
         if not self.multiplayer_info_asked:
-            print("Would you like to join an existing game(join) or create a new game(create)?: ")
+            print(
+                "Would you like to join an existing game(join) or create a new game(create)?: ")
             room_join_status = input().lower()
             self.is_host = True if room_join_status == 'create' else False
 
-            # to make sure that 'other' isn't classified as 'join', a previous bug
+            # to make sure that 'other' isn't classified as 'join', a previous
+            # bug
             while room_join_status != 'create' and room_join_status != 'join':
-                print("\nLets try that again :/\nWould you like to join an existing game(join) or create a new game(create)?: ")
+                print(
+                    "\nLets try that again :/\nWould you like to join an existing game(join) or create a new game(create)?: ")
                 room_join_status = input().lower()
                 self.is_host = True if room_join_status == 'create' else False
 
@@ -337,12 +340,11 @@ class Game:
                 self.room_id,
                 "username",
                 self.username)
-            #server setup
+            # server setup
             self.server = ServerIface(self.username)
             self.server.connect(self.room_id, self.is_host)  # connect to room
             self.multiplayer_info_asked = True
             self.enemy_id_count = 0
-
 
     def play_multiplayer(self):
         self.clock.tick(self.frame_rate)
@@ -364,14 +366,14 @@ class Game:
                 self.spawn_counter = self.max_spawn_counter
                 self.enemy_id_count += 1
                 new_enemy = Enemy(
-                                randrange(0, self.screen_width, 1),
-                                100,
-                                randrange(0, self.num_z_levels, 1),
-                                self.num_z_levels,
-                                choice(self.enemy_types),
-                                self.enemy_info,
-                                self.enemy_id_count
-                                )
+                    randrange(0, self.screen_width, 1),
+                    100,
+                    randrange(0, self.num_z_levels, 1),
+                    self.num_z_levels,
+                    choice(self.enemy_types),
+                    self.enemy_info,
+                    self.enemy_id_count
+                )
 
                 self.server.append_new_enemy_to_server(new_enemy)
                 self.enemies.append(new_enemy)
@@ -381,14 +383,14 @@ class Game:
                 while len(self.server.awaiting_new_enemies) > 0:
                     new_enemy = self.server.awaiting_new_enemies.pop()
                     new_enemy_instance = Enemy(
-                                    new_enemy['x'],
-                                    new_enemy['y'],
-                                    new_enemy['z'],
-                                    self.num_z_levels,
-                                    new_enemy['enemy_type'],
-                                    self.enemy_info,
-                                    new_enemy['id']
-                                    )
+                        new_enemy['x'],
+                        new_enemy['y'],
+                        new_enemy['z'],
+                        self.num_z_levels,
+                        new_enemy['enemy_type'],
+                        self.enemy_info,
+                        new_enemy['id']
+                    )
                     self.enemies.append(new_enemy_instance)
 
         # ranger movement
@@ -413,7 +415,8 @@ class Game:
                 self.player.ranger.z))
 
         # update server coordinates
-        self.server.send_location_and_meta(x, y, self.player.ranger.z, self.controller.is_firing())
+        self.server.send_location_and_meta(
+            x, y, self.player.ranger.z, self.controller.is_firing())
 
         # show laser
         self.player.ranger.fire(
@@ -424,7 +427,8 @@ class Game:
         # display all enemies
         for enemy in self.enemies:
 
-            #check if it has been removed from server, set should_display to false if so
+            # check if it has been removed from server, set should_display to
+            # false if so
             if enemy.id in self.server.awaiting_enemy_despawn:
                 enemy.should_display = False
                 del self.server.awaiting_enemy_despawn[enemy.id]
@@ -478,7 +482,7 @@ class Game:
         self.opponent_rangers = self.server.opponent_rangers
 
         # Update Ranger Opponents list
-        opponent_dict = {} #Here so when ranger disconnects, they unspawn
+        opponent_dict = {}  # Here so when ranger disconnects, they unspawn
         for opponent_ranger in self.opponent_rangers:
             if opponent_ranger not in opponent_dict:
                 opponent = Player(
@@ -525,7 +529,6 @@ class Game:
         # TODO -- might not need this but it is placeholder for now
         # updage game state
         self.game_state = 'play_multiplayer'
-
 
     def run(self):
         # create clouds

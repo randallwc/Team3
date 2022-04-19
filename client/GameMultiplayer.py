@@ -268,7 +268,7 @@ class GameMultiplayer:
                 enemy.step(self.screen_manager.screen_dimensions)
                 # Update server on where enemy stepped
                 enemy_coordinates = enemy.get_coordinates()
-                #self.server.update_enemy_coordinates(
+                # self.server.update_enemy_coordinates(
                 #    enemy.id, enemy_coordinates[0], enemy_coordinates[1])
                 if enemy.should_display:
                     # detect laser hits
@@ -281,8 +281,8 @@ class GameMultiplayer:
                     # remove dead and timed out enemies
                     self.enemies.remove(enemy)
                     if self.server.is_host:
-                        #for host
-                        #self.server.remove_enemy_from_server(enemy.id)
+                        # for host
+                        # self.server.remove_enemy_from_server(enemy.id)
                         continue
 
             for enemy in self.server.host_enemies:
@@ -298,7 +298,7 @@ class GameMultiplayer:
                         self.player.current_score += enemy.handle_death()
                 else:
                     # Not only host, if you hit it, you can remove it
-                    #self.server.remove_enemy_from_server(enemy.id)
+                    # self.server.remove_enemy_from_server(enemy.id)
                     continue
             ################################################
 
@@ -314,7 +314,7 @@ class GameMultiplayer:
             self.opponent_rangers = self.server.opponent_rangers
 
             # Update Ranger Opponents list
-            opponent_dict = {} #Here so when ranger disconnects, they unspawn
+            opponent_dict = {}  # Here so when ranger disconnects, they unspawn
             for opponent_ranger in self.opponent_rangers:
                 if opponent_ranger not in opponent_dict:
                     opponent = Player(
