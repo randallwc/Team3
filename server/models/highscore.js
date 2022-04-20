@@ -164,8 +164,14 @@ HighscoreSchema.statics.fetchNHighestSingleGameScores = function(nScores, mode){
             //what if 100 scores are requested but only 5 exist?
             const numScoresToReturn = Math.min(nScores, scores.length);
             const requestedScores = scores.slice(0, numScoresToReturn);
+            const trimmedScores = requestedScores.map(score => {
+                return {
+                    score: score.score,
+                    username: score.username
+                }
+            })
 
-            return resolve(requestedScores);
+            return resolve(trimmedScores);
         }).catch(err => {
             return reject(err);
         })
@@ -197,7 +203,14 @@ HighscoreSchema.statics.fetchNHighestLifetimeScores = function(nScores, mode){
             const numScoresToReturn = Math.min(nScores, scores.length);
             const requestedScores = scores.slice(0, numScoresToReturn);
 
-            return resolve(requestedScores);
+            const trimmedScores = requestedScores.map(score => {
+                return {
+                    score: score.score,
+                    username: score.username
+                }
+            })
+
+            return resolve(trimmedScores);
         }).catch(err => {
             return reject(err);
         })
