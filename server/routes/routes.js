@@ -113,10 +113,6 @@ router.post('/insertscore', (request, response, next) => {
 
         const intScore = parseInt(score);
 
-        if (intScore < 0){
-            return next(new Error('Score must be at least 0'));
-        }
-
         Player.addScore(username, intScore, mode).then(player => {
 
             return response.status(200).send({
@@ -128,8 +124,6 @@ router.post('/insertscore', (request, response, next) => {
     }catch (err) {
         return next(err);
     }
-
-
 });
 
 
