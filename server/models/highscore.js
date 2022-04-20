@@ -1,6 +1,6 @@
 // Will be used to store our scores
 const mongoose = require("mongoose");
-const masterKey = 'MasterKey';
+const MASTERKEY = 'MasterKey';
 
 let HighscoreSchema = new mongoose.Schema({
     // single player
@@ -57,7 +57,7 @@ HighscoreSchema.statics.handleSingleGameScore = function(playerID, username, sco
 
     return new Promise((resolve, reject) => {
 
-        Highscore.findOne({key: masterKey}).then(highscores => {
+        Highscore.findOne({key: MASTERKEY}).then(highscores => {
             let scores = highscores[fieldToModifySingleGame];
 
             // find if score is already in array
@@ -104,7 +104,7 @@ HighscoreSchema.statics.handleScoreForLifetimeScore = function(playerID, usernam
     }
 
     return new Promise((resolve, reject) => {
-        Highscore.findOne({key: masterKey}).then(highscores => {
+        Highscore.findOne({key: MASTERKEY}).then(highscores => {
             const scores = highscores[fieldToModifyLifetime];
 
             // find if score is already in array
@@ -157,8 +157,19 @@ HighscoreSchema.statics.fetchNHighestSingleGameScores = function(nScores, mode){
         if (!nScores || nScores < 1){
             reject(new Error('Please enter a valid [n] scores'));
         }
-        const dummyScores = [11,10,9,8,7,6,5,4,3,2];
-        return resolve(dummyScores)
+
+        Highscore.findOne({key: MASTERKEY}).then(highscores => {
+
+            const scores = highscores[fieldToModifySingleGame];
+            //what if 100 scores are requested but only 5 exist?
+            const numScoresToReturn = Math.min(nScores, scores.length);
+            const requestedScores = scores.slice(0, numScoresToReturn);
+
+            return resolve(requestedScores);
+        }).catch(err => {
+            return reject(err);
+        })
+
     });
 }
 
@@ -178,8 +189,18 @@ HighscoreSchema.statics.fetchNHighestLifetimeScores = function(nScores, mode){
         if (!nScores || nScores < 1){
             reject(new Error('Please enter a valid [n] scores'));
         }
-        const dummyScores = [10,9,8,7,6,5,4,3,2,1];
-        return resolve(dummyScores)
+
+        Highscore.findOne({key: MASTERKEY}).then(highscores => {
+
+            const scores = highscores[fieldToModifyLifetime];
+            //what if 100 scores are requested but only 5 exist?
+            const numScoresToReturn = Math.min(nScores, scores.length);
+            const requestedScores = scores.slice(0, numScoresToReturn);
+
+            return resolve(requestedScores);
+        }).catch(err => {
+            return reject(err);
+        })
     });
 }
 

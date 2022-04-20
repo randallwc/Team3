@@ -38,7 +38,7 @@ PlayerSchema.statics.addScore = function(username, score, mode){
             fieldToModifyLifetime = 'singleplayerLifetimeScore';
             fieldToModifySingleGame = 'singleplayerSingleGameHighscore';
         }else{
-            return Promise.reject(new Error('Available modes to pass in: "singleplayer" & "multiplayer"'));
+            return reject(new Error('Available modes to pass in: "singleplayer" & "multiplayer"'));
         }
 
 
@@ -81,19 +81,19 @@ PlayerSchema.pre('save', async function(next){
 
     if (lifetimeMultiplayerModified || singleGameMultiplayerModified){
         if (lifetimeMultiplayerModified){
-            await Highscore.handleScoreForLifetimeScore(this._id, this.username, this.multiplayerLifetimeScore, mode);
+            await Highscore.handleScoreForLifetimeScore(this._id, this.username, this.multiplayerLifetimeScore, 'multiplayer');
         }
         if (singleGameMultiplayerModified){
-            await Highscore.handleSingleGameScore(this._id, this.username, this.multiplayerSingleGameHighscore, mode);
+            await Highscore.handleSingleGameScore(this._id, this.username, this.multiplayerSingleGameHighscore, 'multiplayer');
         }
         next();
     }else if (lifetimeSinglePlayerModified || singleGameSinglePlayerModified){
 
         if (lifetimeSinglePlayerModified){
-            await Highscore.handleScoreForLifetimeScore(this._id, this.username, this.singleplayerLifetimeScore, mode);
+            await Highscore.handleScoreForLifetimeScore(this._id, this.username, this.singleplayerLifetimeScore, 'singleplayer');
         }
         if (singleGameSinglePlayerModified){
-            await Highscore.handleSingleGameScore(this._id, this.username, this.singleplayerSingleGameHighscore, mode);
+            await Highscore.handleSingleGameScore(this._id, this.username, this.singleplayerSingleGameHighscore, 'singleplayer');
         }
     }else{
         next();
