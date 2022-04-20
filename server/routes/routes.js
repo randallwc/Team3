@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Highscore = require('../models/highscore');
-
+const Player = require('../models/player');
 
 // Going to localhost:8000/api/sky will return this
 router.get("/sky", (request, response, next) => {
@@ -71,5 +71,67 @@ router.get('/fetch/singlegame/highscores', (request, response, next) => {
         return next(err);
     }
 });
+
+
+
+// TODO: delete this once everything works, python client will send highscores
+router.get('/set/scores', (request, response, next) => {
+
+    const {username} = request.body;
+    const {score} = request.body;
+    
+    try {
+
+        const stringScore = parseInt(score);
+        Player.addScore('jc', 25).then(player => {
+
+            return response.status(200).send({
+                player: player
+            });
+        }).catch(err => {
+            return next(err);
+        });
+    }catch (err) {
+        return next(err);
+    }
+
+
+});
+
+router.get('/createmaster', (request, response, next) => {
+    Highscore.create({
+        key: 'MasterKey'
+    }).then(highscores => {
+        return response.status(200).send(highscores);
+    }).catch(err => {
+        return next(err);
+    })
+});
+
+
+router.get('/insertscore', (request, response, next) => {
+
+    const {username} = request.body;
+    const {score} = request.body;
+
+    try {
+
+        const intScore = parseInt(score);
+        Player.addScore(username, intScore).then(player => {
+
+            return response.status(200).send({
+                player: player
+            });
+        }).catch(err => {
+            return next(err);
+        });
+    }catch (err) {
+        return next(err);
+    }
+
+
+});
+
+
 
 module.exports = router;
