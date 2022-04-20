@@ -94,7 +94,8 @@ router.get('/fetch/singlegame/highscores', (request, response, next) => {
 
 
 
-router.get('/insertscore', (request, response, next) => {
+
+router.post('/insertscore', (request, response, next) => {
 
     const {username} = request.body;
     const {score} = request.body;
