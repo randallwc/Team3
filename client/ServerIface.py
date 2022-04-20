@@ -1,7 +1,9 @@
-import socketio
-import uuid
 import time
+import uuid
 from random import choice, randrange
+
+import socketio
+
 from MultiplayerEnemy import MultiplayerEnemy
 from Paths import (anton_death_sound_path, anton_path, armando_path, cow_path,
                    david2_death_sound_path, david2_path, david_path,
@@ -15,9 +17,11 @@ class ServerIface:
     def __init__(self, username):
         self.socket = socketio.Client()
         # Localhost
-        self.socket.connect('http://localhost:8000', transports=['websocket'])
+        # self.socket.connect('http://localhost:8000', transports=['websocket'])
         # Production
-        #self.socket.connect('https://skydangerranger.herokuapp.com/', transports=['websocket'])
+        self.socket.connect(
+            'https://skydangerranger.herokuapp.com/',
+            transports=['websocket'])
         self.is_host = False
         self.room_id = ''
         self.socket_id = ''
@@ -100,8 +104,7 @@ class ServerIface:
         # modulo counter
         self.send_location_counter += 1
         # on initial load, or a change occurred
-        change_occurred = len(
-            self.curr_metadata) == 0 or (
+        change_occurred = len(self.curr_metadata) == 0 or (
             self.curr_metadata[0] != x or self.curr_metadata[1] != y or self.curr_metadata[2] != z or self.curr_metadata[3] != is_firing)
 
         if self.socket.connected and self.send_location_counter % 5 == 0 and change_occurred:
