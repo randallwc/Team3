@@ -325,7 +325,8 @@ class Game:
         # get a list of ranger id's
         self.opponent_ranger_ids = self.server.opponent_rangers
         for opponent_ranger in self.opponent_ranger_ids:
-            metadata = self.server.opponent_ranger_coordinates.get(opponent_ranger, None)
+            metadata = self.server.opponent_ranger_coordinates.get(
+                opponent_ranger, None)
             if metadata is None:
                 continue
             x, y, z, is_firing = metadata
@@ -384,7 +385,9 @@ class Game:
         # update ranger coordinates
         self.player.ranger.update_coordinates(x, y)
         # update z axis
-        self.player.ranger.set_level(self.controller.get_z(self.player.ranger.z))
+        self.player.ranger.set_level(
+            self.controller.get_z(
+                self.player.ranger.z))
 
         # update server coordinates
         self.update_ranger_server_coordinates()
