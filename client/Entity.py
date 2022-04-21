@@ -1,5 +1,7 @@
 import pygame
 
+from ParticleCloud import ParticleCloud
+
 black = (0, 0, 0)
 white = (255, 255, 255)
 
@@ -13,6 +15,7 @@ class Entity:
         self.num_z_levels = num_z_levels
         self.image_path = image_path
         self.shape = self.set_image(self.image_path)
+        self.particle_cloud = ParticleCloud(self.x, self.y)
 
         if image_dimensions is not None:
             self.scale_image(*image_dimensions)
@@ -53,13 +56,17 @@ class Entity:
         self.rect.y = self.top
         self.rect.width = self.shape.get_width()
         self.rect.height = self.shape.get_height()
+        self.particle_cloud.x = self.x
+        self.particle_cloud.y = self.y
 
-    def show(self, surface: pygame.surface):
+    def show(self, surface: pygame.surface.Surface,
+             particle_surface: pygame.surface.Surface):
         self.update_coordinates(self.x, self.y)
         surface.blit(self.shape, (self.left, self.top))
+        self.particle_cloud.show(particle_surface)
         # self.show_rect(surface)
 
-    def show_rect(self, surface: pygame.surface, color=white):
+    def show_rect(self, surface: pygame.surface.Surface, color=white):
         for i in range(4):
             pygame.draw.rect(
                 surface,
