@@ -16,9 +16,9 @@ class VoiceIface:
             print('listening... ', end='', flush=True)
             audio = self.recognizer.listen(source, timeout=self.timeout)
             print('processing... ')
-        out = None
+        out = ''
         try:
-            out = self.recognizer.recognize_google(audio)
+            out = str(self.recognizer.recognize_google(audio))
             print(out)
         except sr.UnknownValueError:
             print('saying not recognized')
@@ -30,15 +30,13 @@ class VoiceIface:
         phrase = self.listen()
         word = ''
         if phrase:
-            word = phrase.split(' ')[-1]
+            word = phrase.rsplit(' ', maxsplit=1)[-1]
         if word:
             return word
-        else:
-            return None
+        return None
 
     def find_word(self, word: str):
         phrase = self.listen().lower()
         if phrase:
             return word.lower() in phrase.split(' ')
-        else:
-            return False
+        return False

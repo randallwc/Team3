@@ -1,6 +1,6 @@
 import pygame
 
-from Paths import *
+from Paths import laser_sound_path
 
 
 def play_sound(file_path):
@@ -17,4 +17,9 @@ def play_music(file_path):
 
 
 def stop_music():
+    pygame.mixer.music.stop()
     pygame.mixer.stop()
+
+
+def is_playing_sounds() -> bool:
+    return pygame.mixer.music.get_busy()

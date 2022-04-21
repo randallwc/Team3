@@ -1,24 +1,26 @@
 import pygame
 
-from CameraIface import *
-from ImuIface import *
-from VoiceIface import *
+from CameraIface import CameraIface
+from ImuIface import ImuIface
+from VoiceIface import VoiceIface
 
 
 class Controller:
     def __init__(self, num_z_levels):
         self.num_z_levels = num_z_levels
+
+        self.use_face = True
         self.current_z = None
         self.xy_axis = ImuIface()
         self.z_axis = CameraIface(self.num_z_levels)
         self.voice = VoiceIface()
         self.pressing_down_level = False
         self.pressing_up_level = False
+        self._previous_fire_val = False
 
     def get_xy(self, screen_width, screen_height, x, y, speed, max_speed):
         # return self.get_xy_mouse()
-        if speed > max_speed:
-            speed = max_speed
+        speed = min(speed, max_speed)
         x += speed * int(self.get_direction()['right'])
         x -= speed * int(self.get_direction()['left'])
         y += speed * int(self.get_direction()['down'])
@@ -35,7 +37,8 @@ class Controller:
             y = 0
         return int(x), int(y)
 
-    def get_xy_mouse(self):
+    @staticmethod
+    def get_xy_mouse():
         return pygame.mouse.get_pos()
 
     def get_direction(self):
@@ -50,7 +53,8 @@ class Controller:
             'up_level': keys[pygame.K_e],
         }
 
-    def get_mouse(self):
+    @staticmethod
+    def get_mouse():
         return {
             'left_click': pygame.mouse.get_pressed()[0],
             'right_click': pygame.mouse.get_pressed()[1],
@@ -60,31 +64,48 @@ class Controller:
         # return self.get_mouse()['left_click']
         return self.get_direction()['space']
 
+    def fire_edge(self) -> bool:
+        # is_firing signal
+        # -------           -------
+        #        \         /
+        #         \_______/
+        # trigger ^       ^ don't trigger
+        is_firing = self.is_firing()
+        prev_val = self._previous_fire_val
+        self._previous_fire_val = is_firing
+        if is_firing and not prev_val:
+            return True
+        else:
+            return False
+
     def get_z(self, current_z: int):
-        # assert (0 <= current_z < self.num_z_levels)
-        # self.current_z = current_z
-        # if self.get_direction()['down_level']:
-        #     if not self.pressing_down_level:
-        #         self.pressing_down_level = True
-        #         self.current_z -= 1
-        # else:
-        #     self.pressing_down_level = False
-        #
-        # if self.get_direction()['up_level']:
-        #     if not self.pressing_up_level:
-        #         self.pressing_up_level = True
-        #         self.current_z += 1
-        # else:
-        #     self.pressing_up_level = False
-        #
-        # if self.current_z < 0:
-        #     self.current_z = 0
-        # elif self.current_z >= num_z_levels:
-        #     self.current_z = num_z_levels - 1
-        self.current_z = self.z_axis.get_level()
+        if self.use_face:
+            self.current_z = self.z_axis.get_level()
+        else:
+            assert 0 <= current_z < self.num_z_levels
+            self.current_z = current_z
+            if self.get_direction()['down_level']:
+                if not self.pressing_down_level:
+                    self.pressing_down_level = True
+                    self.current_z -= 1
+            else:
+                self.pressing_down_level = False
+
+            if self.get_direction()['up_level']:
+                if not self.pressing_up_level:
+                    self.pressing_up_level = True
+                    self.current_z += 1
+            else:
+                self.pressing_up_level = False
+
+            if self.current_z < 0:
+                self.current_z = 0
+            elif self.current_z >= self.num_z_levels:
+                self.current_z = self.num_z_levels - 1
         return self.current_z
 
-    def is_moving(self):
+    @staticmethod
+    def is_moving():
         return any(pygame.key.get_pressed())
 
     def disconnect(self):

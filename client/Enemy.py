@@ -1,10 +1,23 @@
-from Entity import *
-from Sounds import *
+import pygame
+
+from Entity import Entity
+from Sounds import play_sound
 
 
 class Enemy(Entity):
-    def __init__(self, x, y, z, num_z_levels, enemy_type,
-                 enemy_info, health=1, image_dimensions=(100, 100)):
+    def __init__(
+            self,
+            x,
+            y,
+            z,
+            num_z_levels,
+            enemy_type,
+            enemy_info,
+            enemy_id,
+            health=1,
+            image_dimensions=(
+                100,
+                100)):
         self.enemy_info = enemy_info
         self.enemy_type = enemy_type
         self.health = health
@@ -17,6 +30,7 @@ class Enemy(Entity):
         self.x_speed = self.get_x_speed()
         self.y_speed = self.get_y_speed()
         self.current_direction = self.get_direction()
+        self.id = enemy_id  # only used in multiplayer
 
         super().__init__(x, y, z, num_z_levels, self.image_path, image_dimensions)
 
@@ -63,23 +77,29 @@ class Enemy(Entity):
                 play_sound(self.get_death_sound())
 
     def handle_death(self):
+        # TODO -- handle enemy hit function
         self.play_death_sound()
         return 1 if self.enemy_type in self.bad_enemies else -1
 
-    def show(self, surface: pygame.surface):
-        super().show(surface)
+    def show(self, surface: pygame.surface.Surface,
+             particle_surface: pygame.surface.Surface):
+        super().show(surface, particle_surface)
         self.time_alive_countdown -= 1
         if self.time_alive_countdown <= 0 or self.health <= 0:
             self.should_display = False
 
-    def show_diff_level(self, surface: pygame.surface, is_above):
+    def show_diff_level(
+            self,
+            surface: pygame.surface.Surface,
+            particle_surface: pygame.surface.Surface,
+            is_above):
         if is_above:
             self.shape.set_alpha(255 // 2)
             text = 'above'
         else:
             self.shape.set_alpha(255 // 4)
             text = 'below'
-        self.show(surface)
+        self.show(surface, particle_surface)
         self.shape.set_alpha(255)
         # indicate above or below
         font = pygame.font.SysFont('Comic Sans', 20)
