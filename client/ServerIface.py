@@ -8,11 +8,11 @@ class ServerIface:
     def __init__(self, username):
         self.socket = socketio.Client()
         # Localhost
-        # self.socket.connect('http://localhost:8000', transports=['websocket'])
+        self.socket.connect('http://localhost:8000', transports=['websocket'])
         # Production
-        self.socket.connect(
-            'https://skydangerranger.herokuapp.com/',
-            transports=['websocket'])
+        # self.socket.connect(
+        #     'https://skydangerranger.herokuapp.com/',
+        #     transports=['websocket'])
         self.is_host = False
         self.room_id = ''
         self.socket_id = ''
