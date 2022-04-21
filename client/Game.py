@@ -10,13 +10,14 @@ from DatabaseIface import DatabaseIface
 from Enemy import Enemy
 from MultiplayerSocket import MultiplayerSocket
 from OpponentRanger import OpponentRanger
+from ParticleCloud import ParticleCloud
 from Paths import (anton_death_sound_path, anton_path, armando_path,
                    background_music_path, cloud_path, cow_path,
                    david2_death_sound_path, david2_path, david_path,
                    friendly_fire_sound_path, jc_death_sound_path, jc_path,
                    ranger_path, ricky_death_sound_path, ricky_path, sky_path)
 from Player import Player
-from ScreenManager import ScreenManager, show_mouse
+from ScreenManager import ScreenManager, show_mouse, set_caption
 from ServerIface import ServerIface
 from Sounds import play_music, stop_music, is_playing_sounds
 
@@ -101,24 +102,25 @@ class Game:
         self.clock = pygame.time.Clock()
         self.clouds: List[Cloud] = []
         self.enemies: List[Enemy] = []
-        self.max_num_enemies = 3
         self.enemy_types = list(self.enemy_info.keys())
+        self.fire_edge = False
         self.frame_rate = 60
+        self.game_state = 'start'  # in ['start', 'play', 'multiplayer']
+        self.max_num_enemies = 3
         self.max_spawn_counter = 100
+        self.mousedown = False
+        self.mouseup = False
         self.num_clouds = 10
         self.num_z_levels = 3
         self.opponent_ranger_ids = []
+        self.play_music = True
         self.screen_height = screen_height
         self.screen_width = screen_width
-
-        self.game_state = 'start'  # in ['start', 'play', 'multiplayer']
         self.use_camera = False
-        self.mouseup = False
-        self.mousedown = False
-        self.fire_edge = False
-        self.play_music = True
+        self.dead_enemy_particle_clouds: List[ParticleCloud] = []
 
         self.controller = Controller(self.num_z_levels)
+        self.controller.use_face = self.use_camera
         self.screen_manager = ScreenManager(
             sky_path, self.screen_width, self.screen_height)
         self.spawn_counter = self.max_spawn_counter
@@ -129,7 +131,6 @@ class Game:
             screen_height,
             self.db,
             self.num_z_levels)
-        self.controller.use_face = self.use_camera
 
         # For multiplayer use
         self.username = ''
@@ -139,7 +140,7 @@ class Game:
         self.server = None
         self.enemy_id_count = 0
 
-    def start_screen(self):
+    def _start_screen(self):
         # tick clock
         self.clock.tick(self.frame_rate)
 
@@ -210,7 +211,7 @@ class Game:
         # update display
         pygame.display.update()
 
-    def ask_player_info(self):
+    def _ask_player_info(self):
         prompt = "Would you like to join an existing game(join) "
         prompt += "or create a new game(create)?: "
         retry_prompt = "Lets try that again :/"
@@ -241,15 +242,16 @@ class Game:
             self.server = ServerIface(self.username)
             self.server.connect(self.room_id, self.is_host)  # connect to room
             self.multiplayer_info_asked = True
-            pygame.display.set_caption(
-                f'{"host" if self.is_host else "player"} in "{self.room_id}" named "{self.username}"')
+            caption = f'{"host" if self.is_host else "player"} in "{self.room_id}" named "{self.username}"'
+            set_caption(caption)
 
-    def spawn_enemies(self):
+    def _spawn_enemies(self):
         # if you joined a game
         if self.game_state == 'multiplayer' and not self.is_host:
             # if there are enemies from server to be appended.
             while len(self.server.awaiting_new_enemies) > 0:
                 new_enemy = self.server.awaiting_new_enemies.pop()
+                # TODO -- get each enemies' health
                 self.enemies.append(
                     Enemy(
                         new_enemy['x'],
@@ -279,7 +281,41 @@ class Game:
             if self.game_state == 'multiplayer' and self.is_host:
                 self.server.append_new_enemy_to_server(new_enemy)
 
-    def display_enemies(self):
+    def _handle_enemy_collision(self, enemy: Enemy):
+        # TODO -- send when enemy is collided with
+        if pygame.Rect.colliderect(
+                enemy.rect, self.player.ranger.rect):
+            if enemy.enemy_type in enemy.bad_enemies:
+                # TODO -- lower health instead of points
+                self.player.handle_point_change(-1)
+            if enemy.enemy_type in enemy.good_enemies:
+                # TODO -- get back health if you pick up a good enemy
+                self.player.handle_point_change(1)
+                enemy.health = 0
+        return enemy
+
+    def _handle_enemy_laser_hit(self, enemy: Enemy):
+        def _hit_enemy() -> bool:
+            return enemy.should_display \
+                   and self.player.ranger.laser_is_deadly \
+                   and self.player.ranger.x in enemy.get_x_hitbox() \
+                   and self.player.ranger.y > enemy.y \
+                   and self.player.ranger.z == enemy.z
+
+        if _hit_enemy():
+            # TODO -- send when enemy is hit
+            damage = 0.5
+            enemy.got_hit(damage)
+            self.player.handle_point_change(enemy.handle_death())
+            if enemy.health <= 0 and enemy.enemy_type in enemy.bad_enemies:
+                particle_cloud = ParticleCloud(enemy.x, enemy.y)
+                particle_cloud.fire_burst(10)
+                self.dead_enemy_particle_clouds.append(particle_cloud)
+            elif enemy.health < 1:
+                enemy.particle_cloud.smoking = True
+        return enemy
+
+    def _display_enemies(self):
         for enemy in self.enemies:
             if self.game_state == 'multiplayer':
                 # check if it has been removed from server, set should_display to
@@ -291,34 +327,11 @@ class Game:
             enemy.step(self.screen_manager.screen_dimensions)
             # do logic on enemies in same level
             if enemy.z == self.player.ranger.z:
-                # TODO -- move this into a game function
-                if pygame.Rect.colliderect(
-                        enemy.rect, self.player.ranger.rect):
-                    if enemy.enemy_type in enemy.bad_enemies:
-                        # TODO -- lower health instead of points
-                        self.player.handle_point_change(-1)
-                        # TODO -- remove enemy
-                    if enemy.enemy_type in enemy.good_enemies:
-                        # TODO -- get back health if you pick up a good
-                        # enemy
-                        self.player.handle_point_change(1)
-                        enemy.health = 0
+                enemy = self._handle_enemy_collision(enemy)
                 enemy.show(
                     self.screen_manager.surface,
                     self.screen_manager.transparent_surface)
-
-                # detect laser hits
-                # TODO -- move this into a game function
-                if enemy.should_display \
-                        and self.player.ranger.laser_is_deadly \
-                        and self.player.ranger.x in enemy.get_x_hitbox() \
-                        and self.player.ranger.y > enemy.y \
-                        and self.player.ranger.z == enemy.z:
-                    damage = 1
-                    enemy.got_hit(damage)
-                    self.player.handle_point_change(enemy.handle_death())
-                    if self.game_state == 'multiplayer':
-                        self.server.remove_enemy_from_server(enemy.id)
+                self._handle_enemy_laser_hit(enemy)
             else:
                 # display enemies on other levels
                 is_above = enemy.z > self.player.ranger.z
@@ -326,12 +339,11 @@ class Game:
                     self.screen_manager.surface,
                     self.screen_manager.transparent_surface,
                     is_above)
+            if self.game_state == 'multiplayer' and not enemy.should_display:
+                self.server.remove_enemy_from_server(enemy.id)
+        self.enemies = [enemy for enemy in self.enemies if enemy.should_display]
 
-            # remove dead and timed out enemies
-            if not enemy.should_display:
-                self.enemies.remove(enemy)
-
-    def update_ranger_opponents(self):
+    def _update_ranger_opponents(self):
         if self.game_state == 'play':
             return
         if self.game_state != 'multiplayer':
@@ -349,7 +361,8 @@ class Game:
             opponent_ranger = OpponentRanger(
                 x, y, z, self.num_z_levels, self.screen_width, self.screen_height)
             opponent_ranger.update_coordinates(x, y)
-            opp_firing = False  # TODO -- hard code enemies to not have deadly lasers purely cosmetic
+            # hard code enemies to not have deadly lasers purely cosmetic
+            opp_firing = False
             opponent_ranger.fire(
                 is_firing,
                 opp_firing,
@@ -359,7 +372,7 @@ class Game:
                 self.screen_manager.transparent_surface,
                 self.player.ranger.z)
 
-    def update_ranger_server_coordinates(self):
+    def _update_ranger_server_coordinates(self):
         if self.game_state == 'multiplayer':
             self.server.send_location_and_meta(
                 self.player.ranger.x,
@@ -388,7 +401,7 @@ class Game:
             cloud.loop_around(self.screen_width, self.screen_height)
 
         # spawn an enemy every self.max_spawn_counter frames
-        self.spawn_enemies()
+        self._spawn_enemies()
 
         # ranger movement
         x, y = self.controller.get_xy(
@@ -412,7 +425,7 @@ class Game:
                 self.player.ranger.z))
 
         # update server coordinates
-        self.update_ranger_server_coordinates()
+        self._update_ranger_server_coordinates()
 
         # show laser
         self.player.ranger.fire(
@@ -422,7 +435,7 @@ class Game:
         )
 
         # display all enemies
-        self.display_enemies()
+        self._display_enemies()
 
         # show ranger
         self.player.ranger.show(
@@ -430,7 +443,7 @@ class Game:
             self.screen_manager.transparent_surface)
 
         # update ranger opponents
-        self.update_ranger_opponents()
+        self._update_ranger_opponents()
 
         # show current score
         self.screen_manager.render_score(self.player.current_score)
@@ -445,6 +458,10 @@ class Game:
         # TODO -- show current health
 
         # show particles
+        for particle_cloud in self.dead_enemy_particle_clouds:
+            particle_cloud.show(self.screen_manager.transparent_surface)
+        self.dead_enemy_particle_clouds = [cloud for cloud in self.dead_enemy_particle_clouds if
+                                           len(cloud.particles) > 0]
         self.screen_manager.show_particles()
 
         # update display
@@ -486,16 +503,20 @@ class Game:
                     self.mousedown = True
             # game states
             if self.game_state == 'start':
-                self.start_screen()
+                self._start_screen()
             elif self.game_state == 'play':
                 self.play()
             elif self.game_state == 'multiplayer':
                 if not self.multiplayer_info_asked:
-                    self.ask_player_info()
+                    self._ask_player_info()
                 self.play()
             else:
                 print('error in game state')
                 sys.exit(1)
+
+            print('\r', 'pc:', len(self.dead_enemy_particle_clouds), 'en:', len(self.enemies), 'ori:',
+                  len(self.opponent_ranger_ids), 'cl', len(self.clouds),
+                  end='')
 
         print('quitting')
         self.controller.disconnect()

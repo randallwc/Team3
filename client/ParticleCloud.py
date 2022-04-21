@@ -50,7 +50,7 @@ class Particle:
             self.radius_delta = 1
 
             # colors
-            self.color = [*GREY, 255]
+            self.color = [*GREY, 150]
             self.red_delta = 10
             self.green_delta = 10
             self.blue_delta = 10
@@ -121,14 +121,13 @@ class ParticleCloud:
         if self.smoking or self.smoking_count > 0:
             new_particle = Particle(self.x, self.y, 'smoke')
             self.particles.append(new_particle)
-            self.on_fire_count -= 1 if self.on_fire > 0 else 0
+            self.smoking_count -= 1 if self.smoking_count > 0 else 0
 
         if self.on_fire or self.on_fire_count > 0:
             new_particle = Particle(self.x, self.y, 'fire')
             self.particles.append(new_particle)
-            self.on_fire_count -= 1 if self.on_fire > 0 else 0
+            self.on_fire_count -= 1 if self.on_fire_count > 0 else 0
 
-        # TODO -- loop backwards
         for particle in self.particles:
             particle.animate(surface)
         self.particles = [
