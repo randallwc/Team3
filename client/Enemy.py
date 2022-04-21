@@ -6,18 +6,18 @@ from Sounds import play_sound
 
 class Enemy(Entity):
     def __init__(
-        self,
-        x,
-        y,
-        z,
-        num_z_levels,
-        enemy_type,
-        enemy_info,
-        enemy_id=1,
-        health=1,
-        image_dimensions=(
-            100,
-            100)):
+            self,
+            x,
+            y,
+            z,
+            num_z_levels,
+            enemy_type,
+            enemy_info,
+            enemy_id,
+            health=1,
+            image_dimensions=(
+                    100,
+                    100)):
         self.enemy_info = enemy_info
         self.enemy_type = enemy_type
         self.health = health

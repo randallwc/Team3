@@ -32,19 +32,15 @@ class Ranger(Entity):
         y = min(self.screen_height, y)
         super().update_coordinates(x, y)
 
-    def fire(self, is_firing: bool, surface: pygame.surface.Surface):
-        # TODO -- use is mouse down
+    def fire(self, is_firing: bool, fire_edge: bool, surface: pygame.surface.Surface):
+        self.laser_is_deadly = fire_edge
         # update coordinates
         if is_firing:
-            self.laser_is_deadly = False
             self.frames_clicking += self.delta_laser_width
 
             # only fire once per click
-            if self.frames_clicking < (
-                    self.max_laser_width -
-                    self.min_laser_width) and self.current_laser_width == self.max_laser_width:
+            if fire_edge:
                 play_laser_sound()
-                self.laser_is_deadly = True
 
             # display red laser
             top_laser_coordinates = (self.x, 0)
@@ -75,4 +71,3 @@ class Ranger(Entity):
             # when not clicking reset laser width and the countdown
             self.current_laser_width = self.max_laser_width
             self.frames_clicking = 0
-            self.laser_is_deadly = False

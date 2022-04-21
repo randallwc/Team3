@@ -16,8 +16,6 @@ class Entity:
         self.image_path = image_path
         self.shape = self.set_image(self.image_path)
         self.particle_cloud = ParticleCloud(self.x, self.y)
-        self.particle_cloud.on_fire = False
-        self.particle_cloud.smoking = False
 
         if image_dimensions is not None:
             self.scale_image(*image_dimensions)

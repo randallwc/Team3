@@ -16,6 +16,7 @@ class Controller:
         self.voice = VoiceIface()
         self.pressing_down_level = False
         self.pressing_up_level = False
+        self._previous_fire_val = False
 
     def get_xy(self, screen_width, screen_height, x, y, speed, max_speed):
         # return self.get_xy_mouse()
@@ -62,6 +63,20 @@ class Controller:
     def is_firing(self):
         # return self.get_mouse()['left_click']
         return self.get_direction()['space']
+
+    def fire_edge(self) -> bool:
+        # is_firing signal
+        # -------           -------
+        #        \         /
+        #         \_______/
+        # trigger ^       ^ don't trigger
+        is_firing = self.is_firing()
+        prev_val = self._previous_fire_val
+        self._previous_fire_val = is_firing
+        if is_firing and not prev_val:
+            return True
+        else:
+            return False
 
     def get_z(self, current_z: int):
         if self.use_face:
