@@ -342,17 +342,21 @@ class Game:
         # Here so when ranger disconnects, they despawn -- what??
         opponent_dict = {}
         for opponent_ranger in self.opponent_ranger_ids:
-            metadata = self.server.opponent_ranger_coordinates.get(opponent_ranger, None)
+            metadata = self.server.opponent_ranger_coordinates.get(
+                opponent_ranger, None)
             if metadata is None:
                 continue
             x, y, z, is_firing = metadata
             # create new rangers
             if opponent_ranger not in opponent_dict:
-                opponent_ranger = OpponentRanger(x, y, z, self.num_z_levels, self.screen_width, self.screen_height)
+                opponent_ranger = OpponentRanger(
+                    x, y, z, self.num_z_levels, self.screen_width, self.screen_height)
                 opponent_dict[opponent_ranger] = opponent_ranger
             opponent_ranger.update_coordinates(x, y)
             opponent_ranger.fire(is_firing, self.screen_manager.surface)
-            opponent_ranger.show(self.screen_manager.surface, self.screen_manager.transparent_surface)
+            opponent_ranger.show(
+                self.screen_manager.surface,
+                self.screen_manager.transparent_surface)
 
     def update_ranger_server_coordinates(self):
         if self.game_state == 'multiplayer':
@@ -402,7 +406,9 @@ class Game:
         # update ranger coordinates
         self.player.ranger.update_coordinates(x, y)
         # update z axis
-        self.player.ranger.set_level(self.controller.get_z(self.player.ranger.z))
+        self.player.ranger.set_level(
+            self.controller.get_z(
+                self.player.ranger.z))
 
         # update server coordinates
         self.update_ranger_server_coordinates()
