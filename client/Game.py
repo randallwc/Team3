@@ -297,10 +297,10 @@ class Game:
     def _handle_enemy_laser_hit(self, enemy: Enemy):
         def _hit_enemy() -> bool:
             return enemy.should_display \
-                   and self.player.ranger.laser_is_deadly \
-                   and self.player.ranger.x in enemy.get_x_hitbox() \
-                   and self.player.ranger.y > enemy.y \
-                   and self.player.ranger.z == enemy.z
+                and self.player.ranger.laser_is_deadly \
+                and self.player.ranger.x in enemy.get_x_hitbox() \
+                and self.player.ranger.y > enemy.y \
+                and self.player.ranger.z == enemy.z
 
         if _hit_enemy():
             # TODO -- send when enemy is hit
@@ -341,7 +341,8 @@ class Game:
                     is_above)
             if self.game_state == 'multiplayer' and not enemy.should_display:
                 self.server.remove_enemy_from_server(enemy.id)
-        self.enemies = [enemy for enemy in self.enemies if enemy.should_display]
+        self.enemies = [
+            enemy for enemy in self.enemies if enemy.should_display]
 
     def _update_ranger_opponents(self):
         if self.game_state == 'play':

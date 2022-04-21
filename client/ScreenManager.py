@@ -97,7 +97,7 @@ class ScreenManager:
                     f'{num_enemies_on_level(enemies, i)}', True, number_color)
                 text_x = line_x + 10
                 text_y = line_bottom[1] - rendered_font.get_height() // 2 - \
-                         line_length * (i / (num_z_levels - 1))
+                    line_length * (i / (num_z_levels - 1))
                 self.surface.blit(rendered_font, (text_x, text_y))
 
     def render_fps(self, fps: int):
