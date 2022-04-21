@@ -18,7 +18,7 @@ from Paths import (anton_death_sound_path, anton_path, armando_path,
 from Player import Player
 from ScreenManager import ScreenManager, show_mouse
 from ServerIface import ServerIface
-from Sounds import play_music
+from Sounds import play_music, stop_music, is_playing_sounds
 
 
 class Game:
@@ -116,6 +116,7 @@ class Game:
         self.mouseup = False
         self.mousedown = False
         self.fire_edge = False
+        self.play_music = True
 
         self.controller = Controller(self.num_z_levels)
         self.screen_manager = ScreenManager(
@@ -128,6 +129,7 @@ class Game:
             screen_height,
             self.db,
             self.num_z_levels)
+        self.controller.use_face = self.use_camera
 
         # For multiplayer use
         self.username = ''
@@ -182,16 +184,29 @@ class Game:
             self.game_state = 'multiplayer'
 
         # camera toggle
-        camera_inactive = light_blue
-        camera_active = dark_blue
         if self.screen_manager.button(
                 f'Toggle Camera {"off" if self.use_camera else "on"}',
                 self.screen_height // 2 + 200,
                 self.screen_width // 2,
-                camera_active,
-                camera_inactive) and self.mousedown:
+                dark_blue,
+                light_blue) and self.mousedown:
             self.use_camera = not self.use_camera
         self.controller.use_face = self.use_camera
+
+        # music toggle
+        is_playing = is_playing_sounds()
+        if self.screen_manager.button(
+                f'sound {"off" if self.play_music else "on"}',
+                self.screen_height - 100,
+                100,
+                dark_blue,
+                light_blue) and self.mousedown:
+            self.play_music = not self.play_music
+        if self.play_music and not is_playing:
+            play_music(background_music_path)
+        elif not self.play_music and is_playing:
+            stop_music()
+
         # update display
         pygame.display.update()
 
@@ -339,9 +354,10 @@ class Game:
                 is_firing,
                 opp_firing,
                 self.screen_manager.surface)
-            opponent_ranger.show(
+            opponent_ranger.show_diff_level(
                 self.screen_manager.surface,
-                self.screen_manager.transparent_surface)
+                self.screen_manager.transparent_surface,
+                self.player.ranger.z)
 
     def update_ranger_server_coordinates(self):
         if self.game_state == 'multiplayer':
@@ -449,7 +465,8 @@ class Game:
             )
 
         # start music
-        play_music(background_music_path)
+        if self.play_music:
+            play_music(background_music_path)
 
         # game loop
         running = True

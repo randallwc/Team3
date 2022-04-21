@@ -17,4 +17,9 @@ def play_music(file_path):
 
 
 def stop_music():
+    pygame.mixer.music.stop()
     pygame.mixer.stop()
+
+
+def is_playing_sounds() -> bool:
+    return pygame.mixer.music.get_busy()
