@@ -50,6 +50,19 @@ class ScreenManager:
             (self.screen_dimensions[0] - 100,
              self.screen_dimensions[1] - 100))
 
+    def render_time(self, current_time: int):
+        foreground_color = (0, 0, 0)
+        background_color = (255, 255, 255)
+        font = pygame.font.SysFont('Comic Sans', 20)
+        rendered_font = font.render(
+            f'time: {current_time}',
+            True,
+            foreground_color,
+            background_color)
+        self.surface.blit(
+            rendered_font,
+            (self.screen_dimensions[0] // 2, 100))
+
     def render_level(self, current_level: int, num_z_levels: int, enemies):
         def dist(p1, p2):
             x1, y1 = p1

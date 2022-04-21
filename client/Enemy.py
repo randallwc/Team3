@@ -16,8 +16,8 @@ class Enemy(Entity):
             enemy_id,
             health=1,
             image_dimensions=(
-                100,
-                100)):
+                    100,
+                    100)):
         self.enemy_info = enemy_info
         self.enemy_type = enemy_type
         self.health = health
@@ -77,6 +77,7 @@ class Enemy(Entity):
                 play_sound(self.get_death_sound())
 
     def handle_death(self):
+        # TODO -- handle enemy hit function
         self.play_death_sound()
         return 1 if self.enemy_type in self.bad_enemies else -1
 
