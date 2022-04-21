@@ -2,6 +2,7 @@ import cv2
 import dlib
 import numpy as np
 
+
 class CameraIface:
     def __init__(self, num_levels, show_cam=True):
         self.show_cam = show_cam
@@ -19,17 +20,23 @@ class CameraIface:
         self.previous_center = (
             self.camera_width // 2,
             self.camera_height // 2)
-        self.directions = {'up': False, 'down': False, 'left': False, 'right': False}
+        self.directions = {
+            'up': False,
+            'down': False,
+            'left': False,
+            'right': False}
         self.top_level = 2
         self.mid_level = 1
         self.bot_level = 0
 
-        self.left_vertical_line_x = int((self.camera_width // 2) - (self.camera_width*0.05))
-        self.right_vertical_line_x = int((self.camera_width // 2) + (self.camera_width*0.05))
-        self.upper_horizontal_line_y = int((self.camera_height // 2) - (self.camera_height*0.05))
-        self.lower_horizontal_line_y = int((self.camera_height // 2) + (self.camera_height*0.05))
-
-
+        self.left_vertical_line_x = int(
+            (self.camera_width // 2) - (self.camera_width * 0.05))
+        self.right_vertical_line_x = int(
+            (self.camera_width // 2) + (self.camera_width * 0.05))
+        self.upper_horizontal_line_y = int(
+            (self.camera_height // 2) - (self.camera_height * 0.05))
+        self.lower_horizontal_line_y = int(
+            (self.camera_height // 2) + (self.camera_height * 0.05))
 
     def get_object_position(self):
         # only run every self.counter frames
@@ -56,10 +63,38 @@ class CameraIface:
 
         # show camera
         if self.show_cam:
-            cv2.line(img, (self.left_vertical_line_x, 0), (self.left_vertical_line_x, self.camera_height), self.color_green, self.line_width)
-            cv2.line(img, (self.right_vertical_line_x, 0), (self.right_vertical_line_x, self.camera_height), self.color_green, self.line_width)
-            cv2.line(img, (0, self.upper_horizontal_line_y), (self.camera_width, self.upper_horizontal_line_y), self.color_green, self.line_width)
-            cv2.line(img, (0, self.lower_horizontal_line_y), (self.camera_width, self.lower_horizontal_line_y), self.color_green, self.line_width)
+            cv2.line(
+                img,
+                (self.left_vertical_line_x,
+                 0),
+                (self.left_vertical_line_x,
+                 self.camera_height),
+                self.color_green,
+                self.line_width)
+            cv2.line(
+                img,
+                (self.right_vertical_line_x,
+                 0),
+                (self.right_vertical_line_x,
+                 self.camera_height),
+                self.color_green,
+                self.line_width)
+            cv2.line(
+                img,
+                (0,
+                 self.upper_horizontal_line_y),
+                (self.camera_width,
+                 self.upper_horizontal_line_y),
+                self.color_green,
+                self.line_width)
+            cv2.line(
+                img,
+                (0,
+                 self.lower_horizontal_line_y),
+                (self.camera_width,
+                 self.lower_horizontal_line_y),
+                self.color_green,
+                self.line_width)
             cv2.imshow('webcam', cv2.flip(img, 1))
 
         # update previous center
@@ -92,7 +127,8 @@ class CameraIface:
 
     def get_directions(self):
         # set the directions in the dictionary
-        # For the first row of movements (make opposite direction false first for smoother transition)
+        # For the first row of movements (make opposite direction false first
+        # for smoother transition)
         xy_level = self.get_xy_level()
         curr_y = xy_level[1]
         curr_x = xy_level[0]

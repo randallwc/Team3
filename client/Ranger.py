@@ -32,7 +32,8 @@ class Ranger(Entity):
         y = min(self.screen_height, y)
         super().update_coordinates(x, y)
 
-    def fire(self, is_firing: bool, fire_edge: bool, surface: pygame.surface.Surface):
+    def fire(self, is_firing: bool, fire_edge: bool,
+             surface: pygame.surface.Surface):
         self.laser_is_deadly = fire_edge
         # update coordinates
         if is_firing:
