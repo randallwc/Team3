@@ -21,10 +21,10 @@
 let express = require("express"),
     http = require("http"),
     path = require("path");
-let mongoose = require("mongoose");
+// let mongoose = require("mongoose");
 let session = require("express-session");
 let sharedSIOSession = require("express-socket.io-session");
-let mongoStore = require("connect-mongo");
+// let mongoStore = require("connect-mongo");
 let bodyParser = require("body-parser");
 const PORT = 8000;
 const app = express();
@@ -59,27 +59,27 @@ let routes = require("./routes/routes");
 app.use("/api/", routes);
 
 /////////////// DB initialization
-let URI = `mongodb+srv://${process.env.DBUSERNAME}:${process.env.DBPASSWORD}@skydangerrangerdb.ozahe.mongodb.net/${process.env.DBNAME}?retryWrites=true&w=majority`;
+// let URI = `mongodb+srv://${process.env.DBUSERNAME}:${process.env.DBPASSWORD}@skydangerrangerdb.ozahe.mongodb.net/${process.env.DBNAME}?retryWrites=true&w=majority`;
 // Connect to database
-mongoose.connect(process.env.DBLOCALURI || URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-});
+// mongoose.connect(process.env.DBLOCALURI || URI, {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+// });
 
-let db = mongoose.connection;
-db.on("error", console.error.bind(console, "Error connecting to mongodb"));
+// let db = mongoose.connection;
+// db.on("error", console.error.bind(console, "Error connecting to mongodb"));
 
-db.on("connected", function () {
-    console.log("Database has connected!");
-});
+// db.on("connected", function () {
+//     console.log("Database has connected!");
+// });
 
 let sessionData = session({
     secret: "Server initialized",
     resave: true,
     saveUninitialized: true,
-    store: mongoStore.create({
-        mongoUrl: process.env.DBLOCALURI || URI,
-    }),
+    // store: mongoStore.create({
+    //     mongoUrl: process.env.DBLOCALURI || URI,
+    // }),
 });
 app.use(sessionData);
 
