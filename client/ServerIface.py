@@ -99,10 +99,10 @@ class ServerIface:
         self.send_location_counter += 1
         # on initial load, or a change occurred
         change_occurred = len(self.curr_metadata) == 0 or (
-                self.curr_metadata[0] != x or
-                self.curr_metadata[1] != y or
-                self.curr_metadata[2] != z or
-                self.curr_metadata[3] != is_firing)
+            self.curr_metadata[0] != x or
+            self.curr_metadata[1] != y or
+            self.curr_metadata[2] != z or
+            self.curr_metadata[3] != is_firing)
 
         if self.socket.connected and self.send_location_counter % 5 == 0 and change_occurred:
             # update local coordinates so we know what previous coordinates
