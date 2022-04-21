@@ -50,7 +50,7 @@ class Particle:
             self.radius_delta = 1
 
             # colors
-            self.color = [*GREY, 255]
+            self.color = [*GREY, 150]
             self.red_delta = 10
             self.green_delta = 10
             self.blue_delta = 10
