@@ -14,10 +14,11 @@ from Paths import (anton_death_sound_path, anton_path, armando_path,
                    cloud_path, cow_path,
                    david2_death_sound_path, david2_path, david_path,
                    friendly_fire_sound_path, jc_death_sound_path, jc_path,
-                   ranger_path, ricky_death_sound_path, ricky_path, sky_path)
+                   ranger_path, ricky_death_sound_path, ricky_path, sky_path, background_music_path)
 from Player import Player
 from ScreenManager import ScreenManager, show_mouse
 from ServerIface import ServerIface
+from client.Sounds import play_music
 
 
 class Game:
@@ -114,6 +115,7 @@ class Game:
         self.use_camera = False
         self.mouseup = False
         self.mousedown = False
+        self.fire_edge = False
 
         self.controller = Controller(self.num_z_levels)
         self.screen_manager = ScreenManager(
@@ -224,60 +226,43 @@ class Game:
             self.server = ServerIface(self.username)
             self.server.connect(self.room_id, self.is_host)  # connect to room
             self.multiplayer_info_asked = True
+            pygame.display.set_caption(
+                f'{"host" if self.is_host else "player"} in "{self.room_id}" named "{self.username}"')
 
     def spawn_enemies(self):
-        if self.game_state == 'play':
-            if self.spawn_counter <= 0 and len(
-                    self.enemies) < self.max_num_enemies:
-                # reset spawn countdown timer
-                self.spawn_counter = self.max_spawn_counter
+        # if you joined a game
+        if self.game_state == 'multiplayer' and not self.is_host:
+            # if there are enemies from server to be appended.
+            while len(self.server.awaiting_new_enemies) > 0:
+                new_enemy = self.server.awaiting_new_enemies.pop()
                 self.enemies.append(
                     Enemy(
-                        randrange(
-                            0,
-                            self.screen_width,
-                            1),
-                        100,
-                        randrange(0, self.num_z_levels, 1),
+                        new_enemy['x'],
+                        new_enemy['y'],
+                        new_enemy['z'],
                         self.num_z_levels,
-                        choice(self.enemy_types),
-                        self.enemy_info)
-                )
-        elif self.game_state == 'multiplayer':
-            if self.spawn_counter <= 0 and len(
-                    self.enemies) < self.max_num_enemies:
-                if self.server.is_host:
-                    # reset spawn countdown timer
-                    self.spawn_counter = self.max_spawn_counter
-                    self.enemy_id_count += 1
-                    new_enemy = Enemy(
-                        randrange(0, self.screen_width, 1),
-                        100,
-                        randrange(0, self.num_z_levels, 1),
-                        self.num_z_levels,
-                        choice(self.enemy_types),
+                        new_enemy['enemy_type'],
                         self.enemy_info,
-                        self.enemy_id_count
-                    )
-                    self.server.append_new_enemy_to_server(new_enemy)
-                    self.enemies.append(new_enemy)
-                else:
-                    # if there are enemies from server to be appended.
-                    while len(self.server.awaiting_new_enemies) > 0:
-                        new_enemy = self.server.awaiting_new_enemies.pop()
-                        new_enemy_instance = Enemy(
-                            new_enemy['x'],
-                            new_enemy['y'],
-                            new_enemy['z'],
-                            self.num_z_levels,
-                            new_enemy['enemy_type'],
-                            self.enemy_info,
-                            new_enemy['id']
-                        )
-                        self.enemies.append(new_enemy_instance)
-        else:
-            print('error in game state')
-            sys.exit(1)
+                        new_enemy['id'])
+                )
+        # if you are the host or in single player
+        elif self.spawn_counter <= 0 and len(self.enemies) < self.max_num_enemies:
+            # reset spawn countdown timer
+            self.spawn_counter = self.max_spawn_counter
+            # add to enemy id count
+            self.enemy_id_count += 1
+            new_enemy = Enemy(
+                randrange(0, self.screen_width, 1),
+                100,
+                randrange(0, self.num_z_levels, 1),
+                self.num_z_levels,
+                choice(self.enemy_types),
+                self.enemy_info,
+                self.enemy_id_count
+            )
+            self.enemies.append(new_enemy)
+            if self.game_state == 'multiplayer' and self.is_host:
+                self.server.append_new_enemy_to_server(new_enemy)
 
     def display_enemies(self):
         for enemy in self.enemies:
@@ -339,8 +324,6 @@ class Game:
             sys.exit(1)
         # get a list of ranger id's
         self.opponent_ranger_ids = self.server.opponent_rangers
-        # Here so when ranger disconnects, they despawn -- what??
-        opponent_dict = {}
         for opponent_ranger in self.opponent_ranger_ids:
             metadata = self.server.opponent_ranger_coordinates.get(
                 opponent_ranger, None)
@@ -348,15 +331,11 @@ class Game:
                 continue
             x, y, z, is_firing = metadata
             # create new rangers
-            if opponent_ranger not in opponent_dict:
-                opponent_ranger = OpponentRanger(
-                    x, y, z, self.num_z_levels, self.screen_width, self.screen_height)
-                opponent_dict[opponent_ranger] = opponent_ranger
+            opponent_ranger = OpponentRanger(x, y, z, self.num_z_levels, self.screen_width, self.screen_height)
             opponent_ranger.update_coordinates(x, y)
-            opponent_ranger.fire(is_firing, self.screen_manager.surface)
-            opponent_ranger.show(
-                self.screen_manager.surface,
-                self.screen_manager.transparent_surface)
+            opp_firing = False  # TODO -- hard code enemies to not have deadly lasers purely cosmetic
+            opponent_ranger.fire(is_firing, opp_firing, self.screen_manager.surface)
+            opponent_ranger.show(self.screen_manager.surface, self.screen_manager.transparent_surface)
 
     def update_ranger_server_coordinates(self):
         if self.game_state == 'multiplayer':
@@ -364,7 +343,7 @@ class Game:
                 self.player.ranger.x,
                 self.player.ranger.y,
                 self.player.ranger.z,
-                self.player.ranger.laser_is_deadly)
+                self.controller.is_firing())
         elif self.game_state != 'play':
             print('error in game state')
             sys.exit(1)
@@ -416,6 +395,7 @@ class Game:
         # show laser
         self.player.ranger.fire(
             self.controller.is_firing(),
+            self.fire_edge,
             self.screen_manager.surface
         )
 
@@ -463,7 +443,7 @@ class Game:
             )
 
         # start music
-        # play_music(background_music_path)
+        play_music(background_music_path)
 
         # game loop
         running = True
@@ -471,6 +451,7 @@ class Game:
             # event handler
             self.mouseup = False
             self.mousedown = False
+            self.fire_edge = self.controller.fire_edge()
             for event in pygame.event.get():
                 # check for window close
                 if event.type == pygame.QUIT:
@@ -480,7 +461,6 @@ class Game:
                     self.mouseup = True
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.mousedown = True
-
             # game states
             if self.game_state == 'start':
                 self.start_screen()

@@ -4,9 +4,6 @@ import uuid
 import socketio
 
 
-# TODO -- create this class or decide on whether or not to delete it
-
-
 class ServerIface:
     def __init__(self, username):
         self.socket = socketio.Client()
