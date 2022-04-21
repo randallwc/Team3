@@ -27,7 +27,6 @@ class OpponentRanger(Ranger):
         # indicate above or below
         font = pygame.font.SysFont('Comic Sans', 20)
         rendered_font = font.render(f'{text}', True, (255, 255, 255))
-        print('blit')
         surface.blit(
             rendered_font,
             (self.rect.centerx - rendered_font.get_width() // 2, self.rect.bottom))
