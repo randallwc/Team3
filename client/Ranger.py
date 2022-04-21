@@ -26,17 +26,14 @@ class Ranger(Entity):
     # is_alive
 
     def update_coordinates(self, x, y):
-        if x <= 0:
-            x = 0
-        elif x >= self.screen_width:
-            x = self.screen_width
-        if y <= 0:
-            y = 0
-        elif y >= self.screen_height:
-            y = self.screen_height
+        x = max(x, 0)
+        x = min(self.screen_width, x)
+        y = max(y, 0)
+        y = min(self.screen_height, y)
         super().update_coordinates(x, y)
 
     def fire(self, is_firing: bool, surface: pygame.surface.Surface):
+        # TODO -- use is mouse down
         # update coordinates
         if is_firing:
             self.laser_is_deadly = False
