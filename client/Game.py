@@ -16,7 +16,7 @@ from Paths import (anton_death_sound_path, anton_path, armando_path,
                    friendly_fire_sound_path, jc_death_sound_path, jc_path,
                    ranger_path, ricky_death_sound_path, ricky_path, sky_path)
 from Player import Player
-from ScreenManager import ScreenManager, show_mouse
+from ScreenManager import ScreenManager, show_mouse, set_caption
 from ServerIface import ServerIface
 from Sounds import play_music, stop_music, is_playing_sounds
 
@@ -101,24 +101,24 @@ class Game:
         self.clock = pygame.time.Clock()
         self.clouds: List[Cloud] = []
         self.enemies: List[Enemy] = []
-        self.max_num_enemies = 3
         self.enemy_types = list(self.enemy_info.keys())
+        self.fire_edge = False
         self.frame_rate = 60
+        self.game_state = 'start'  # in ['start', 'play', 'multiplayer']
+        self.max_num_enemies = 3
         self.max_spawn_counter = 100
+        self.mousedown = False
+        self.mouseup = False
         self.num_clouds = 10
         self.num_z_levels = 3
         self.opponent_ranger_ids = []
+        self.play_music = True
         self.screen_height = screen_height
         self.screen_width = screen_width
-
-        self.game_state = 'start'  # in ['start', 'play', 'multiplayer']
         self.use_camera = False
-        self.mouseup = False
-        self.mousedown = False
-        self.fire_edge = False
-        self.play_music = True
 
         self.controller = Controller(self.num_z_levels)
+        self.controller.use_face = self.use_camera
         self.screen_manager = ScreenManager(
             sky_path, self.screen_width, self.screen_height)
         self.spawn_counter = self.max_spawn_counter
@@ -129,7 +129,6 @@ class Game:
             screen_height,
             self.db,
             self.num_z_levels)
-        self.controller.use_face = self.use_camera
 
         # For multiplayer use
         self.username = ''
@@ -241,8 +240,8 @@ class Game:
             self.server = ServerIface(self.username)
             self.server.connect(self.room_id, self.is_host)  # connect to room
             self.multiplayer_info_asked = True
-            pygame.display.set_caption(
-                f'{"host" if self.is_host else "player"} in "{self.room_id}" named "{self.username}"')
+            caption = f'{"host" if self.is_host else "player"} in "{self.room_id}" named "{self.username}"'
+            set_caption(caption)
 
     def spawn_enemies(self):
         # if you joined a game
