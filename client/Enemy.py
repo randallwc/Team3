@@ -16,8 +16,8 @@ class Enemy(Entity):
             enemy_id,
             health=1,
             image_dimensions=(
-                    100,
-                    100)):
+                100,
+                100)):
         self.enemy_info = enemy_info
         self.enemy_type = enemy_type
         self.health = health

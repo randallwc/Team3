@@ -474,7 +474,8 @@ class Game:
         self.screen_manager.render_fps(round(self.clock.get_fps()))
 
         # show timer
-        self.screen_manager.render_time((self.GAME_TIME - (self.current_time - self.start_time)) // 1000)
+        self.screen_manager.render_time(
+            (self.GAME_TIME - (self.current_time - self.start_time)) // 1000)
 
         # TODO -- show current health
 
