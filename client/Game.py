@@ -99,8 +99,11 @@ class Game:
                 'direction': 'right'
             },
         }
+        self.GAME_TIME = 30 * 1000
         self.clock = pygame.time.Clock()
         self.clouds: List[Cloud] = []
+        self.current_time = 0
+        self.dead_enemy_particle_clouds: List[ParticleCloud] = []
         self.enemies: List[Enemy] = []
         self.enemy_types = list(self.enemy_info.keys())
         self.fire_edge = False
@@ -116,8 +119,8 @@ class Game:
         self.play_music = True
         self.screen_height = screen_height
         self.screen_width = screen_width
+        self.start_time = 0
         self.use_camera = False
-        self.dead_enemy_particle_clouds: List[ParticleCloud] = []
 
         self.controller = Controller(self.num_z_levels)
         self.controller.use_face = self.use_camera
@@ -174,6 +177,7 @@ class Game:
                 dark_blue,
                 light_blue):
             self.game_state = 'play'
+            self.start_time = pygame.time.get_ticks()
 
         # multiplayer button
         if self.screen_manager.button(
@@ -306,12 +310,18 @@ class Game:
             # TODO -- send when enemy is hit
             damage = 0.5
             enemy.got_hit(damage)
-            self.player.handle_point_change(enemy.handle_death())
             if enemy.health <= 0 and enemy.enemy_type in enemy.bad_enemies:
+                # gain points
+                self.player.handle_point_change(enemy.handle_death())
+                # show fire cloud
                 particle_cloud = ParticleCloud(enemy.x, enemy.y)
                 particle_cloud.fire_burst(10)
                 self.dead_enemy_particle_clouds.append(particle_cloud)
+            elif enemy.health < 1 and enemy.enemy_type in enemy.good_enemies:
+                # auto get hurt if enemy is good
+                self.player.handle_point_change(enemy.handle_death())
             elif enemy.health < 1:
+                # any enemy that is hurt smokes
                 enemy.particle_cloud.smoking = True
         return enemy
 
@@ -387,6 +397,13 @@ class Game:
         self.clock.tick(self.frame_rate)
         self.screen_manager.render_background()
 
+        # TODO -- if timer is over game over and display score
+        self.current_time = pygame.time.get_ticks()
+        if abs(self.current_time - self.start_time) > self.GAME_TIME:
+            print('game over')
+            print('score', self.player.current_score)
+            sys.exit(0)
+
         # remove all particles
         self.screen_manager.reset_particles()
 
@@ -455,6 +472,9 @@ class Game:
         # show fps
         self.screen_manager.render_fps(round(self.clock.get_fps()))
 
+        # show timer
+        self.screen_manager.render_time((self.GAME_TIME - (self.current_time - self.start_time)) // 1000)
+
         # TODO -- show current health
 
         # show particles
@@ -514,9 +534,9 @@ class Game:
                 print('error in game state')
                 sys.exit(1)
 
-            print('\r', 'pc:', len(self.dead_enemy_particle_clouds), 'en:', len(self.enemies), 'ori:',
-                  len(self.opponent_ranger_ids), 'cl', len(self.clouds),
-                  end='')
+            # print('\r', 'pc:', len(self.dead_enemy_particle_clouds), 'en:', len(self.enemies), 'ori:',
+            #       len(self.opponent_ranger_ids), 'cl', len(self.clouds),
+            #       end='')
 
         print('quitting')
         self.controller.disconnect()
