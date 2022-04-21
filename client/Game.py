@@ -11,14 +11,14 @@ from Enemy import Enemy
 from MultiplayerSocket import MultiplayerSocket
 from OpponentRanger import OpponentRanger
 from Paths import (anton_death_sound_path, anton_path, armando_path,
-                   cloud_path, cow_path,
+                   background_music_path, cloud_path, cow_path,
                    david2_death_sound_path, david2_path, david_path,
                    friendly_fire_sound_path, jc_death_sound_path, jc_path,
-                   ranger_path, ricky_death_sound_path, ricky_path, sky_path, background_music_path)
+                   ranger_path, ricky_death_sound_path, ricky_path, sky_path)
 from Player import Player
 from ScreenManager import ScreenManager, show_mouse
 from ServerIface import ServerIface
-from client.Sounds import play_music
+from Sounds import play_music
 
 
 class Game:
@@ -331,11 +331,17 @@ class Game:
                 continue
             x, y, z, is_firing = metadata
             # create new rangers
-            opponent_ranger = OpponentRanger(x, y, z, self.num_z_levels, self.screen_width, self.screen_height)
+            opponent_ranger = OpponentRanger(
+                x, y, z, self.num_z_levels, self.screen_width, self.screen_height)
             opponent_ranger.update_coordinates(x, y)
             opp_firing = False  # TODO -- hard code enemies to not have deadly lasers purely cosmetic
-            opponent_ranger.fire(is_firing, opp_firing, self.screen_manager.surface)
-            opponent_ranger.show(self.screen_manager.surface, self.screen_manager.transparent_surface)
+            opponent_ranger.fire(
+                is_firing,
+                opp_firing,
+                self.screen_manager.surface)
+            opponent_ranger.show(
+                self.screen_manager.surface,
+                self.screen_manager.transparent_surface)
 
     def update_ranger_server_coordinates(self):
         if self.game_state == 'multiplayer':
