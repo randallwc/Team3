@@ -238,6 +238,7 @@ print(server, room)
 print('begin looping')
 
 previous_is_pushing = False
+previous_is_upward_lift = False
 
 while True:
 
@@ -449,7 +450,8 @@ while True:
     # " % ( yG, xG, zG)
 
     # code for tilt recognition
-    isForwardPush = zG < 0.8 and xG > 0.2
+    is_forward_push = zG < 0.8 and xG > 0.2
+    is_upward_lift = zG > 1.08 and xG < 0.2 and -0.1 < yG < 0.1
     #isUpwardLift = zG > 1.1
 
     if isIdle:
@@ -457,6 +459,7 @@ while True:
         gyro_y_angle = 0
         gyro_z_angle = 0
         is_forward_push = False
+        is_upward_lift = False
 
     # assert(len(kVals) == 5)
 
@@ -467,17 +470,22 @@ while True:
     # print(calibrateString + '\n')
 
     # info to send
+
     IMU_dict = {
         "x_gyro": gyro_x_angle,
         "y_gyro": gyro_y_angle,
         "z_gyro": gyro_z_angle,
         "is_idle": isIdle,
-        "is_pushing": isForwardPush,
+        "is_pushing": is_forward_push,
+        "is_upward_lift": is_upward_lift,
     }
     # print(IMU_dict)
-    if previous_is_pushing != is_forward_push:
+    #if previous_is_pushing != is_forward_push:
+        #publisher.publish(room, str.encode(json.dumps(IMU_dict)), qos=qos)
+        #previous_is_pushing = is_forward_push
+    if previous_is_upward_lift != is_upward_lift:
         publisher.publish(room, str.encode(json.dumps(IMU_dict)), qos=qos)
-        previous_is_pushing = is_forward_push
+        previous_is_upward_lift = is_upward_lift
     # message = json.dumps(IMU_dict)
     # message = str.encode(message)
     # sock.sendto(message, server_address)
