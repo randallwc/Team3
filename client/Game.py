@@ -10,6 +10,7 @@ from DatabaseIface import DatabaseIface
 from Enemy import Enemy
 from MultiplayerSocket import MultiplayerSocket
 from OpponentRanger import OpponentRanger
+from ParticleCloud import ParticleCloud
 from Paths import (anton_death_sound_path, anton_path, armando_path,
                    background_music_path, cloud_path, cow_path,
                    david2_death_sound_path, david2_path, david_path,
@@ -116,6 +117,7 @@ class Game:
         self.screen_height = screen_height
         self.screen_width = screen_width
         self.use_camera = False
+        self.particle_clouds: List[ParticleCloud] = []
 
         self.controller = Controller(self.num_z_levels)
         self.controller.use_face = self.use_camera
