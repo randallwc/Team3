@@ -326,6 +326,7 @@ class Game:
                     self.screen_manager.transparent_surface,
                     is_above)
 
+        for enemy in self.enemies:
             # remove dead and timed out enemies
             if not enemy.should_display:
                 self.enemies.remove(enemy)
