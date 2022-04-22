@@ -137,10 +137,10 @@ class Game:
 
         # game settings
         self.num_z_levels = 3
-        self.play_music = True
+        self.play_music = False
         self.screen_height = screen_height
         self.screen_width = screen_width
-        self.use_camera = True
+        self.use_camera = False
 
         # Controller settings
         self.controller = Controller(self.num_z_levels, self.use_camera)
@@ -166,7 +166,6 @@ class Game:
         self.username = ''
         self.room_id = ''
         self.is_host = False
-        self.multiplayer_info_asked = False
         self.server = None
         self.enemy_id_count = 0
         self.opponent_ranger_ids = []
@@ -214,7 +213,7 @@ class Game:
                 self.screen_width // 2,
                 dark_blue,
                 light_blue):
-            self.game_state = 'multiplayer'
+            self.game_state = 'multiplayer_start'
 
         # camera toggle
         if self.screen_manager.button(
@@ -247,35 +246,34 @@ class Game:
         prompt = "Would you like to join an existing game(join) "
         prompt += "or create a new game(create)?: "
         retry_prompt = "Lets try that again :/"
-        if not self.multiplayer_info_asked:
-            print(prompt)
-            room_join_status = input().lower().strip()
+        print(prompt)
+        room_join_status = input().lower().strip()
+        self.is_host = bool(room_join_status == 'create')
+
+        # to make sure that 'other' isn't classified as 'join', a previous
+        # bug
+        while room_join_status not in ('create', 'join'):
+            print(retry_prompt, prompt, sep='\n')
+            room_join_status = input().lower()
             self.is_host = bool(room_join_status == 'create')
 
-            # to make sure that 'other' isn't classified as 'join', a previous
-            # bug
-            while room_join_status not in ('create', 'join'):
-                print(retry_prompt, prompt, sep='\n')
-                room_join_status = input().lower()
-                self.is_host = bool(room_join_status == 'create')
-
-            if self.is_host:
-                room_id_question = "Pick a room ID for everyone to join!: "
-            else:
-                room_id_question = "What is the room ID that you'd like to join?: "
-            print(room_id_question)
-            self.room_id = "".join(input().split())
-            print("What username would you like to use?")
-            self.username = "".join(input().split())
-            print("is host:", 'yes' if self.is_host else 'no')
-            print("room id:", self.room_id)
-            print("username:", self.username)
-            # server setup
-            self.server = ServerIface(self.username)
-            self.server.connect(self.room_id, self.is_host)  # connect to room
-            self.multiplayer_info_asked = True
-            caption = f'{"host" if self.is_host else "player"} in "{self.room_id}" named "{self.username}"'
-            set_caption(caption)
+        if self.is_host:
+            room_id_question = "Pick a room ID for everyone to join!: "
+        else:
+            room_id_question = "What is the room ID that you'd like to join?: "
+        print(room_id_question)
+        self.room_id = "".join(input().split())
+        print("What username would you like to use?")
+        self.username = "".join(input().split())
+        print("is host:", 'yes' if self.is_host else 'no')
+        print("room id:", self.room_id)
+        print("username:", self.username)
+        # server setup
+        self.server = ServerIface(self.username)
+        self.server.connect(self.room_id, self.is_host)  # connect to room
+        caption = f'{"host" if self.is_host else "player"} in "{self.room_id}" named "{self.username}"'
+        set_caption(caption)
+        self.game_state = 'multiplayer'
 
     def _spawn_enemies(self):
         # if you joined a game
@@ -395,7 +393,7 @@ class Game:
             x, y, z, is_firing = metadata
             # create new rangers
             opponent_ranger = OpponentRanger(
-                x, y, z, self.num_z_levels, self.screen_width, self.screen_height)
+                x, y, z, self.num_z_levels, self.screen_width, self.screen_height, opponent_ranger)
             opponent_ranger.update_coordinates(x, y)
             # hard code enemies to not have deadly lasers purely cosmetic
             opp_firing = False
@@ -498,8 +496,8 @@ class Game:
         self.screen_manager.render_fps(round(self.clock.get_fps()))
 
         # show timer
-        self.screen_manager.render_time(
-            (self.GAME_TIMER - (self.current_time - self.start_time)) // 1000)
+        if self.game_state == 'play':
+            self.screen_manager.render_time((self.GAME_TIMER - (self.current_time - self.start_time)) // 1000)
 
         # TODO -- show current health
 
@@ -552,9 +550,9 @@ class Game:
                 self._start_screen()
             elif self.game_state == 'play':
                 self.play()
+            elif self.game_state == 'multiplayer_start':
+                self._ask_player_info()
             elif self.game_state == 'multiplayer':
-                if not self.multiplayer_info_asked:
-                    self._ask_player_info()
                 self.play()
             else:
                 if self.game_state not in self.GAME_STATES:
