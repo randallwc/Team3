@@ -33,7 +33,7 @@ class Game:
             pygame.image.load(ranger_path)
         )
 
-        # member variables
+        # enemies
         self.enemy_info = {
             'jc': {
                 'is_good': False,
@@ -99,49 +99,72 @@ class Game:
                 'direction': 'right'
             },
         }
-        self.GAME_TIME = 30 * 1000
-        self.clock = pygame.time.Clock()
-        self.clouds: List[Cloud] = []
-        self.current_time = 0
-        self.dead_enemy_particle_clouds: List[ParticleCloud] = []
         self.enemies: List[Enemy] = []
         self.enemy_types = list(self.enemy_info.keys())
-        self.fire_edge = False
-        self.frame_rate = 60
-        self.game_state = 'start'  # in ['start', 'play', 'multiplayer']
         self.max_num_enemies = 3
         self.max_spawn_counter = 100
+        self.spawn_counter = self.max_spawn_counter
+
+        # game state
+        self.GAME_STATES = ['start', 'play', 'multiplayer_start', 'multiplayer', 'game_over']
+        self.game_state = self.GAME_STATES[0]
+
+        # game timer
+        self.GAME_TIMER = 30 * 1000
+        self.clock = pygame.time.Clock()
+        self.current_time = 0
+        self.start_time = 0
+
+        # clouds
+        self.clouds: List[Cloud] = []
+        self.num_clouds = 10
+
+        # particles
+        self.dead_enemy_particle_clouds: List[ParticleCloud] = []
+
+        # ranger laser
+        self.fire_edge = False
+        self.frame_rate = 60
+
+        # mouse clicks
         self.mousedown = False
         self.mouseup = False
-        self.num_clouds = 10
+
+        # game settings
         self.num_z_levels = 3
-        self.opponent_ranger_ids = []
         self.play_music = True
         self.screen_height = screen_height
         self.screen_width = screen_width
-        self.start_time = 0
-        self.use_camera = False
+        self.use_camera = True
 
-        self.controller = Controller(self.num_z_levels)
-        self.controller.use_face = self.use_camera
+        # Controller settings
+        self.controller = Controller(self.num_z_levels, self.use_camera)
+
+        # Screen Manager settings
         self.screen_manager = ScreenManager(
             sky_path, self.screen_width, self.screen_height)
-        self.spawn_counter = self.max_spawn_counter
+
+        # Database Settings -- TODO dead class
         self.db = DatabaseIface()
+
+        # Multiplayer Settings
         self.multiplayer_socket = MultiplayerSocket()
+
+        # Player Settings
         self.player = Player(
             screen_width,
             screen_height,
             self.db,
             self.num_z_levels)
 
-        # For multiplayer use
+        # Multiplayer Information
         self.username = ''
         self.room_id = ''
         self.is_host = False
         self.multiplayer_info_asked = False
         self.server = None
         self.enemy_id_count = 0
+        self.opponent_ranger_ids = []
 
     def _start_screen(self):
         # tick clock
@@ -196,7 +219,7 @@ class Game:
                 dark_blue,
                 light_blue) and self.mousedown:
             self.use_camera = not self.use_camera
-        self.controller.use_face = self.use_camera
+        self.controller.use_camera(self.use_camera)
 
         # music toggle
         is_playing = is_playing_sounds()
@@ -301,10 +324,10 @@ class Game:
     def _handle_enemy_laser_hit(self, enemy: Enemy):
         def _hit_enemy() -> bool:
             return enemy.should_display \
-                and self.player.ranger.laser_is_deadly \
-                and self.player.ranger.x in enemy.get_x_hitbox() \
-                and self.player.ranger.y > enemy.y \
-                and self.player.ranger.z == enemy.z
+                   and self.player.ranger.laser_is_deadly \
+                   and self.player.ranger.x in enemy.get_x_hitbox() \
+                   and self.player.ranger.y > enemy.y \
+                   and self.player.ranger.z == enemy.z
 
         if _hit_enemy():
             # TODO -- send when enemy is hit
@@ -355,11 +378,8 @@ class Game:
             enemy for enemy in self.enemies if enemy.should_display]
 
     def _update_ranger_opponents(self):
-        if self.game_state == 'play':
-            return
         if self.game_state != 'multiplayer':
-            print('error in game state')
-            sys.exit(1)
+            return
         # get a list of ranger id's
         self.opponent_ranger_ids = self.server.opponent_rangers
         for opponent_ranger in self.opponent_ranger_ids:
@@ -384,26 +404,25 @@ class Game:
                 self.player.ranger.z)
 
     def _update_ranger_server_coordinates(self):
-        if self.game_state == 'multiplayer':
-            self.server.send_location_and_meta(
-                self.player.ranger.x,
-                self.player.ranger.y,
-                self.player.ranger.z,
-                self.controller.is_firing())
-        elif self.game_state != 'play':
-            print('error in game state')
-            sys.exit(1)
+        if self.game_state != 'multiplayer':
+            return
+        self.server.send_location_and_meta(
+            self.player.ranger.x,
+            self.player.ranger.y,
+            self.player.ranger.z,
+            self.controller.is_firing())
 
     def play(self):
         self.clock.tick(self.frame_rate)
         self.screen_manager.render_background()
 
         # TODO -- if timer is over game over and display score
-        self.current_time = pygame.time.get_ticks()
-        if abs(self.current_time - self.start_time) > self.GAME_TIME:
-            print('game over')
-            print('score', self.player.current_score)
-            sys.exit(0)
+        if self.game_state == 'play':
+            self.current_time = pygame.time.get_ticks()
+            if abs(self.current_time - self.start_time) > self.GAME_TIMER:
+                print('game over')
+                print('score', self.player.current_score)
+                sys.exit(0)
 
         # remove all particles
         self.screen_manager.reset_particles()
@@ -474,7 +493,7 @@ class Game:
         self.screen_manager.render_fps(round(self.clock.get_fps()))
 
         # show timer
-        self.screen_manager.render_time((self.GAME_TIME - (self.current_time - self.start_time)) // 1000)
+        self.screen_manager.render_time((self.GAME_TIMER - (self.current_time - self.start_time)) // 1000)
 
         # TODO -- show current health
 
@@ -532,8 +551,10 @@ class Game:
                     self._ask_player_info()
                 self.play()
             else:
-                print('error in game state')
-                sys.exit(1)
+                if self.game_state not in self.GAME_STATES:
+                    print('error in game state')
+                    sys.exit(1)
+                print(self.game_state)
 
             # print('\r', 'pc:', len(self.dead_enemy_particle_clouds), 'en:', len(self.enemies), 'ori:',
             #       len(self.opponent_ranger_ids), 'cl', len(self.clouds),

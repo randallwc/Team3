@@ -1,18 +1,27 @@
+import sys
 import time
 import uuid
 
 import socketio
+import socketio.exceptions
 
 
 class ServerIface:
     def __init__(self, username):
         self.socket = socketio.Client()
-        # Localhost
-        # self.socket.connect('http://localhost:8000', transports=['websocket'])
-        # Production
-        self.socket.connect(
-            'https://skydangerranger.herokuapp.com/',
-            transports=['websocket'])
+        self.is_local = True
+        self.local_uri = 'http://localhost:8000'
+        self.prod_uri = 'https://skydangerranger.herokuapp.com/'
+        try:
+            if self.is_local:
+                self.socket.connect(self.local_uri, transports=['websocket'])
+            else:
+                self.socket.connect(self.prod_uri, transports=['websocket'])
+        except socketio.exceptions.ConnectionError as err:
+            print(err, ": can't connect to server! :(")
+            sys.exit(1)
+        else:
+            print('Connected to:', self.socket.connection_url)
         self.is_host = False
         self.room_id = ''
         self.socket_id = ''
@@ -96,10 +105,10 @@ class ServerIface:
         self.send_location_counter += 1
         # on initial load, or a change occurred
         change_occurred = len(self.curr_metadata) == 0 or (
-            self.curr_metadata[0] != x or
-            self.curr_metadata[1] != y or
-            self.curr_metadata[2] != z or
-            self.curr_metadata[3] != is_firing)
+                self.curr_metadata[0] != x or
+                self.curr_metadata[1] != y or
+                self.curr_metadata[2] != z or
+                self.curr_metadata[3] != is_firing)
 
         if self.socket.connected and self.send_location_counter % 5 == 0 and change_occurred:
             # update local coordinates so we know what previous coordinates
