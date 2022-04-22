@@ -84,7 +84,7 @@ class Controller:
             return False
 
     def get_z(self, current_z: int):
-        if self.use_camera:
+        if self._use_camera:
             self.current_z = self.z_axis.get_level()
         else:
             assert 0 <= current_z < self.num_z_levels
