@@ -15,7 +15,8 @@ class OpponentRanger(Ranger):
         super().__init__(x, y, z, num_z_levels, screenwidth, screenheight, image_path)
 
     def fire(self, *args, **kwargs):
-        # set random seed to be the ranger id so each ranger has their own color laser
+        # set random seed to be the ranger id so each ranger has their own
+        # color laser
         random.seed(self.ranger_id)
         r = random.randint(0, 255)
         g = random.randint(0, 255)

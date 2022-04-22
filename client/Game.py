@@ -497,7 +497,8 @@ class Game:
 
         # show timer
         if self.game_state == 'play':
-            self.screen_manager.render_time((self.GAME_TIMER - (self.current_time - self.start_time)) // 1000)
+            self.screen_manager.render_time(
+                (self.GAME_TIMER - (self.current_time - self.start_time)) // 1000)
 
         # TODO -- show current health
 
