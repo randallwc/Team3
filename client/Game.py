@@ -106,7 +106,12 @@ class Game:
         self.spawn_counter = self.max_spawn_counter
 
         # game state
-        self.GAME_STATES = ['start', 'play', 'multiplayer_start', 'multiplayer', 'game_over']
+        self.GAME_STATES = [
+            'start',
+            'play',
+            'multiplayer_start',
+            'multiplayer',
+            'game_over']
         self.game_state = self.GAME_STATES[0]
 
         # game timer
@@ -322,10 +327,10 @@ class Game:
     def _handle_enemy_laser_hit(self, enemy: Enemy):
         def _hit_enemy() -> bool:
             return enemy.should_display \
-                   and self.player.ranger.laser_is_deadly \
-                   and self.player.ranger.x in enemy.get_x_hitbox() \
-                   and self.player.ranger.y > enemy.y \
-                   and self.player.ranger.z == enemy.z
+                and self.player.ranger.laser_is_deadly \
+                and self.player.ranger.x in enemy.get_x_hitbox() \
+                and self.player.ranger.y > enemy.y \
+                and self.player.ranger.z == enemy.z
 
         if _hit_enemy():
             # TODO -- send when enemy is hit
