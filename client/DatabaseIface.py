@@ -28,10 +28,10 @@ class DatabaseIface:
         res = None
         if score_kind == 'lifetime':
             url = self.used_uri + '/api/v1/fetch/lifetime/highscores'
-            res = requests.post(url, obj)
+            res = requests.get(url, obj)
         elif score_kind == 'singlegame':
             url = self.used_uri + '/api/v1/fetch/singlegame/highscores'
-            res = requests.post(url, obj)
+            res = requests.get(url, obj)
         return res
 
     def add_highscore(self, new_score, username, mode):
