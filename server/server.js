@@ -204,13 +204,11 @@ const listenForAppendingEnemyByHost = (socket) => {
     });
 };
 
-
 const listenForHostSendingEnemyToSpecificUser = (socket) => {
-    socket.on('host_sending_enemy_to_specific_user', (request) => {
-        io.to(request.socket_id).emit('new_host_appended_enemy', request);
+    socket.on("host_sending_enemy_to_specific_user", (request) => {
+        io.to(request.socket_id).emit("new_host_appended_enemy", request);
     });
 };
-
 
 const listenForEnemyRemoved = (socket) => {
     socket.on("remove_enemy", (request) => {
@@ -224,20 +222,19 @@ const listenForEnemyRemoved = (socket) => {
             socket
                 .to(socket.handshake.session.roomID)
                 .emit("remove_enemy_from_client", request);
-        }catch (err) {
+        } catch (err) {
             console.log(err);
         }
-
     });
 };
 
 const listenForEnemyHit = (socket) => {
-    socket.on('enemy_hit_to_server', (request) => {
-        socket.to(request.room_id).emit('enemy_hit_to_client', {
+    socket.on("enemy_hit_to_server", (request) => {
+        socket.to(request.room_id).emit("enemy_hit_to_client", {
             id: request.id,
-            health: request.health
+            health: request.health,
         });
-    })
+    });
 };
 
 //////////////////////////////////////////////////////////
