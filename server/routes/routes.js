@@ -93,11 +93,15 @@ router.get("/fetch/singlegame/highscores", (request, response, next) => {
 
 router.post("/insertscore", (request, response, next) => {
     const { username } = request.body;
-    const { score } = request.body;
+    let { score } = request.body;
     const { mode } = request.body;
 
     if (!username) {
         return next(new Error("Please pass in username"));
+    }
+
+    if (!score){
+        return next(new Error("Please pass in score"));
     }
 
     if (mode !== "multiplayer" && mode !== "singleplayer") {
