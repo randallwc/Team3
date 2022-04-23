@@ -6,16 +6,22 @@ from VoiceIface import VoiceIface
 
 
 class Controller:
-    def __init__(self, num_z_levels):
+    def __init__(self, num_z_levels: int, use_camera: bool):
         self.num_z_levels = num_z_levels
 
-        self.use_face = True
+        self._use_camera = use_camera
         self.current_z = None
         self.xy_axis = ImuIface()
-        self.z_axis = CameraIface(self.num_z_levels)
+        self.z_axis = CameraIface(self.num_z_levels, self._use_camera)
         self.voice = VoiceIface()
         self.pressing_down_level = False
         self.pressing_up_level = False
+        self._previous_fire_val = False
+
+    def use_camera(self, use_camera: bool):
+        self._use_camera = use_camera
+        self.z_axis.use_camera = self._use_camera
+        self.z_axis.toggle_camera()
 
     def get_xy(self, screen_width, screen_height, x, y, speed, max_speed):
         # return self.get_xy_mouse()
@@ -63,8 +69,22 @@ class Controller:
         # return self.get_mouse()['left_click']
         return self.get_direction()['space']
 
+    def fire_edge(self) -> bool:
+        # is_firing signal
+        # -------           -------
+        #        \         /
+        #         \_______/
+        # trigger ^       ^ don't trigger
+        is_firing = self.is_firing()
+        prev_val = self._previous_fire_val
+        self._previous_fire_val = is_firing
+        if is_firing and not prev_val:
+            return True
+        else:
+            return False
+
     def get_z(self, current_z: int):
-        if self.use_face:
+        if self._use_camera:
             self.current_z = self.z_axis.get_level()
         else:
             assert 0 <= current_z < self.num_z_levels

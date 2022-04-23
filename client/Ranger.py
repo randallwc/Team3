@@ -4,6 +4,8 @@ from Entity import Entity
 from Paths import ranger_path
 from Sounds import play_laser_sound
 
+RED = (255, 0, 0)
+
 
 class Ranger(Entity):
     def __init__(self, x, y, z, num_z_levels, screen_width,
@@ -12,7 +14,7 @@ class Ranger(Entity):
         self.delta_laser_width = 1
         self.max_laser_width = 20
         self.min_laser_width = 7
-        self.laser_color = (255, 0, 0)
+        self.laser_color = None
         self.inner_laser_color = (255, 255, 255)
         self.current_laser_width = self.max_laser_width
         self.frames_clicking = 0
@@ -26,28 +28,23 @@ class Ranger(Entity):
     # is_alive
 
     def update_coordinates(self, x, y):
-        if x <= 0:
-            x = 0
-        elif x >= self.screen_width:
-            x = self.screen_width
-        if y <= 0:
-            y = 0
-        elif y >= self.screen_height:
-            y = self.screen_height
+        x = max(x, 0)
+        x = min(self.screen_width, x)
+        y = max(y, 0)
+        y = min(self.screen_height, y)
         super().update_coordinates(x, y)
 
-    def fire(self, is_firing: bool, surface: pygame.surface.Surface):
+    def fire(self, is_firing: bool, fire_edge: bool,
+             surface: pygame.surface.Surface, color=RED):
+        self.laser_color = color
+        self.laser_is_deadly = fire_edge
         # update coordinates
         if is_firing:
-            self.laser_is_deadly = False
             self.frames_clicking += self.delta_laser_width
 
             # only fire once per click
-            if self.frames_clicking < (
-                    self.max_laser_width -
-                    self.min_laser_width) and self.current_laser_width == self.max_laser_width:
+            if fire_edge:
                 play_laser_sound()
-                self.laser_is_deadly = True
 
             # display red laser
             top_laser_coordinates = (self.x, 0)
@@ -78,4 +75,3 @@ class Ranger(Entity):
             # when not clicking reset laser width and the countdown
             self.current_laser_width = self.max_laser_width
             self.frames_clicking = 0
-            self.laser_is_deadly = False

@@ -3,15 +3,15 @@ import dlib
 
 
 class CameraIface:
-    def __init__(self, num_levels, show_cam=True):
+    def __init__(self, num_levels, use_camera: bool, show_cam=True):
         self.show_cam = show_cam
         self.camera_width = 640
         self.camera_height = 480
         self.num_levels = num_levels
         self.detector = dlib.get_frontal_face_detector()
-        self.cam = cv2.VideoCapture(0)
-        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, self.camera_width)
-        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, self.camera_height)
+        self.use_camera = use_camera
+        self.cam = None
+        self.toggle_camera()
         self.color_green = (0, 255, 0)
         self.line_width = 3
         self.counter_max = 60
@@ -19,6 +19,15 @@ class CameraIface:
         self.previous_center = (
             self.camera_width // 2,
             self.camera_height // 2)
+
+    def toggle_camera(self):
+        if self.use_camera and self.cam is None:
+            self.cam = cv2.VideoCapture(0)
+            self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, self.camera_width)
+            self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, self.camera_height)
+        elif not self.use_camera and self.cam is not None:
+            self.cam.release()
+            self.cam = None
 
     def get_object_position(self):
         # only run every self.counter frames
