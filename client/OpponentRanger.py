@@ -1,3 +1,5 @@
+import random
+
 import pygame.surface
 
 from Paths import opponent_path
@@ -6,9 +8,22 @@ from Ranger import Ranger
 
 # TODO -- create this class
 class OpponentRanger(Ranger):
-    def __init__(self, x, y, z, num_z_levels, screenwidth, screenheight,
+    def __init__(self, x, y, z, num_z_levels, screenwidth, screenheight, ranger_id,
                  image_path=opponent_path):
+        self.ranger_id: int = ranger_id
+
         super().__init__(x, y, z, num_z_levels, screenwidth, screenheight, image_path)
+
+    def fire(self, *args, **kwargs):
+        # set random seed to be the ranger id so each ranger has their own
+        # color laser
+        random.seed(self.ranger_id)
+        r = random.randint(0, 255)
+        g = random.randint(0, 255)
+        b = random.randint(0, 255)
+        super().fire(*args, **kwargs, color=(r, g, b))
+        # reset random seed
+        random.seed(None)
 
     def show_diff_level(self, surface: pygame.surface.Surface,
                         particle_surface: pygame.surface.Surface, cur_z: int):

@@ -1,18 +1,27 @@
+import sys
 import time
 import uuid
 
 import socketio
+import socketio.exceptions
 
 
 class ServerIface:
     def __init__(self, username):
         self.socket = socketio.Client()
-        # Localhost
-        # self.socket.connect('http://localhost:8000', transports=['websocket'])
-        # Production
-        self.socket.connect(
-            'https://skydangerranger.herokuapp.com/',
-            transports=['websocket'])
+        self.is_local = True
+        self.local_uri = 'http://localhost:8000'
+        self.prod_uri = 'https://skydangerranger.herokuapp.com/'
+        try:
+            if self.is_local:
+                self.socket.connect(self.local_uri, transports=['websocket'])
+            else:
+                self.socket.connect(self.prod_uri, transports=['websocket'])
+        except socketio.exceptions.ConnectionError as err:
+            print(err, ": can't connect to server! :(")
+            sys.exit(1)
+        else:
+            print('Connected to:', self.socket.connection_url)
         self.is_host = False
         self.room_id = ''
         self.socket_id = ''
