@@ -100,7 +100,7 @@ router.post("/insertscore", (request, response, next) => {
         return next(new Error("Please pass in username"));
     }
 
-    if (!score){
+    if (!score) {
         return next(new Error("Please pass in score"));
     }
 
