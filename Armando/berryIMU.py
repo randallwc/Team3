@@ -505,7 +505,7 @@ while True:
         #print("pointing upward")
         upward_movement_state = 1
         downward_movement_state = 0
-    if accYnorm < -0.3 and zG < 0.4 and xG < -0.8 and upward_movement_state == 1:  # if it is pointing and pushing upwards
+    if accYnorm < -0.3 and upward_movement_state == 1:  # if it is pointing and pushing upwards
         #print("moving upwards!")
         upward_movement_state = 2
     if accYnorm > -0.3 and upward_movement_state == 2:
@@ -519,7 +519,7 @@ while True:
         shooting_state = 0
         shooting_counter = 0
         isIdle = True
-        
+
     if pointing_down and downward_movement_state == 0:  # code for downward movement
         #print("pointing downward")
         downward_movement_state = 1
