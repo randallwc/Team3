@@ -519,7 +519,7 @@ while True:
         shooting_state = 0
         shooting_counter = 0
         isIdle = True
-#bruh
+        
     if pointing_down and downward_movement_state == 0:  # code for downward movement
         #print("pointing downward")
         downward_movement_state = 1
