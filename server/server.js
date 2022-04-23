@@ -56,7 +56,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 let routes = require("./routes/routes");
-app.use("/api/", routes);
+app.use("/api/v1/", routes);
 
 /////////////// DB initialization
 let URI = `mongodb+srv://${process.env.DBUSERNAME}:${process.env.DBPASSWORD}@skydangerrangerdb.ozahe.mongodb.net/${process.env.DBNAME}?retryWrites=true&w=majority`;
