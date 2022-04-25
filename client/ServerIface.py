@@ -48,6 +48,8 @@ class ServerIface:
         self.host_enemies_dict = {}
         self.awaiting_new_enemies = []
         self.awaiting_enemy_despawn = {}
+        self.new_players_awaiting_enemies = []
+        self.enemies_hurt = {}
 
         @self.socket.on("welcome_client")
         def on_welcome(data):
@@ -82,6 +84,26 @@ class ServerIface:
         def remove_enemy_from_client(data):
             enemy_id = data['id']
             self.awaiting_enemy_despawn[enemy_id] = True
+
+        @self.socket.on('new_player_joined_room')
+        def new_player_joined_actions(data):
+            print(data)
+            self.new_players_awaiting_enemies.append(data['socket_id'])
+            if len(self.curr_metadata) > 0:
+                self.socket.emit("update_my_coordinates_and_meta", {
+                    'x': self.curr_metadata[0],
+                    'y': self.curr_metadata[1],
+                    'z': self.curr_metadata[2],
+                    'is_firing': self.curr_metadata[3]
+                })
+
+        @self.socket.on('enemy_hit_to_client')
+        def enemy_hurt(data):
+            print('better days', data)
+            new_health = data['health']
+            enemy_id = data['id']
+            self.enemies_hurt[enemy_id] = new_health
+
 
     def connect(self, room_id, is_host):
         event_name = "join_new_room" if is_host else "join_existing_room"
@@ -123,7 +145,7 @@ class ServerIface:
                 'is_firing': is_firing
             })
 
-    def append_new_enemy_to_server(self, enemy):
+    def append_new_enemy_to_server(self, enemy, socket_id = None):
         if self.is_host and self.socket.connected:
             coordinates = enemy.get_coordinates()
             stripped_enemy = {
@@ -133,9 +155,13 @@ class ServerIface:
                 'id': enemy.id,
                 'enemy_type': enemy.enemy_type,
                 'health': enemy.health,
-                'num_z_levels': enemy.num_z_levels
+                'num_z_levels': enemy.num_z_levels,
+                'socket_id': socket_id
             }
-            self.socket.emit('host_appending_new_enemy', stripped_enemy)
+            if socket_id is not None:
+                self.socket.emit('host_sending_enemy_to_specific_user', stripped_enemy)
+            else:
+                self.socket.emit('host_appending_new_enemy', stripped_enemy)
 
     def update_enemy_coordinates(self, enemy_id, x, y):
         if self.is_host:
@@ -147,6 +173,13 @@ class ServerIface:
 
     def remove_enemy_from_server(self, enemy_id):
         self.socket.emit('remove_enemy', {"id": enemy_id})
+
+    def send_enemy_was_hit(self, enemy_id, new_health):
+        self.socket.emit('enemy_hit_to_server', {
+            "id": enemy_id,
+            "health": new_health,
+            "room_id": self.room_id
+        })
 
     def disconnect(self):
         self.socket.disconnect()
