@@ -363,7 +363,8 @@ class Game:
                     if not enemy.enemy_info[enemy.enemy_type]['is_good']:
                         new_particle_cloud = ParticleCloud(enemy.x, enemy.y)
                         new_particle_cloud.fire_burst(10)
-                        self.dead_enemy_particle_clouds.append(new_particle_cloud)
+                        self.dead_enemy_particle_clouds.append(
+                            new_particle_cloud)
                     enemy.should_display = False
                     del self.server.awaiting_enemy_despawn[enemy.id]
                 # if enemy was hurt by other players, make it smoke
@@ -373,19 +374,25 @@ class Game:
                         enemy.particle_cloud.smoking = True
                     del self.server.enemies_hurt[enemy.id]
 
-                #if this is the host and there are new players awaiting the existing enemies
-                if self.is_host and len(self.server.new_players_awaiting_enemies) > 0 and enemy.should_display:
+                # if this is the host and there are new players awaiting the
+                # existing enemies
+                if self.is_host and len(
+                        self.server.new_players_awaiting_enemies) > 0 and enemy.should_display:
                     # do this in reverse so we don't shift any elements
-                    awaiting_players_index = len(self.server.new_players_awaiting_enemies) - 1
+                    awaiting_players_index = len(
+                        self.server.new_players_awaiting_enemies) - 1
 
                     # send this enemy to all players awaiting enemies
                     num_enemies_final_index = len(self.enemies) - 1
-                    for index, player_id in reversed(list(enumerate(self.server.new_players_awaiting_enemies))):
+                    for index, player_id in reversed(
+                            list(enumerate(self.server.new_players_awaiting_enemies))):
                         # send the enemy to new user
-                        self.server.append_new_enemy_to_server(enemy, player_id)
+                        self.server.append_new_enemy_to_server(
+                            enemy, player_id)
 
                         if i == num_enemies_final_index:
-                            # we have finished sending the new users the current enemies
+                            # we have finished sending the new users the
+                            # current enemies
                             self.server.new_players_awaiting_enemies.pop(index)
 
             enemy.step(self.screen_manager.screen_dimensions)

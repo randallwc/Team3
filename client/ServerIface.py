@@ -104,7 +104,6 @@ class ServerIface:
             enemy_id = data['id']
             self.enemies_hurt[enemy_id] = new_health
 
-
     def connect(self, room_id, is_host):
         event_name = "join_new_room" if is_host else "join_existing_room"
         self.is_host = is_host
@@ -145,7 +144,7 @@ class ServerIface:
                 'is_firing': is_firing
             })
 
-    def append_new_enemy_to_server(self, enemy, socket_id = None):
+    def append_new_enemy_to_server(self, enemy, socket_id=None):
         if self.is_host and self.socket.connected:
             coordinates = enemy.get_coordinates()
             stripped_enemy = {
@@ -159,7 +158,9 @@ class ServerIface:
                 'socket_id': socket_id
             }
             if socket_id is not None:
-                self.socket.emit('host_sending_enemy_to_specific_user', stripped_enemy)
+                self.socket.emit(
+                    'host_sending_enemy_to_specific_user',
+                    stripped_enemy)
             else:
                 self.socket.emit('host_appending_new_enemy', stripped_enemy)
 
