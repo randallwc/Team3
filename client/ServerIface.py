@@ -145,7 +145,7 @@ class ServerIface:
                 'is_firing': is_firing
             })
 
-    def append_new_enemy_to_server(self, enemy, socket_id = ''):
+    def append_new_enemy_to_server(self, enemy, socket_id = None):
         if self.is_host and self.socket.connected:
             coordinates = enemy.get_coordinates()
             stripped_enemy = {
@@ -158,7 +158,7 @@ class ServerIface:
                 'num_z_levels': enemy.num_z_levels,
                 'socket_id': socket_id
             }
-            if socket_id != '':
+            if socket_id is not None:
                 self.socket.emit('host_sending_enemy_to_specific_user', stripped_enemy)
             else:
                 self.socket.emit('host_appending_new_enemy', stripped_enemy)
