@@ -14,13 +14,14 @@ class DatabaseIface:
             self.used_uri = self.prod_uri
 
     def get_highscores(self, n_scores, mode, score_kind):
-        #n_scores, number of scores to return
+        # n_scores, number of scores to return
         #mode, 'multiplayer' or 'singleplayer'
         #score_kind, 'lifetime' or 'singlegame'
 
         # let me answer that for you, no it has to be nScores and not n_scores
         # bad practice to send underscores through http requests,
-        # different browsers handle differently, even though we don't use browser
+        # different browsers handle differently, even though we don't use
+        # browser
         obj = {
             'nScores': n_scores,
             'mode': mode
@@ -36,7 +37,7 @@ class DatabaseIface:
 
     def add_highscore(self, new_score, username, mode):
         obj = {
-            'username':username,
+            'username': username,
             'mode': mode,
             'score': new_score
         }
