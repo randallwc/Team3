@@ -379,15 +379,14 @@ class Game:
                     awaiting_players_index = len(self.server.new_players_awaiting_enemies) - 1
 
                     # send this enemy to all players awaiting enemies
-                    while awaiting_players_index >= 0:
-                        new_player_socket_id = self.server.new_players_awaiting_enemies[awaiting_players_index]
+                    num_enemies_final_index = len(self.enemies) - 1
+                    for index, player_id in reversed(list(enumerate(self.server.new_players_awaiting_enemies))):
                         # send the enemy to new user
-                        self.server.append_new_enemy_to_server(enemy, new_player_socket_id)
+                        self.server.append_new_enemy_to_server(enemy, player_id)
 
-                        if i == len(self.enemies) - 1:
+                        if i == num_enemies_final_index:
                             # we have finished sending the new users the current enemies
-                            self.server.new_players_awaiting_enemies.pop(awaiting_players_index)
-                        awaiting_players_index -= 1
+                            self.server.new_players_awaiting_enemies.pop(index)
 
             enemy.step(self.screen_manager.screen_dimensions)
             # do logic on enemies in same level
