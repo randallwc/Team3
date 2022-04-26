@@ -10,7 +10,7 @@ run these commands to use the client
 
 ```sh
 cd client
-make run
+make
 ```
 
 to lint the python files
