@@ -419,11 +419,14 @@ const listenForDisconnection = (socket, roomTracker) => {
         }
 
         // If the person who disconnected is the host
-        if (socket.handshake.session.timeUserID === roomTracker[socket.handshake.session.roomID]?.host){
+        if (
+            socket.handshake.session.timeUserID ===
+            roomTracker[socket.handshake.session.roomID]?.host
+        ) {
             delete roomTracker[socket.handshake.session.roomID];
             io.in(socket.handshake.session.roomID).disconnectSockets(true);
         }
-        console.log('Room after leaving:', roomTracker);
+        console.log("Room after leaving:", roomTracker);
     });
 };
 
