@@ -17,6 +17,7 @@ run: activate
 
 # run the linter on all the python files
 lint: activate
+	autoflake --in-place --recursive --remove-all-unused-imports --remove-unused-variables --expand-star-imports *.py
 	pylint *.py
 
 # remove the team3 environment
