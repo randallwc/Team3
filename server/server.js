@@ -89,7 +89,6 @@ io.use(
     })
 );
 
-
 // main socket.io stuff
 io.on("connection", (socket) => {
     //// Fetching types of enemies
