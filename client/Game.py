@@ -1,4 +1,5 @@
 import sys
+import uuid
 from random import choice, randrange
 from typing import List
 
@@ -173,7 +174,7 @@ class Game:
             self.num_z_levels)
 
         # Multiplayer Information
-        self.username = ''
+        self.username = uuid.getnode()
         self.room_id = ''
         self.is_host = False
         self.server = None
