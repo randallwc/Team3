@@ -251,14 +251,14 @@ is_downward_push = False
 is_shooting = False
 
 IMU_dict = {
-        "x_gyro": gyro_x_angle,
-        "y_gyro": gyro_y_angle,
-        "z_gyro": gyro_z_angle,
-        "is_idle": isIdle,
-        "is_upward_push": is_upward_push,
-        "is_downward_push": is_downward_push,
-        "is_shooting": is_shooting,
-    }
+    "x_gyro": gyro_x_angle,
+    "y_gyro": gyro_y_angle,
+    "z_gyro": gyro_z_angle,
+    "is_idle": isIdle,
+    "is_upward_push": is_upward_push,
+    "is_downward_push": is_downward_push,
+    "is_shooting": is_shooting,
+}
 
 while True:
 
@@ -519,7 +519,7 @@ while True:
         downward_movement_state = 1
         upward_movement_state = 0
         shooting_state = 0
-    if accYnorm > 0.3 and downward_movement_state == 1:  #if it is pointing and pushing downwards
+    if accYnorm > 0.3 and downward_movement_state == 1:  # if it is pointing and pushing downwards
         #print("moving downwards!")
         downward_movement_state = 2
     if accYnorm < 0.3 and downward_movement_state == 2:
@@ -551,9 +551,9 @@ while True:
 
     # print(IMU_dict)
 
-    #if previous_is_pushing != is_forward_push:
-        #publisher.publish(room, str.encode(json.dumps(IMU_dict)), qos=qos)
-        #previous_is_pushing = is_forward_push
+    # if previous_is_pushing != is_forward_push:
+    #publisher.publish(room, str.encode(json.dumps(IMU_dict)), qos=qos)
+    #previous_is_pushing = is_forward_push
 
     if isIdle:
         gyro_x_angle = 0  # reset gyro angles
