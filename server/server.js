@@ -89,56 +89,6 @@ io.use(
     })
 );
 
-const MAXSPEED = 4;
-function getRandomInt(max) {
-    //random num from 1 to max, inclusive
-    return Math.floor(Math.random() * max) + 1;
-}
-
-const enemy_info = {
-    jc: {
-        is_good: true,
-        id: 0,
-        max_time_alive: 200,
-        speed: getRandomInt(MAXSPEED),
-    },
-    cow: {
-        is_good: true,
-        id: 1,
-        max_time_alive: 200,
-        speed: getRandomInt(MAXSPEED),
-    },
-    ricky: {
-        is_good: false,
-        id: 2,
-        max_time_alive: 300,
-        speed: getRandomInt(MAXSPEED),
-    },
-    david: {
-        is_good: false,
-        id: 3,
-        max_time_alive: 300,
-        speed: getRandomInt(MAXSPEED),
-    },
-    anton: {
-        is_good: false,
-        max_time_alive: 300,
-        speed: getRandomInt(MAXSPEED),
-        id: 4,
-    },
-    armando: {
-        is_good: true,
-        max_time_alive: 300,
-        speed: getRandomInt(MAXSPEED),
-        id: 5,
-    },
-    david2: {
-        is_good: true,
-        max_time_alive: 300,
-        speed: 20,
-        id: 6,
-    },
-};
 
 // main socket.io stuff
 io.on("connection", (socket) => {
