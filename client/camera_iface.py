@@ -28,6 +28,7 @@ class CameraIface:
         elif not self.use_camera and self.cam is not None:
             self.cam.release()
             self.cam = None
+            cv2.destroyAllWindows()
 
     def get_object_position(self):
         # only run every self.counter frames
