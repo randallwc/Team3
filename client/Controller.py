@@ -53,7 +53,7 @@ class Controller:
             'down': keys[pygame.K_DOWN] or keys[pygame.K_s],
             'left': keys[pygame.K_LEFT] or keys[pygame.K_a],
             'right': keys[pygame.K_RIGHT] or keys[pygame.K_d],
-            'space': keys[pygame.K_SPACE] or self.xy_axis.is_pushing or self.xy_axis.is_pushing,
+            'space': keys[pygame.K_SPACE] or self.xy_axis.is_shooting,
             'down_level': keys[pygame.K_q],
             'up_level': keys[pygame.K_e],
         }
@@ -80,8 +80,7 @@ class Controller:
         self._previous_fire_val = is_firing
         if is_firing and not prev_val:
             return True
-        else:
-            return False
+        return False
 
     def get_z(self, current_z: int):
         if self._use_camera:

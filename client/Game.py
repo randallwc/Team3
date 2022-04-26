@@ -9,7 +9,6 @@ from Cloud import Cloud
 from Controller import Controller
 from DatabaseIface import DatabaseIface
 from Enemy import Enemy
-from MultiplayerSocket import MultiplayerSocket
 from OpponentRanger import OpponentRanger
 from ParticleCloud import ParticleCloud
 from Paths import (anton_death_sound_path, anton_path, armando_path,
@@ -153,20 +152,6 @@ class Game:
         self.screen_manager = ScreenManager(
             sky_path, self.screen_width, self.screen_height)
 
-        # Database Settings
-        self.db = DatabaseIface()
-        # n_scores, number of scores to return
-        self.n_scores = 3
-        # mode, 'multiplayer' or 'singleplayer'
-        self.mode = 'singleplayer'
-        # score_kind, 'lifetime' or 'singlegame'
-        self.score_kind = 'lifetime'
-        self.scores = self.db.get_highscores(
-            self.n_scores, self.mode, self.score_kind)
-
-        # Multiplayer Settings
-        self.multiplayer_socket = MultiplayerSocket()
-
         # Player Settings
         self.player = Player(
             screen_width,
@@ -180,6 +165,17 @@ class Game:
         self.server = None
         self.enemy_id_count = 0
         self.opponent_ranger_ids = []
+
+        # Database Settings
+        self.db = DatabaseIface()
+        # n_scores, number of scores to return
+        self.n_scores = 3
+        # mode, 'multiplayer' or 'singleplayer'
+        self.mode = 'singleplayer'
+        # score_kind, 'lifetime' or 'singlegame'
+        self.score_kind = 'lifetime'
+        self.scores = self.db.get_highscores(
+            self.n_scores, self.mode, self.score_kind)
 
     def _start_screen(self):
         # tick clock
@@ -377,7 +373,7 @@ class Game:
                     # TODO -- server send player was damaged
                 # bad enemy hurt
                 else:
-                    ...
+                    pass
         return enemy
 
     def _display_enemies(self):
