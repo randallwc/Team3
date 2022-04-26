@@ -1,6 +1,6 @@
 import pygame
 
-from Paths import laser_sound_path
+from paths import laser_sound_path
 
 
 def play_sound(file_path):

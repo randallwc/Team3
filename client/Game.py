@@ -5,113 +5,34 @@ from typing import List
 
 import pygame
 
-from Cloud import Cloud
-from Controller import Controller
-from DatabaseIface import DatabaseIface
-from Enemy import Enemy
-from OpponentRanger import OpponentRanger
-from ParticleCloud import ParticleCloud
-from Paths import (anton_death_sound_path, anton_path, armando_path,
-                   background_music_path, cloud_path, cow_path,
-                   david2_death_sound_path, david2_path, david_path,
-                   friendly_fire_sound_path, jc_death_sound_path, jc_path,
-                   ranger_path, ricky_death_sound_path, ricky_path, sky_path)
-from Player import Player
-from ScreenManager import ScreenManager, set_caption, show_mouse
-from ServerIface import ServerIface
-from Sounds import is_playing_sounds, play_music, stop_music
-
-FRAME_RATE = 60
-DARK_BLUE = (0, 50, 255)
-LIGHT_BLUE = (0, 100, 255)
-GAME_TIMER = 30_000
-GAME_STATES = [
-    'start',
-    'play',
-    'multiplayer_start',
-    'multiplayer',
-    'game_over']
+from cloud import Cloud
+from constants import (DARK_BLUE, ENEMY_INFO, FRAME_RATE, GAME_STATES,
+                       GAME_TIMER, LIGHT_BLUE, SCREEN_HEIGHT, SCREEN_WIDTH)
+from controller import Controller
+from database_iface import DatabaseIface
+from enemy import Enemy
+from opponent_ranger import OpponentRanger
+from particle_cloud import ParticleCloud
+from paths import background_music_path, cloud_path, ranger_path, sky_path
+from player import Player
+from screen_manager import ScreenManager, set_caption, show_mouse
+from server_iface import ServerIface
+from sounds import is_playing_sounds, play_music, stop_music
 
 
 class Game:
-    def __init__(self, screen_width=1280, screen_height=720,
-                 window_title='Sky Danger Ranger'):
+    def __init__(self):
         # pygame initialization
         pygame.init()
         show_mouse(True)
-        pygame.display.set_caption(window_title)
+        pygame.display.set_caption('Sky Danger Ranger')
         pygame.display.set_icon(
             pygame.image.load(ranger_path)
         )
 
         # enemies
-        self.enemy_info = {
-            'jc': {
-                'is_good': False,
-                'death_sound_path': jc_death_sound_path,
-                'image_path': jc_path,
-                'max_time_alive': 1000,
-                'x_speed': 3,
-                'y_speed': 60,
-                'direction': 'left'
-            },
-            'cow': {
-                'is_good': True,
-                'death_sound_path': friendly_fire_sound_path,
-                'image_path': cow_path,
-                'max_time_alive': 1000,
-                'x_speed': 1,
-                'y_speed': 98,
-                'direction': 'right'
-            },
-            'ricky': {
-                'is_good': False,
-                'death_sound_path': ricky_death_sound_path,
-                'image_path': ricky_path,
-                'max_time_alive': 1000,
-                'x_speed': 2,
-                'y_speed': 86,
-                'direction': 'left'
-            },
-            'david': {
-                'is_good': False,
-                'death_sound_path': None,
-                'image_path': david_path,
-                'max_time_alive': 1000,
-                'x_speed': 3,
-                'y_speed': 65,
-                'direction': 'right'
-            },
-            'anton': {
-                'is_good': False,
-                'death_sound_path': anton_death_sound_path,
-                'image_path': anton_path,
-                'max_time_alive': 1000,
-                'x_speed': 4,
-                'y_speed': 81,
-                'direction': 'right'
-            },
-            'armando': {
-                'is_good': True,
-                'death_sound_path': friendly_fire_sound_path,
-                'image_path': armando_path,
-                'max_time_alive': 1000,
-                'x_speed': 3,
-                'y_speed': 69,
-                'direction': 'left'
-            },
-            'david2': {
-                'is_good': False,
-                'death_sound_path': david2_death_sound_path,
-                'image_path': david2_path,
-                'max_time_alive': 1000,
-                'x_speed': 20,
-                'y_speed': 50,
-                'direction': 'right'
-            },
-        }
         self.enemies: List[Enemy] = []
-        self.enemy_types = list(self.enemy_info.keys())
+        self.enemy_types = list(ENEMY_INFO.keys())
         self.max_num_enemies = 3
         self.max_spawn_counter = 100
         self.spawn_counter = self.max_spawn_counter
@@ -141,22 +62,16 @@ class Game:
         # game settings
         self.num_z_levels = 3
         self.play_music = False
-        self.screen_height = screen_height
-        self.screen_width = screen_width
         self.use_camera = False
 
         # Controller settings
         self.controller = Controller(self.num_z_levels, self.use_camera)
 
         # Screen Manager settings
-        self.screen_manager = ScreenManager(
-            sky_path, self.screen_width, self.screen_height)
+        self.screen_manager = ScreenManager(sky_path)
 
         # Player Settings
-        self.player = Player(
-            screen_width,
-            screen_height,
-            self.num_z_levels)
+        self.player = Player(self.num_z_levels)
 
         # Multiplayer Information
         self.username = uuid.getnode()
@@ -189,7 +104,7 @@ class Game:
             cloud.show(
                 self.screen_manager.surface,
                 self.screen_manager.transparent_surface)
-            cloud.loop_around(self.screen_width, self.screen_height)
+            cloud.loop_around()
 
         # show logo
         self.screen_manager.show_logo()
@@ -199,13 +114,13 @@ class Game:
             cloud.show(
                 self.screen_manager.surface,
                 self.screen_manager.transparent_surface)
-            cloud.loop_around(self.screen_width, self.screen_height)
+            cloud.loop_around()
 
         # display buttons and update state
         if self.screen_manager.button(
                 'Start Game',
-                self.screen_height // 2,
-                self.screen_width // 2,
+                SCREEN_HEIGHT // 2,
+                SCREEN_WIDTH // 2,
                 DARK_BLUE,
                 LIGHT_BLUE):
             self.game_state = 'play'
@@ -214,8 +129,8 @@ class Game:
         # multiplayer button
         if self.screen_manager.button(
                 'Multiplayer',
-                self.screen_height // 2 + 100,
-                self.screen_width // 2,
+                SCREEN_HEIGHT // 2 + 100,
+                SCREEN_WIDTH // 2,
                 DARK_BLUE,
                 LIGHT_BLUE):
             self.game_state = 'multiplayer_start'
@@ -223,8 +138,8 @@ class Game:
         # camera toggle
         if self.screen_manager.button(
                 f'Toggle Camera {"off" if self.use_camera else "on"}',
-                self.screen_height // 2 + 200,
-                self.screen_width // 2,
+                SCREEN_HEIGHT // 2 + 200,
+                SCREEN_WIDTH // 2,
                 DARK_BLUE,
                 LIGHT_BLUE) and self.mousedown:
             self.use_camera = not self.use_camera
@@ -234,7 +149,7 @@ class Game:
         is_playing = is_playing_sounds()
         if self.screen_manager.button(
                 f'sound {"off" if self.play_music else "on"}',
-                self.screen_height - 100,
+                SCREEN_HEIGHT - 100,
                 100,
                 DARK_BLUE,
                 LIGHT_BLUE) and self.mousedown:
@@ -294,7 +209,7 @@ class Game:
                         new_enemy['z'],
                         self.num_z_levels,
                         new_enemy['enemy_type'],
-                        self.enemy_info,
+                        ENEMY_INFO,
                         new_enemy['id'])
                 )
         # if you are the host or in single player
@@ -304,12 +219,12 @@ class Game:
             # add to enemy id count
             self.enemy_id_count += 1
             new_enemy = Enemy(
-                randrange(0, self.screen_width, 1),
+                randrange(0, SCREEN_WIDTH, 1),
                 100,
                 randrange(0, self.num_z_levels, 1),
                 self.num_z_levels,
                 choice(self.enemy_types),
-                self.enemy_info,
+                ENEMY_INFO,
                 self.enemy_id_count
             )
             self.enemies.append(new_enemy)
@@ -419,7 +334,7 @@ class Game:
                             # current enemies
                             self.server.new_players_awaiting_enemies.pop(index)
 
-            enemy.step(self.screen_manager.screen_dimensions)
+            enemy.step()
             # do logic on enemies in same level
             if enemy.z == self.player.ranger.z:
                 enemy = self._handle_enemy_collision(enemy)
@@ -444,9 +359,9 @@ class Game:
             return
         # get a list of ranger id's
         self.opponent_ranger_ids = self.server.opponent_rangers
-        for opponent_ranger in self.opponent_ranger_ids:
+        for opponent_ranger_id in self.opponent_ranger_ids:
             metadata = self.server.opponent_ranger_coordinates.get(
-                opponent_ranger, None)
+                opponent_ranger_id, None)
             if metadata is None:
                 continue
             x, y, z, is_firing = metadata
@@ -456,9 +371,7 @@ class Game:
                 y,
                 z,
                 self.num_z_levels,
-                self.screen_width,
-                self.screen_height,
-                opponent_ranger)
+                opponent_ranger_id)
             opponent_ranger.update_coordinates(x, y)
             # hard code enemies to not have deadly lasers purely cosmetic
             opp_firing = False
@@ -492,7 +405,7 @@ class Game:
             cloud.show(
                 self.screen_manager.surface,
                 self.screen_manager.transparent_surface)
-            cloud.loop_around(self.screen_width, self.screen_height)
+            cloud.loop_around()
 
         self.screen_manager.show_game_over()
 
@@ -501,7 +414,7 @@ class Game:
             cloud.show(
                 self.screen_manager.surface,
                 self.screen_manager.transparent_surface)
-            cloud.loop_around(self.screen_width, self.screen_height)
+            cloud.loop_around()
 
         self.screen_manager.render_final_scores(
             self.player.current_score, self.scores)
@@ -509,15 +422,15 @@ class Game:
         message = 'Main Menu'
         if self.screen_manager.button(
                 message,
-                self.screen_height - 100,
-                self.screen_width // 2,
+                SCREEN_HEIGHT - 100,
+                SCREEN_WIDTH // 2,
                 DARK_BLUE,
                 LIGHT_BLUE):
             self.game_state = 'start'
             # clear variables
             self.enemies = []
-            start_x = 0.5 * self.screen_width
-            start_y = 0.9 * self.screen_height
+            start_x = 0.5 * SCREEN_WIDTH
+            start_y = 0.9 * SCREEN_HEIGHT
             self.player.ranger.x = start_x
             self.player.ranger.y = start_y
             self.player.current_score = 0
@@ -551,14 +464,13 @@ class Game:
             cloud.show(
                 self.screen_manager.surface,
                 self.screen_manager.transparent_surface)
-            cloud.loop_around(self.screen_width, self.screen_height)
+            cloud.loop_around()
 
         # spawn an enemy every self.max_spawn_counter frames
         self._spawn_enemies()
 
         # ranger movement
         x, y = self.controller.get_xy(
-            self.screen_width, self.screen_width,
             self.player.ranger.x, self.player.ranger.y,
             self.player.speed, self.player.max_speed
         )
@@ -629,11 +541,10 @@ class Game:
     def run(self):
         # create clouds
         for _ in range(self.num_clouds):
-            screen_x, screen_y = self.screen_manager.screen_dimensions
             self.clouds.append(
                 Cloud(
-                    randrange(0, screen_x, 1),
-                    randrange(0, screen_y, 1),
+                    randrange(0, SCREEN_WIDTH, 1),
+                    randrange(0, SCREEN_HEIGHT, 1),
                     0,
                     self.num_z_levels,
                     cloud_path

@@ -1,7 +1,6 @@
 import speech_recognition as sr
 
 
-# TODO -- create this class
 class VoiceIface:
     def __init__(self):
         self.recognizer = sr.Recognizer()

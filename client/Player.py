@@ -1,22 +1,21 @@
-from Paths import point_gain_sound_path, point_loss_sound_path
-from Ranger import Ranger
-from Sounds import play_sound
+from constants import SCREEN_HEIGHT, SCREEN_WIDTH
+from paths import point_gain_sound_path, point_loss_sound_path
+from ranger import Ranger
+from sounds import play_sound
 
 
 class Player:
-    def __init__(self, screen_width, screen_height, num_z_levels):
+    def __init__(self, num_z_levels):
         self.current_score = 0
-        self.start_x = 0.5 * screen_width
-        self.start_y = 0.9 * screen_height
+        self.start_x = 0.5 * SCREEN_WIDTH
+        self.start_y = 0.9 * SCREEN_HEIGHT
         self.num_z_levels = num_z_levels
         self.start_z = self.num_z_levels // 2
         self.ranger = Ranger(
             self.start_x,
             self.start_y,
             self.start_z,
-            num_z_levels,
-            screen_width,
-            screen_height,
+            num_z_levels
         )
         self.min_speed = 5.0
         self.max_speed = 20.0

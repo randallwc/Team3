@@ -2,14 +2,9 @@ import math
 
 import pygame
 
-from Paths import gameover_path, logo_path
-
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-LIGHT_BLUE = (0, 191, 255)
-BLUE = (0, 0, 255)
-FONT = 'Comic Sans'
-FONT_SIZE = 20
+from constants import (BACKGROUND_BLUE, BLACK, FONT, FONT_SIZE, SCREEN_HEIGHT,
+                       SCREEN_WIDTH, WHITE)
+from paths import gameover_path, logo_path
 
 
 def show_mouse(is_visible: bool):
@@ -21,14 +16,13 @@ def set_caption(caption: str):
 
 
 class ScreenManager:
-    def __init__(self, background_image_path, screen_width, screen_height):
+    def __init__(self, background_image_path):
         self.background_image_path = background_image_path
         self.pygame_loaded_background = pygame.image.load(
             self.background_image_path)
-        self.screen_dimensions = (screen_width, screen_height)
-        self.surface = pygame.display.set_mode((screen_width, screen_height))
+        self.surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.transparent_surface = pygame.Surface(
-            (screen_width, screen_height), pygame.SRCALPHA)
+            (SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
 
     def reset_particles(self):
         self.transparent_surface.fill((0, 0, 0, 0))
@@ -40,7 +34,7 @@ class ScreenManager:
         self.background_image_path = image_path
         self.pygame_loaded_background = pygame.image.load(image_path)
 
-    def render_background(self, color=LIGHT_BLUE):
+    def render_background(self, color=BACKGROUND_BLUE):
         self.surface.fill(color)
 
     def render_score(self, current_score: int):
@@ -54,8 +48,8 @@ class ScreenManager:
             background_color)
         self.surface.blit(
             rendered_font,
-            (self.screen_dimensions[0] - 100 - rendered_font.get_width() // 2,
-             self.screen_dimensions[1] - 100))
+            (SCREEN_WIDTH - 100 - rendered_font.get_width() // 2,
+             SCREEN_HEIGHT - 100))
 
     def render_final_scores(self, current_score: int, high_scores):
         foreground_color = BLACK
@@ -71,9 +65,9 @@ class ScreenManager:
                 True,
                 foreground_color))
         for i, rendered_font in enumerate(output_rendered_fonts):
-            left = self.screen_dimensions[0] // 2 - \
+            left = SCREEN_WIDTH // 2 - \
                 rendered_font.get_width() // 2
-            top = self.screen_dimensions[1] // 2 + \
+            top = SCREEN_HEIGHT // 2 + \
                 i * rendered_font.get_height()
             self.surface.blit(rendered_font, (left, top))
 
@@ -88,7 +82,7 @@ class ScreenManager:
             background_color)
         self.surface.blit(
             rendered_font,
-            (self.screen_dimensions[0] //
+            (SCREEN_WIDTH //
              2 -
              rendered_font.get_width() //
              2,
@@ -107,7 +101,7 @@ class ScreenManager:
                     count += 1
             return count
 
-        line_x = self.screen_dimensions[0] - 100
+        line_x = SCREEN_WIDTH - 100
         line_top = (line_x, 50)
         line_bottom = (line_x, line_top[1] + 150)
         line_length = dist(line_top, line_bottom)
@@ -163,7 +157,7 @@ class ScreenManager:
         logo_width = rendered_logo_rect.width
         self.surface.blit(
             rendered_logo,
-            (self.screen_dimensions[0] // 2 - logo_width // 2,
+            (SCREEN_WIDTH // 2 - logo_width // 2,
              100 + logo_height // 2))
 
     def show_game_over(self):
@@ -174,7 +168,7 @@ class ScreenManager:
         logo_width = rendered_logo_rect.width
         self.surface.blit(
             rendered_logo,
-            (self.screen_dimensions[0] // 2 - logo_width // 2,
+            (SCREEN_WIDTH // 2 - logo_width // 2,
              logo_height // 2))
 
     def button(self, message, top, left, hover_color,
