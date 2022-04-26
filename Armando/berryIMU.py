@@ -237,15 +237,10 @@ kVals = [0, 0, 0, 0, 0]
 print(server, room)
 print('begin looping')
 
-#previous_is_pushing = False
-#previous_is_upward_push = False
-#previous_is_downward_push = False
 
 state_counter = 0
 upward_movement_state = 0
 downward_movement_state = 0
-#pointing_down_counter = 0
-#moving_up_counter = 0
 shooting_state = 0
 shooting_counter = 0
 
@@ -260,7 +255,6 @@ IMU_dict = {
         "y_gyro": gyro_y_angle,
         "z_gyro": gyro_z_angle,
         "is_idle": isIdle,
-        "is_pushing": is_forward_push,
         "is_upward_push": is_upward_push,
         "is_downward_push": is_downward_push,
         "is_shooting": is_shooting,
@@ -565,7 +559,6 @@ while True:
         gyro_x_angle = 0  # reset gyro angles
         gyro_y_angle = 0
         gyro_z_angle = 0
-        is_forward_push = False
         is_upward_push = False
         is_downward_push = False
         state_counter = 0
