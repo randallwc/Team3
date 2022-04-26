@@ -10,7 +10,6 @@ class VoiceIface:
 
     def listen(self):
         with sr.Microphone() as source:
-            print('calibrating... ', end='', flush=True)
             self.recognizer.adjust_for_ambient_noise(source, duration=5)
             print('listening... ', end='', flush=True)
             audio = self.recognizer.listen(source, timeout=self.timeout)
