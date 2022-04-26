@@ -388,7 +388,7 @@ class Game:
                     enemy.health = self.server.enemies_hurt[enemy.id]
                     if enemy.health <= 0:
                         # if enemy was bad, make it blow up upon death
-                        if enemy.type in enemy.bad_enemies:
+                        if enemy.enemy_type in enemy.bad_enemies:
                             new_particle_cloud = ParticleCloud(
                                 enemy.x, enemy.y)
                             new_particle_cloud.fire_burst(10)
