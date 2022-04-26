@@ -8,12 +8,10 @@ class ImuIface:
     def __init__(self):
         self.tiltDirection = ""
         self.IMU_dict = {}
-        self.is_forward_tilt = False
-        self.is_backward_tilt = False
-        self.is_right_tilt = False
-        self.is_left_tilt = False
-        self.is_pushing = False
         self.is_idle = False
+        self.is_upward_push = False
+        self.is_downward_push = False
+        self.is_shooting = False
         self.x_gyro = 0.0
         self.y_gyro = 0.0
         self.room = 'team3/controller/will'
@@ -31,15 +29,10 @@ class ImuIface:
             self.IMU_dict = json.loads(message.payload)
             self.x_gyro = self.IMU_dict['x_gyro']
             self.y_gyro = self.IMU_dict['y_gyro']
-            self.is_forward_tilt = 5 < self.IMU_dict["x_gyro"] < 80
-            self.is_backward_tilt = -80 < self.IMU_dict["x_gyro"] < -5
-            self.is_right_tilt = -80 < self.IMU_dict["y_gyro"] < -5
-            self.is_left_tilt = 5 < self.IMU_dict["y_gyro"] < 80
             self.is_idle = self.IMU_dict['is_idle']
-            self.is_pushing = self.IMU_dict['is_pushing']
-            print(1 / (self.new_time - self.previous_time),
-                  self.x_gyro, self.y_gyro)
-            self.previous_time = self.new_time
+            self.is_upward_push = self.IMU_dict['is_forward_push']
+            self.is_downward_push = self.IMU_dict['is_downward_push']
+            self.is_shooting = self.IMU_dict['is_shooting']
 
         def on_disconnect(client, userdata, rc):
             if rc != 0:

@@ -237,7 +237,28 @@ kVals = [0, 0, 0, 0, 0]
 print(server, room)
 print('begin looping')
 
-previous_is_pushing = False
+
+state_counter = 0
+upward_movement_state = 0
+downward_movement_state = 0
+shooting_state = 0
+shooting_counter = 0
+
+isIdle = False
+is_forward_push = False
+is_upward_push = False
+is_downward_push = False
+is_shooting = False
+
+IMU_dict = {
+        "x_gyro": gyro_x_angle,
+        "y_gyro": gyro_y_angle,
+        "z_gyro": gyro_z_angle,
+        "is_idle": isIdle,
+        "is_upward_push": is_upward_push,
+        "is_downward_push": is_downward_push,
+        "is_shooting": is_shooting,
+    }
 
 while True:
 
@@ -449,39 +470,103 @@ while True:
     # " % ( yG, xG, zG)
 
     # code for tilt recognition
-    isForwardPush = zG < 0.8 and xG > 0.2
-    #isUpwardLift = zG > 1.1
+    is_forward_push = zG < 0.8 and xG > 0.2 and 0 < gyro_x_angle < 30
+    # is_upward_push = zG > 1.08 and xG < 0.2 and -0.1 < yG < 0.1
+    is_upward_push = zG < 0.95 and xG < -0.3 and gyro_x_angle < -60
+    is_downward_push = zG < 0.95 and xG > 0.3 and gyro_x_angle > 70
+
+    # state machine code
+    pointing_up = gyro_x_angle < -60
+    pointing_down = gyro_x_angle > 70
+    tilting_down = 0 < gyro_x_angle < 50
+    pointing_straight = -20 < gyro_x_angle < 20
 
     if isIdle:
         gyro_x_angle = 0  # reset gyro angles
         gyro_y_angle = 0
         gyro_z_angle = 0
         is_forward_push = False
+        is_upward_push = False
+        is_downward_push = False
+        state_counter = 0
+        state = 0
+        upward_movement_state = 0
+        shooting_state = 0
+        pointing_up = False
+        pointing_down = False
 
-    # assert(len(kVals) == 5)
-
-    # check if need to calibrate
-    # calibrateString = "False"
-    # message, address = sock.recvfrom(4096)
-    # calibrateString = message.decode()
-    # print(calibrateString + '\n')
-
-    # info to send
-    IMU_dict = {
-        "x_gyro": gyro_x_angle,
-        "y_gyro": gyro_y_angle,
-        "z_gyro": gyro_z_angle,
-        "is_idle": isIdle,
-        "is_pushing": isForwardPush,
-    }
-    # print(IMU_dict)
-    if previous_is_pushing != is_forward_push:
+    if pointing_up and upward_movement_state == 0:  # code for upward movement
+        #print("pointing upward")
+        upward_movement_state = 1
+        downward_movement_state = 0
+    if accYnorm < -0.3 and upward_movement_state == 1:  # if it is pointing and pushing upwards
+        #print("moving upwards!")
+        upward_movement_state = 2
+    if accYnorm > -0.3 and upward_movement_state == 2:
+        print("Gesture detected: upward movement")
+        IMU_dict["is_upward_push"] = True
         publisher.publish(room, str.encode(json.dumps(IMU_dict)), qos=qos)
-        previous_is_pushing = is_forward_push
-    # message = json.dumps(IMU_dict)
-    # message = str.encode(message)
-    # sock.sendto(message, server_address)
+        time.sleep(0.5)
+        IMU_dict["is_upward_push"] = False
+        publisher.publish(room, str.encode(json.dumps(IMU_dict)), qos=qos)
+        upward_movement_state = 0
+        shooting_state = 0
+        shooting_counter = 0
+        isIdle = True
+
+    if pointing_down and downward_movement_state == 0:  # code for downward movement
+        #print("pointing downward")
+        downward_movement_state = 1
+        upward_movement_state = 0
+        shooting_state = 0
+    if accYnorm > 0.3 and downward_movement_state == 1:  #if it is pointing and pushing downwards
+        #print("moving downwards!")
+        downward_movement_state = 2
+    if accYnorm < 0.3 and downward_movement_state == 2:
+        print("Gesture detected: downward movement")
+        IMU_dict["is_downward_push"] = True
+        publisher.publish(room, str.encode(json.dumps(IMU_dict)), qos=qos)
+        time.sleep(0.5)
+        IMU_dict["is_downward_push"] = False
+        publisher.publish(room, str.encode(json.dumps(IMU_dict)), qos=qos)
+        downward_movement_state = 0
+        shooting_state = 0
+        shooting_counter = 0
+        isIdle = True
+    elif accYnorm > 0.07 and pointing_up == False and pointing_down == False and pointing_straight and shooting_counter > 20:  # code for shooting
+        shooting_state = 1
+    elif accYnorm < 0.07 and shooting_state == 1 and pointing_straight and downward_movement_state == upward_movement_state == 0:
+        print("shooting!!!!")
+        IMU_dict["is_shooting"] = True
+        publisher.publish(room, str.encode(json.dumps(IMU_dict)), qos=qos)
+        time.sleep(0.01)
+        IMU_dict["is_shooting"] = False
+        publisher.publish(room, str.encode(json.dumps(IMU_dict)), qos=qos)
+        state_counter = 0
+        shooting_state = 0
+        isIdle = True
+
+    shooting_counter += 1
+    # assert(len(kVals) == 5
 
     # print(IMU_dict)
+
+    #if previous_is_pushing != is_forward_push:
+        #publisher.publish(room, str.encode(json.dumps(IMU_dict)), qos=qos)
+        #previous_is_pushing = is_forward_push
+
+    if isIdle:
+        gyro_x_angle = 0  # reset gyro angles
+        gyro_y_angle = 0
+        gyro_z_angle = 0
+        is_upward_push = False
+        is_downward_push = False
+        state_counter = 0
+        upward_movement_state = 0
+        downward_movement_state = 0
+        shooting_state = 0
+        pointing_up = False
+        pointing_down = False
+
     # slow program down a bit, makes the output more readable
-    # time.sleep(0.25)
+    time.sleep(0.03)
