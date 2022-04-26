@@ -423,6 +423,7 @@ const listenForDisconnection = (socket, roomTracker) => {
             socket.handshake.session.timeUserID ===
             roomTracker[socket.handshake.session.roomID]?.host
         ) {
+            // Delete room data & disconnect clients connected to this room
             delete roomTracker[socket.handshake.session.roomID];
             io.in(socket.handshake.session.roomID).disconnectSockets(true);
         }
