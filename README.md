@@ -10,17 +10,30 @@ run these commands to use the client
 
 ```sh
 cd client
-conda env create --file environment.yaml
-conda activate team3
-python3 main.py
+make run
+```
+
+to lint the python files
+
+```sh
+cd client
+make lint
 ```
 
 to update the dependencies
 
 ```sh
 cd client
-conda intall [something]
-conda env export > environment.yaml
+conda activate team3
+conda install [something]
+make update
+```
+
+to delete the team3 environment after you are done with this project
+
+```sh
+cd client
+make remove-env
 ```
 
 https://kiwidamien.github.io/save-the-environment-with-conda-and-how-to-let-others-run-your-programs.html
