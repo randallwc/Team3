@@ -2,11 +2,7 @@ from random import randrange
 
 import pygame
 
-YELLOW = (255, 255, 0)
-ORANGE = (255, 165, 0)
-RED = (255, 0, 0)
-GREY = (120, 120, 120)
-BLUE = (0, 0, 255)
+from constants import BLUE, GREY, YELLOW
 
 
 def change_colors(red_delta, green_delta, blue_delta, current_colors):

@@ -1,9 +1,7 @@
 import pygame
 
-from ParticleCloud import ParticleCloud
-
-black = (0, 0, 0)
-white = (255, 255, 255)
+from constants import WHITE
+from particle_cloud import ParticleCloud
 
 
 class Entity:
@@ -66,7 +64,7 @@ class Entity:
         self.particle_cloud.show(particle_surface)
         # self.show_rect(surface)
 
-    def show_rect(self, surface: pygame.surface.Surface, color=white):
+    def show_rect(self, surface: pygame.surface.Surface, color=WHITE):
         for i in range(4):
             pygame.draw.rect(
                 surface,

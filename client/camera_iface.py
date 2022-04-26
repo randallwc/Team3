@@ -46,9 +46,14 @@ class CameraIface:
                       (detect.top() + detect.bottom()) // 2)
             # only draw box if showing camera
             if self.show_cam:
-                lt = (detect.left(), detect.top())
-                rb = (detect.right(), detect.bottom())
-                cv2.rectangle(img, lt, rb, self.color_green, self.line_width)
+                left_top = (detect.left(), detect.top())
+                right_bottom = (detect.right(), detect.bottom())
+                cv2.rectangle(
+                    img,
+                    left_top,
+                    right_bottom,
+                    self.color_green,
+                    self.line_width)
                 cv2.circle(img, center, 3, self.color_green, self.line_width)
 
         # show camera

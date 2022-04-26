@@ -1,8 +1,9 @@
 import pygame
 
-from CameraIface import CameraIface
-from ImuIface import ImuIface
-from VoiceIface import VoiceIface
+from camera_iface import CameraIface
+from constants import SCREEN_HEIGHT, SCREEN_WIDTH
+from imu_iface import ImuIface
+from voice_iface import VoiceIface
 
 
 class Controller:
@@ -11,8 +12,8 @@ class Controller:
 
         self._use_camera = use_camera
         self.current_z = None
-        self.xy_axis = ImuIface()
-        self.z_axis = CameraIface(self.num_z_levels, self._use_camera)
+        self.imu = ImuIface()
+        self.camera = CameraIface(self.num_z_levels, self._use_camera)
         self.voice = VoiceIface()
         self.pressing_down_level = False
         self.pressing_up_level = False
@@ -20,27 +21,18 @@ class Controller:
 
     def use_camera(self, use_camera: bool):
         self._use_camera = use_camera
-        self.z_axis.use_camera = self._use_camera
-        self.z_axis.toggle_camera()
+        self.camera.use_camera = self._use_camera
+        self.camera.toggle_camera()
 
-    def get_xy(self, screen_width, screen_height, x, y, speed, max_speed):
+    def get_xy(self, x, y, speed, max_speed):
         # return self.get_xy_mouse()
         speed = min(speed, max_speed)
         x += speed * int(self.get_direction()['right'])
         x -= speed * int(self.get_direction()['left'])
         y += speed * int(self.get_direction()['down'])
         y -= speed * int(self.get_direction()['up'])
-        # x += speed * self.xy_axis.x_gyro / 100
-        # y += speed * self.xy_axis.y_gyro / 100
-        if x > screen_width:
-            x = screen_width
-        elif x < 0:
-            x = 0
-        if y > screen_height:
-            y = screen_height
-        elif y < 0:
-            y = 0
-        return int(x), int(y)
+        return (int(min(max(x, 0), SCREEN_WIDTH)),
+                int(min(max(y, 0), SCREEN_HEIGHT)))
 
     @staticmethod
     def get_xy_mouse():
@@ -53,16 +45,9 @@ class Controller:
             'down': keys[pygame.K_DOWN] or keys[pygame.K_s],
             'left': keys[pygame.K_LEFT] or keys[pygame.K_a],
             'right': keys[pygame.K_RIGHT] or keys[pygame.K_d],
-            'space': keys[pygame.K_SPACE] or self.xy_axis.is_shooting,
-            'down_level': keys[pygame.K_q],
-            'up_level': keys[pygame.K_e],
-        }
-
-    @staticmethod
-    def get_mouse():
-        return {
-            'left_click': pygame.mouse.get_pressed()[0],
-            'right_click': pygame.mouse.get_pressed()[1],
+            'space': keys[pygame.K_SPACE] or self.imu.is_shooting,
+            'down_level': keys[pygame.K_q] or self.imu.is_downward_push,
+            'up_level': keys[pygame.K_e] or self.imu.is_upward_push,
         }
 
     def is_firing(self):
@@ -84,7 +69,7 @@ class Controller:
 
     def get_z(self, current_z: int):
         if self._use_camera:
-            self.current_z = self.z_axis.get_level()
+            self.current_z = self.camera.get_level()
         else:
             assert 0 <= current_z < self.num_z_levels
             self.current_z = current_z
@@ -113,4 +98,4 @@ class Controller:
         return any(pygame.key.get_pressed())
 
     def disconnect(self):
-        self.xy_axis.client.disconnect()
+        self.imu.client.disconnect()

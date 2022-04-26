@@ -1,15 +1,13 @@
 import pygame
 
-from Entity import Entity
-from Paths import ranger_path
-from Sounds import play_laser_sound
-
-RED = (255, 0, 0)
+from constants import RED, SCREEN_HEIGHT, SCREEN_WIDTH
+from entity import Entity
+from paths import ranger_path
+from sounds import play_laser_sound
 
 
 class Ranger(Entity):
-    def __init__(self, x, y, z, num_z_levels, screen_width,
-                 screen_height, image_path=ranger_path):
+    def __init__(self, x, y, z, num_z_levels, image_path=ranger_path):
         super().__init__(x, y, z, num_z_levels, image_path)
         self.delta_laser_width = 1
         self.max_laser_width = 20
@@ -19,8 +17,6 @@ class Ranger(Entity):
         self.current_laser_width = self.max_laser_width
         self.frames_clicking = 0
         self.laser_is_deadly = False
-        self.screen_width = screen_width
-        self.screen_height = screen_height
         self.health = 1
         self.is_alive = True
 
@@ -28,11 +24,7 @@ class Ranger(Entity):
     # is_alive
 
     def update_coordinates(self, x, y):
-        x = max(x, 0)
-        x = min(self.screen_width, x)
-        y = max(y, 0)
-        y = min(self.screen_height, y)
-        super().update_coordinates(x, y)
+        super().update_coordinates(min(max(x, 0), SCREEN_WIDTH), min(max(y, 0), SCREEN_HEIGHT))
 
     def fire(self, is_firing: bool, fire_edge: bool,
              surface: pygame.surface.Surface, color=RED):

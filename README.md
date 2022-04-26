@@ -6,10 +6,24 @@
 
 # Requirements
 
--   python3
--   pygame `python3 -m pip install -U pygame`
--   socketio `pip3 install "python-socketio"`
--   speechrecognition `conda install -c conda-forge speechrecognition`
+run these commands to use the client
+
+```sh
+cd client
+conda env create --file environment.yaml
+conda activate team3
+python3 main.py
+```
+
+to update the dependencies
+
+```sh
+cd client
+conda intall [something]
+conda env export > environment.yaml
+```
+
+https://kiwidamien.github.io/save-the-environment-with-conda-and-how-to-let-others-run-your-programs.html
 
 # Sources
 

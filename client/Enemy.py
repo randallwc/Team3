@@ -1,7 +1,8 @@
 import pygame
 
-from Entity import Entity
-from Sounds import play_sound
+from constants import SCREEN_HEIGHT, SCREEN_WIDTH
+from entity import Entity
+from sounds import play_sound
 
 
 class Enemy(Entity):
@@ -122,26 +123,25 @@ class Enemy(Entity):
 
     # TODO -- make this take a pattern argument e.g. circle or snake and then
     # make it move in those patterns
-    def step(self, screen_dimensions):
+    def step(self):
         super().update_coordinates(self.x, self.y)
-        screen_width, screen_height = screen_dimensions
 
         if self.current_direction == 'right':
             self.x += self.x_speed
         elif self.current_direction == 'left':
             self.x -= self.x_speed
 
-        if self.x >= screen_width:
+        if self.x >= SCREEN_WIDTH:
             self.y += self.y_speed
             self.current_direction = self.directions[0]  # left
-            self.x = screen_width
+            self.x = SCREEN_WIDTH
         if self.x <= 0:
             self.y += self.y_speed
             self.current_direction = self.directions[1]
             self.x = 0
 
         # keep y within the screen
-        if self.y >= screen_height // 2:
-            self.y = screen_height // 2
+        if self.y >= SCREEN_HEIGHT // 2:
+            self.y = SCREEN_HEIGHT // 2
         elif self.y <= 0:
             self.y = 0

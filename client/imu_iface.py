@@ -6,8 +6,8 @@ import paho.mqtt.client as mqtt
 
 class ImuIface:
     def __init__(self):
-        self.tiltDirection = ""
-        self.IMU_dict = {}
+        self.tilt_direction = ""
+        self.imu_dict = {}
         self.is_idle = False
         self.is_upward_push = False
         self.is_downward_push = False
@@ -26,13 +26,13 @@ class ImuIface:
 
         def on_message(client, userdata, message):
             self.new_time = time.time()
-            self.IMU_dict = json.loads(message.payload)
-            self.x_gyro = self.IMU_dict['x_gyro']
-            self.y_gyro = self.IMU_dict['y_gyro']
-            self.is_idle = self.IMU_dict['is_idle']
-            self.is_upward_push = self.IMU_dict['is_forward_push']
-            self.is_downward_push = self.IMU_dict['is_downward_push']
-            self.is_shooting = self.IMU_dict['is_shooting']
+            self.imu_dict = json.loads(message.payload)
+            self.x_gyro = self.imu_dict['x_gyro']
+            self.y_gyro = self.imu_dict['y_gyro']
+            self.is_idle = self.imu_dict['is_idle']
+            self.is_upward_push = self.imu_dict['is_forward_push']
+            self.is_downward_push = self.imu_dict['is_downward_push']
+            self.is_shooting = self.imu_dict['is_shooting']
 
         def on_disconnect(client, userdata, rc):
             if rc != 0:

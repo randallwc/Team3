@@ -1,7 +1,6 @@
 import requests
 
 
-# TODO -- create this class
 class DatabaseIface:
     def __init__(self):
         self.is_local = True
