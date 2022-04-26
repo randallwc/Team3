@@ -24,7 +24,7 @@ from Sounds import is_playing_sounds, play_music, stop_music
 FRAME_RATE = 60
 DARK_BLUE = (0, 50, 255)
 LIGHT_BLUE = (0, 100, 255)
-GAME_TIMER = 5_000
+GAME_TIMER = 30_000
 GAME_STATES = [
     'start',
     'play',
@@ -325,10 +325,15 @@ class Game:
                 enemy.rect, self.player.ranger.rect):
             if enemy.enemy_type in enemy.bad_enemies:
                 # TODO -- lower health instead of points
-                self.player.handle_point_change(-1)
+                self.player.handle_point_change(-10)
+                # TODO -- send server that ranger was damaged
+                # despawn bad enemy if touched
+                enemy.health = 0
             if enemy.enemy_type in enemy.good_enemies:
                 # TODO -- get back health if you pick up a good enemy
-                self.player.handle_point_change(1)
+                self.player.handle_point_change(10)
+                self.player.ranger.particle_cloud.coin_burst(10)
+                # TODO -- send server that ranger gained health
                 enemy.health = 0
         return enemy
 
@@ -341,46 +346,63 @@ class Game:
                 and self.player.ranger.z == enemy.z
 
         if _hit_enemy():
-            # TODO -- send when enemy is hit
             damage = 0.5
             enemy.got_hit(damage)
-            if enemy.health <= 0 and enemy.enemy_type in enemy.bad_enemies:
-                # gain points
-                self.player.handle_point_change(enemy.handle_death())
-                # show fire cloud
-                particle_cloud = ParticleCloud(enemy.x, enemy.y)
-                particle_cloud.fire_burst(10)
-                self.dead_enemy_particle_clouds.append(particle_cloud)
-            elif enemy.health < 1 and enemy.enemy_type in enemy.good_enemies:
-                # auto get hurt if enemy is good
-                self.player.handle_point_change(enemy.handle_death())
+            if self.game_state == 'multiplayer':
+                self.server.send_enemy_was_hit(enemy.id, enemy.health)
+            # dead
+            if enemy.health <= 0:
+                # good enemy dead
+                if enemy.enemy_type in enemy.good_enemies:
+                    # auto get hurt if enemy is good and you killed it
+                    self.player.handle_point_change(enemy.handle_death())
+                    # TODO -- server send player was damaged
+                # bad enemy dead
+                else:
+                    # gain points
+                    self.player.handle_point_change(enemy.handle_death())
+                    # show fire cloud
+                    particle_cloud = ParticleCloud(enemy.x, enemy.y)
+                    particle_cloud.fire_burst(10)
+                    self.dead_enemy_particle_clouds.append(particle_cloud)
+            # hurt
             elif enemy.health < 1:
                 # any enemy that is hurt smokes
                 enemy.particle_cloud.is_smoking = True
-                if self.game_state == 'multiplayer':
-                    self.server.send_enemy_was_hit(enemy.id, enemy.health)
+                # good enemy hurt
+                if enemy.enemy_type in enemy.good_enemies:
+                    # auto get hurt if enemy is good
+                    self.player.handle_point_change(enemy.handle_death())
+                    # TODO -- server send player was damaged
+                # bad enemy hurt
+                else:
+                    ...
         return enemy
 
     def _display_enemies(self):
         for i, enemy in enumerate(self.enemies):
             if self.game_state == 'multiplayer':
-                # check if it has been removed from server, set should_display to
-                # false if so
-                if enemy.id in self.server.awaiting_enemy_despawn:
-                    # if enemy was bad, make it blow up upon death
-                    if not enemy.enemy_info[enemy.enemy_type]['is_good']:
-                        new_particle_cloud = ParticleCloud(enemy.x, enemy.y)
-                        new_particle_cloud.fire_burst(10)
-                        self.dead_enemy_particle_clouds.append(
-                            new_particle_cloud)
-                    enemy.should_display = False
-                    del self.server.awaiting_enemy_despawn[enemy.id]
                 # if enemy was hurt by other players, make it smoke
                 if enemy.id in self.server.enemies_hurt:
                     enemy.health = self.server.enemies_hurt[enemy.id]
-                    if enemy.health < 1:
+                    if enemy.health <= 0:
+                        # if enemy was bad, make it blow up upon death
+                        if enemy.type in enemy.bad_enemies:
+                            new_particle_cloud = ParticleCloud(
+                                enemy.x, enemy.y)
+                            new_particle_cloud.fire_burst(10)
+                            self.dead_enemy_particle_clouds.append(
+                                new_particle_cloud)
+                        # TODO -- if enemy is good make ranger that hit it have
+                        # a fire cloud
+                    elif enemy.health < 1:
                         enemy.particle_cloud.is_smoking = True
                     del self.server.enemies_hurt[enemy.id]
+                # check if it has been removed from server, set should_display to
+                # false if so
+                if enemy.id in self.server.awaiting_enemy_despawn:
+                    enemy.should_display = False
+                    del self.server.awaiting_enemy_despawn[enemy.id]
 
                 # if this is the host
                 # and there are new players awaiting the existing enemies
