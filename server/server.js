@@ -56,7 +56,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 let routes = require("./routes/routes");
-app.use("/api/", routes);
+app.use("/api/v1/", routes);
 
 /////////////// DB initialization
 let URI = `mongodb+srv://${process.env.DBUSERNAME}:${process.env.DBPASSWORD}@skydangerrangerdb.ozahe.mongodb.net/${process.env.DBNAME}?retryWrites=true&w=majority`;
@@ -152,6 +152,8 @@ io.on("connection", (socket) => {
     //// Handle Enemies
     listenForAppendingEnemyByHost(socket);
     listenForEnemyRemoved(socket);
+    listenForEnemyHit(socket);
+    listenForHostSendingEnemyToSpecificUser(socket);
     // listenForUpdatingEnemyCoordsByHost(socket);
 
     //// Client disconnects
@@ -202,16 +204,36 @@ const listenForAppendingEnemyByHost = (socket) => {
     });
 };
 
+const listenForHostSendingEnemyToSpecificUser = (socket) => {
+    socket.on("host_sending_enemy_to_specific_user", (request) => {
+        io.to(request.socket_id).emit("new_host_appended_enemy", request);
+    });
+};
+
 const listenForEnemyRemoved = (socket) => {
     socket.on("remove_enemy", (request) => {
-        const id = request.id;
-        let enemyList = roomToEnemyList[socket.handshake.session.roomID];
-        delete enemyList[id];
+        try {
+            const id = request.id;
+            let enemyList = roomToEnemyList[socket.handshake.session.roomID];
 
-        // to all clients except sender
-        socket
-            .to(socket.handshake.session.roomID)
-            .emit("remove_enemy_from_client", request);
+            delete enemyList[id];
+
+            // to all clients except sender
+            socket
+                .to(socket.handshake.session.roomID)
+                .emit("remove_enemy_from_client", request);
+        } catch (err) {
+            console.log(err);
+        }
+    });
+};
+
+const listenForEnemyHit = (socket) => {
+    socket.on("enemy_hit_to_server", (request) => {
+        socket.to(request.room_id).emit("enemy_hit_to_client", {
+            id: request.id,
+            health: request.health,
+        });
     });
 };
 
