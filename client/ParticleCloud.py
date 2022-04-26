@@ -67,6 +67,20 @@ class Particle:
             self.green_delta = -20
             self.blue_delta = 0
             self.alpha_delta = 5
+        elif particle_type == 'coin':
+            max_velocity = 5
+            max_radius = 50
+
+            self.has_gravity = True
+            self.gravity_delta = -0.5
+            self.radius_delta = -1
+
+            # colors
+            self.color = [*YELLOW, 255]
+            self.red_delta = 0
+            self.green_delta = 0
+            self.blue_delta = 0
+            self.alpha_delta = 0
 
         self.x_velocity = randrange(-max_velocity, max_velocity, 1)
         self.y_velocity = randrange(-max_velocity, max_velocity, 1)
@@ -106,27 +120,37 @@ class ParticleCloud:
         self.x = x
         self.y = y
         self.particles = []
-        self.smoking = False  # smoke toggle
-        self.smoking_count = 0
-        self.on_fire = False  # fire toggle
-        self.on_fire_count = 0
+        self.is_smoking = False  # smoke toggle
+        self._smoking_count = 0
+        self.is_on_fire = False  # fire toggle
+        self._on_fire_count = 0
+        self.is_coin_bursting = False
+        self._coin_burst_count = 0
 
     def smoke_cloud(self, frames):
-        self.smoking_count = frames
+        self._smoking_count = frames
 
     def fire_burst(self, frames):
-        self.on_fire_count = frames
+        self._on_fire_count = frames
+
+    def coin_burst(self, frames):
+        self._coin_burst_count = frames
 
     def show(self, surface):
-        if self.smoking or self.smoking_count > 0:
+        if self.is_smoking or self._smoking_count > 0:
             new_particle = Particle(self.x, self.y, 'smoke')
             self.particles.append(new_particle)
-            self.smoking_count -= 1 if self.smoking_count > 0 else 0
+            self._smoking_count -= 1 if self._smoking_count > 0 else 0
 
-        if self.on_fire or self.on_fire_count > 0:
+        if self.is_on_fire or self._on_fire_count > 0:
             new_particle = Particle(self.x, self.y, 'fire')
             self.particles.append(new_particle)
-            self.on_fire_count -= 1 if self.on_fire_count > 0 else 0
+            self._on_fire_count -= 1 if self._on_fire_count > 0 else 0
+
+        if self.is_coin_bursting or self._coin_burst_count > 0:
+            new_particle = Particle(self.x, self.y, 'coin')
+            self.particles.append(new_particle)
+            self._coin_burst_count -= 1 if self._coin_burst_count > 0 else 0
 
         for particle in self.particles:
             particle.animate(surface)

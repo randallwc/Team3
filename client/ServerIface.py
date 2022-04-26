@@ -99,7 +99,6 @@ class ServerIface:
 
         @self.socket.on('enemy_hit_to_client')
         def enemy_hurt(data):
-            print('better days', data)
             new_health = data['health']
             enemy_id = data['id']
             self.enemies_hurt[enemy_id] = new_health
