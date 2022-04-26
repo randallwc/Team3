@@ -33,7 +33,9 @@ class DatabaseIface:
         elif score_kind == 'singlegame':
             url = self.used_uri + '/api/v1/fetch/singlegame/highscores'
             res = requests.get(url, obj)
-        return res
+        print('api res:', res)  # TODO -- remove debug
+        # return res
+        return [1] * n_scores  # TODO -- remove when highscores work
 
     def add_highscore(self, new_score, username, mode):
         obj = {
@@ -42,4 +44,4 @@ class DatabaseIface:
             'score': new_score
         }
         url = self.used_uri + '/api/v1/insertscore'
-        res = requests.post(url, obj)
+        requests.post(url, obj)
