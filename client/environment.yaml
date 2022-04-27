@@ -78,7 +78,7 @@ dependencies:
   - mccabe=0.7.0=pyhd8ed1ab_0
   - ncurses=6.3=h07bb92c_1
   - nettle=3.6=hc6a1b29_0
-  - numpy=1.22.3=py310h2e04ed8_2
+  - numpy=1.22.3=py310h99fd38b_2
   - opencv=4.5.5=py310hb6292c7_9
   - openh264=2.1.1=habe5f53_0
   - openssl=1.1.1n=h90dfc92_0
@@ -101,7 +101,6 @@ dependencies:
   - readline=8.1=hedafd6a_0
   - requests=2.27.1=pyhd8ed1ab_0
   - setuptools=62.1.0=py310hbe9552e_0
-  - speechrecognition=3.7.1=pyhd8ed1ab_4
   - sqlite=3.38.2=h7e3ccbd_0
   - svt-av1=0.9.1=h07bb92c_0
   - tk=8.6.12=he1e0b03_0
@@ -119,5 +118,7 @@ dependencies:
   - zlib=1.2.11=h90dfc92_1014
   - zstd=1.5.2=h861e0a7_0
   - pip:
+    - pyaudio==0.2.11
     - pygame==2.1.2
+    - speechrecognition==3.8.1
 prefix: /opt/homebrew/Caskroom/miniconda/base/envs/team3

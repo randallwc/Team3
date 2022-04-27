@@ -1,10 +1,8 @@
 # Team 3
 
-# To Run
-
-`python3 main.py`
-
 # Requirements
+
+- https://people.csail.mit.edu/hubert/pyaudio/
 
 run these commands to use the client
 
