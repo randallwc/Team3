@@ -8,11 +8,11 @@ import pygame
 import pyttsx3
 
 from cloud import Cloud
-from constants import (DARK_BLUE, ENEMY_INFO, FIRE_SCORE, FRAME_RATE,
-                       GAME_STATES, GAME_TIMER, LIGHT_BLUE, MAX_FAST_SPEED,
-                       MAX_RANGER_ACCELERATION, MAX_RANGER_SPEED,
-                       RANGER_ACCELERATION, RED, SCREEN_HEIGHT, SCREEN_WIDTH,
-                       WIPE_SCORE)
+from constants import (CLEAR_SCORE, DARK_BLUE, ENEMY_INFO, FIRE_SCORE,
+                       FRAME_RATE, GAME_STATES, GAME_TIMER, LIGHT_BLUE,
+                       MAX_FAST_SPEED, MAX_RANGER_ACCELERATION,
+                       MAX_RANGER_SPEED, RANGER_ACCELERATION, RED,
+                       SCREEN_HEIGHT, SCREEN_WIDTH)
 from controller import Controller
 from database_iface import DatabaseIface
 from enemy import Enemy
@@ -90,9 +90,9 @@ class Game:
         # powerup flags
         self.fast_timer = 0
         self.max_fast_timer = 500
-        self.wipe_flag = False
-        self.max_wipe_cooldown = 500
-        self.wipe_cooldown = 0
+        self.clear_flag = False
+        self.max_clear_cooldown = 500
+        self.clear_cooldown = 0
         self.speech_engine = pyttsx3.init()
 
         # Controller settings
@@ -383,7 +383,7 @@ class Game:
                 self.server.remove_enemy_from_server(enemy.id)
         self.enemies = [
             enemy for enemy in self.enemies if enemy.should_display]
-        if self.wipe_flag:
+        if self.clear_flag:
             for enemy in self.enemies:
                 enemy.health = 0
 
@@ -472,6 +472,9 @@ class Game:
             self.player.ranger.y = 0.9 * SCREEN_HEIGHT
             self.spawn_counter = self.max_spawn_counter
             self.controller.voice.reset_words()
+            self.player.acceleration = RANGER_ACCELERATION
+            self.player.max_speed = MAX_RANGER_SPEED
+            self.player.ranger.particle_cloud.is_coin_bursting = False
 
         # update display
         pygame.display.update()
@@ -502,20 +505,20 @@ class Game:
             self.player.max_speed = MAX_RANGER_SPEED
             self.player.ranger.particle_cloud.is_coin_bursting = False
 
-        wants_wipe = self.controller.voice.wipe_flag
-        self.wipe_cooldown = max(self.wipe_cooldown - 1, 0)
-        if wants_wipe and self.player.current_score >= WIPE_SCORE:
-            self.wipe_flag = True
-            self.wipe_cooldown = self.max_wipe_cooldown
+        wants_wipe = self.controller.voice.clear_flag
+        self.clear_cooldown = max(self.clear_cooldown - 1, 0)
+        if wants_wipe and self.player.current_score >= CLEAR_SCORE:
+            self.clear_flag = True
+            self.clear_cooldown = self.max_clear_cooldown
         elif wants_wipe:
-            point_diff = abs(self.player.current_score - WIPE_SCORE)
+            point_diff = abs(self.player.current_score - CLEAR_SCORE)
             say_string = f'you need {point_diff} more points to clear enemies'
             self.speech_engine.say(say_string)
             self.speech_engine.startLoop(False)
             self.speech_engine.iterate()
-        if self.wipe_cooldown < self.max_wipe_cooldown:
-            self.wipe_flag = False
-        if self.wipe_cooldown > self.max_wipe_cooldown - 10:
+        if self.clear_cooldown < self.max_clear_cooldown:
+            self.clear_flag = False
+        if self.clear_cooldown > self.max_clear_cooldown - 10:
             self.screen_manager.render_background(RED)
 
         if not self.speech_engine.isBusy():

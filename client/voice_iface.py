@@ -13,9 +13,8 @@ class VoiceIface():
         self.stop_listening = None
         self.fast_flag = False
         self.fast_word = 'fast'
-        self.wipe_flag = False
-        self.wipe_word = 'wipe'
-        self.fast_word = 'fast'
+        self.clear_flag = False
+        self.clear_word = 'clear'
         with self.mic as source:
             self.recognizer.adjust_for_ambient_noise(source, duration=1)
 
@@ -25,7 +24,7 @@ class VoiceIface():
 
     def reset_words(self):
         self.fast_flag = False
-        self.wipe_flag = False
+        self.clear_flag = False
 
     def _voice_callback(self, recognizer, audio):
         print('callback')
@@ -34,8 +33,8 @@ class VoiceIface():
             print(said)
             if self.fast_word in said:
                 self.fast_flag = True
-            if self.wipe_word in said:
-                self.wipe_flag = True
+            if self.clear_word in said:
+                self.clear_flag = True
         except sr.UnknownValueError:
             print('[ERROR] unknown')
         except sr.RequestError as e:
