@@ -205,8 +205,6 @@ class Game:
             room_id_question = "What is the room ID that you'd like to join?: "
         print(room_id_question)
         self.room_id = "".join(input().split())
-        print("What username would you like to use?")
-        self.username = "".join(input().split())
         print("is host:", 'yes' if self.is_host else 'no')
         print("room id:", self.room_id)
         print("username:", self.username)
