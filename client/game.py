@@ -1,5 +1,4 @@
 import sys
-import uuid
 from random import choice, randrange
 from typing import List
 
@@ -22,14 +21,6 @@ from sounds import is_playing_sounds, play_music, stop_music
 
 class Game:
     def __init__(self):
-        # pygame initialization
-        pygame.init()
-        show_mouse(True)
-        pygame.display.set_caption('Sky Danger Ranger')
-        pygame.display.set_icon(
-            pygame.image.load(ranger_path)
-        )
-
         # enemies
         self.enemies: List[Enemy] = []
         self.enemy_types = list(ENEMY_INFO.keys())
@@ -74,7 +65,7 @@ class Game:
         self.player = Player(self.num_z_levels)
 
         # Multiplayer Information
-        self.username = uuid.getnode()
+        self.username = input('username: ')
         self.room_id = ''
         self.is_host = False
         self.server = None
@@ -83,14 +74,16 @@ class Game:
 
         # Database Settings
         self.db = DatabaseIface()
-        # n_scores, number of scores to return
-        self.n_scores = 3
-        # mode, 'multiplayer' or 'singleplayer'
-        self.mode = 'singleplayer'
-        # score_kind, 'lifetime' or 'singlegame'
-        self.score_kind = 'lifetime'
-        self.scores = self.db.get_highscores(
-            self.n_scores, self.mode, self.score_kind)
+        self.scores_singlegame = []
+        self.scores_lifetime = []
+
+        # pygame initialization
+        pygame.init()
+        show_mouse(True)
+        pygame.display.set_caption('Sky Danger Ranger')
+        pygame.display.set_icon(
+            pygame.image.load(ranger_path)
+        )
 
     def _start_screen(self):
         # tick clock
@@ -417,7 +410,9 @@ class Game:
             cloud.loop_around()
 
         self.screen_manager.render_final_scores(
-            self.player.current_score, self.scores)
+            self.player.current_score,
+            self.scores_singlegame,
+            self.scores_lifetime)
 
         message = 'Main Menu'
         if self.screen_manager.button(
@@ -449,9 +444,18 @@ class Game:
         if self.game_state == 'play':
             self.current_time = pygame.time.get_ticks()
             if abs(self.current_time - self.start_time) > GAME_TIMER:
-                # TODO -- add score as high score
-                # TODO -- fetch high scores
                 self.game_state = 'game_over'
+
+                # add highscores
+                mode = 'singleplayer' if self.game_state == 'play' else 'multiplayer'
+                self.db.add_highscore(
+                    self.player.current_score, self.username, mode)
+
+                # get highscores
+                self.scores_singlegame = self.db.get_highscores(
+                    5, mode, 'singlegame')
+                self.scores_lifetime = self.db.get_highscores(
+                    5, mode, 'lifetime')
 
         # remove all particles
         self.screen_manager.reset_particles()

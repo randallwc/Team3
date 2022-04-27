@@ -9,21 +9,24 @@
 run these commands to use the client
 
 ```sh
-cd client
 make
 ```
+
+to run the client locally run these 3 commands in 3 terminals
+
+1. `make server`
+2. `make database`
+3. `make`
 
 to lint the python files
 
 ```sh
-cd client
 make lint
 ```
 
 to update the dependencies
 
 ```sh
-cd client
 conda activate team3
 conda install [something]
 make update
@@ -32,7 +35,6 @@ make update
 to delete the team3 environment after you are done with this project
 
 ```sh
-cd client
 make remove-env
 ```
 

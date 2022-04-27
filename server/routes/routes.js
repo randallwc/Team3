@@ -10,6 +10,22 @@ router.get("/sky", (request, response, next) => {
     });
 });
 
+router.get('/createhighscoresobject', (request, response, next) => {
+    const MASTERKEY = "MasterKey";
+    let highscoreObject = {
+        key: MASTERKEY
+    }
+
+    Highscore.create(highscoreObject).then(highscores => {
+        return response.status(200).send({
+            highscoresObject:highscores,
+            message: 'successfully made highscores object, only do this one time'
+        });
+    }).catch(err => {
+        return next(err);
+    });
+});
+
 router.get("/fetch/lifetime/highscores", (request, response, next) => {
     try {
         // to be sent by client

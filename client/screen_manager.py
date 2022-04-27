@@ -51,25 +51,56 @@ class ScreenManager:
             (SCREEN_WIDTH - 100 - rendered_font.get_width() // 2,
              SCREEN_HEIGHT - 100))
 
-    def render_final_scores(self, current_score: int, high_scores):
+    def render_final_scores(
+            self,
+            current_score: int,
+            scores_singlegame,
+            scores_lifetime):
         foreground_color = BLACK
         font = pygame.font.SysFont(FONT, FONT_SIZE)
-        output_rendered_fonts = []
-        for i, score in enumerate(high_scores):
-            rendered_font = font.render(
-                f'{i}. {score}', True, foreground_color)
-            output_rendered_fonts.append(rendered_font)
-        output_rendered_fonts.append(
+        top_of_scores = SCREEN_HEIGHT // 2 - 50
+        singlegame_hs = []
+        lifetime_hs = []
+        # single game highscores
+        singlegame_hs.append(
             font.render(
-                f'final score: {current_score}',
+                'Single Game High Scores',
                 True,
                 foreground_color))
-        for i, rendered_font in enumerate(output_rendered_fonts):
-            left = SCREEN_WIDTH // 2 - \
-                rendered_font.get_width() // 2
-            top = SCREEN_HEIGHT // 2 + \
-                i * rendered_font.get_height()
+        for score in scores_singlegame:
+            singlegame_hs.append(
+                font.render(
+                    f'{score["username"]}: {score["score"]}',
+                    True,
+                    foreground_color))
+        # render singlegame_hs
+        for i, rendered_font in enumerate(singlegame_hs):
+            left = SCREEN_WIDTH // 3 - rendered_font.get_width() // 2
+            top = top_of_scores + i * rendered_font.get_height()
             self.surface.blit(rendered_font, (left, top))
+        # lifetime game high scores
+        lifetime_hs.append(
+            font.render(
+                'Lifetime Game High Scores',
+                True,
+                foreground_color))
+        for score in scores_lifetime:
+            lifetime_hs.append(
+                font.render(
+                    f'{score["username"]}: {score["score"]}',
+                    True,
+                    foreground_color))
+        # render lifetime_hs
+        for i, rendered_font in enumerate(lifetime_hs):
+            left = SCREEN_WIDTH * 2 // 3 - rendered_font.get_width() // 2
+            top = top_of_scores + i * rendered_font.get_height()
+            self.surface.blit(rendered_font, (left, top))
+        # final score
+        rendered_final_score = font.render(
+            f'final score: {current_score}', True, foreground_color)
+        left = SCREEN_WIDTH // 2 - rendered_final_score.get_width() // 2
+        top = SCREEN_HEIGHT // 2 + 150
+        self.surface.blit(rendered_final_score, (left, top))
 
     def render_time(self, current_time: int):
         foreground_color = BLACK

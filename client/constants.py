@@ -9,7 +9,7 @@ SCREEN_HEIGHT = 720
 FRAME_RATE = 60
 
 # game stuff
-GAME_TIMER = 30_000
+GAME_TIMER = 3_000
 GAME_STATES = [
     'start',
     'play',
