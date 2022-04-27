@@ -512,7 +512,7 @@ class Game:
             self.clear_cooldown = self.max_clear_cooldown
         elif wants_wipe:
             point_diff = abs(self.player.current_score - CLEAR_SCORE)
-            say_string = f'you need {point_diff} more points to clear enemies'
+            say_string = f'you need {point_diff} more points to kill all enemies'
             self.speech_engine.say(say_string)
             self.speech_engine.startLoop(False)
             self.speech_engine.iterate()
