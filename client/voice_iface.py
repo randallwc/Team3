@@ -9,7 +9,7 @@ class VoiceIface():
         # vars
         self.timeout = 5
         self.recognizer = sr.Recognizer()
-        self.mic = sr.Microphone(1)
+        self.mic = sr.Microphone(0)
         self.stop_listening = None
         self.fast_flag = False
         self.fast_word = 'fast'
@@ -27,18 +27,19 @@ class VoiceIface():
         self.clear_flag = False
 
     def _voice_callback(self, recognizer, audio):
-        print('callback')
         try:
             said = str(recognizer.recognize_google(audio)).lower().split()
-            print(said)
+            # print(said)
             if self.fast_word in said:
                 self.fast_flag = True
             if self.clear_word in said:
                 self.clear_flag = True
         except sr.UnknownValueError:
-            print('[ERROR] unknown')
+            # print('[ERROR] unknown')
+            pass
         except sr.RequestError as e:
-            print(f'[ERROR]; {e}')
+            # print(f'[ERROR]; {e}')
+            pass
 
     def start_voice(self):
         self.stop_listening = self.recognizer.listen_in_background(
