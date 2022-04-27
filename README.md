@@ -2,7 +2,7 @@
 
 # Requirements
 
-- https://people.csail.mit.edu/hubert/pyaudio/
+-   https://people.csail.mit.edu/hubert/pyaudio/
 
 run these commands to use the client
 
