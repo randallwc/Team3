@@ -440,7 +440,6 @@ class Game:
         self.clock.tick(FRAME_RATE)
         self.screen_manager.render_background()
 
-        # TODO -- if timer is over game over and display score
         if self.game_state == 'play':
             self.current_time = pygame.time.get_ticks()
             if abs(self.current_time - self.start_time) > GAME_TIMER:
