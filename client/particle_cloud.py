@@ -123,6 +123,15 @@ class ParticleCloud:
         self.is_coin_bursting = False
         self._coin_burst_count = 0
 
+    def reset(self):
+        self.particles = []
+        self.is_smoking = False  # smoke toggle
+        self._smoking_count = 0
+        self.is_on_fire = False  # fire toggle
+        self._on_fire_count = 0
+        self.is_coin_bursting = False
+        self._coin_burst_count = 0
+
     def smoke_cloud(self, frames):
         self._smoking_count = frames
 

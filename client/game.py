@@ -1,5 +1,7 @@
 import sys
+import tkinter as tk
 from random import choice, randrange
+from tkinter import messagebox
 from typing import List
 
 import pygame
@@ -21,6 +23,34 @@ from sounds import is_playing_sounds, play_music, stop_music
 
 class Game:
     def __init__(self):
+        # voice
+        self.use_voice = False
+
+        # username for highscores
+        self.username = None
+        if not self.use_voice:
+            def send_message(_=None):
+                self.username = entry.get()
+                if len(self.username) == 0:
+                    messagebox.showinfo('error', 'no username given')
+                    return
+                entry.delete(0, tk.END)
+                window.destroy()
+            window = tk.Tk()
+            window.title("set username")
+            window.geometry('230x100')
+            window.eval('tk::PlaceWindow . center')
+            greeting = tk.Label(text='username:')
+            greeting.pack()
+            entry = tk.Entry()
+            entry.bind('<Return>', send_message)
+            entry.pack()
+            entry.focus()
+            button = tk.Button(text='set', command=send_message)
+            button.pack()
+            window.mainloop()
+        assert self.username is not None
+
         # enemies
         self.enemies: List[Enemy] = []
         self.enemy_types = list(ENEMY_INFO.keys())
@@ -65,7 +95,6 @@ class Game:
         self.player = Player(self.num_z_levels)
 
         # Multiplayer Information
-        self.username = input('username: ')
         self.room_id = ''
         self.is_host = False
         self.server = None
@@ -423,14 +452,13 @@ class Game:
                 LIGHT_BLUE):
             self.game_state = 'start'
             # clear variables
-            self.enemies = []
-            start_x = 0.5 * SCREEN_WIDTH
-            start_y = 0.9 * SCREEN_HEIGHT
-            self.player.ranger.x = start_x
-            self.player.ranger.y = start_y
-            self.player.current_score = 0
-            self.opponent_ranger_ids = []
             self.dead_enemy_particle_clouds = []
+            self.enemies = []
+            self.opponent_ranger_ids = []
+            self.player.current_score = 0
+            self.player.ranger.particle_cloud.reset()
+            self.player.ranger.x = 0.5 * SCREEN_WIDTH
+            self.player.ranger.y = 0.9 * SCREEN_HEIGHT
             self.spawn_counter = self.max_spawn_counter
 
         # update display
