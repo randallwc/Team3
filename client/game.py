@@ -5,10 +5,14 @@ from tkinter import messagebox
 from typing import List
 
 import pygame
+import pyttsx3
 
 from cloud import Cloud
-from constants import (DARK_BLUE, ENEMY_INFO, FRAME_RATE, GAME_STATES,
-                       GAME_TIMER, LIGHT_BLUE, SCREEN_HEIGHT, SCREEN_WIDTH)
+from constants import (DARK_BLUE, ENEMY_INFO, FIRE_SCORE, FRAME_RATE,
+                       GAME_STATES, GAME_TIMER, LIGHT_BLUE, MAX_FAST_SPEED,
+                       MAX_RANGER_ACCELERATION, MAX_RANGER_SPEED,
+                       RANGER_ACCELERATION, RED, SCREEN_HEIGHT, SCREEN_WIDTH,
+                       WIPE_SCORE)
 from controller import Controller
 from database_iface import DatabaseIface
 from enemy import Enemy
@@ -23,32 +27,30 @@ from sounds import is_playing_sounds, play_music, stop_music
 
 class Game:
     def __init__(self):
-        # voice
-        self.use_voice = False
-
         # username for highscores
         self.username = None
-        if not self.use_voice:
-            def send_message(_=None):
-                self.username = entry.get()
-                if len(self.username) == 0:
-                    messagebox.showinfo('error', 'no username given')
-                    return
-                entry.delete(0, tk.END)
-                window.destroy()
-            window = tk.Tk()
-            window.title("set username")
-            window.geometry('230x100')
-            window.eval('tk::PlaceWindow . center')
-            greeting = tk.Label(text='username:')
-            greeting.pack()
-            entry = tk.Entry()
-            entry.bind('<Return>', send_message)
-            entry.pack()
-            entry.focus()
-            button = tk.Button(text='set', command=send_message)
-            button.pack()
-            window.mainloop()
+
+        def send_message(_=None):
+            self.username = entry.get()
+            if len(self.username) == 0:
+                messagebox.showinfo('error', 'no username given')
+                return
+            entry.delete(0, tk.END)
+            window.destroy()
+
+        window = tk.Tk()
+        window.title("set username")
+        window.geometry('230x100')
+        window.eval('tk::PlaceWindow . center')
+        greeting = tk.Label(text='username:')
+        greeting.pack()
+        entry = tk.Entry()
+        entry.bind('<Return>', send_message)
+        entry.pack()
+        entry.focus()
+        button = tk.Button(text='set', command=send_message)
+        button.pack()
+        window.mainloop()
         assert self.username is not None
 
         # enemies
@@ -84,6 +86,14 @@ class Game:
         self.num_z_levels = 3
         self.play_music = False
         self.use_camera = False
+
+        # powerup flags
+        self.fast_timer = 0
+        self.max_fast_timer = 500
+        self.wipe_flag = False
+        self.max_wipe_cooldown = 500
+        self.wipe_cooldown = 0
+        self.speech_engine = pyttsx3.init()
 
         # Controller settings
         self.controller = Controller(self.num_z_levels, self.use_camera)
@@ -358,10 +368,10 @@ class Game:
             # do logic on enemies in same level
             if enemy.z == self.player.ranger.z:
                 enemy = self._handle_enemy_collision(enemy)
+                enemy = self._handle_enemy_laser_hit(enemy)
                 enemy.show(
                     self.screen_manager.surface,
                     self.screen_manager.transparent_surface)
-                self._handle_enemy_laser_hit(enemy)
             else:
                 # display enemies on other levels
                 is_above = enemy.z > self.player.ranger.z
@@ -373,6 +383,9 @@ class Game:
                 self.server.remove_enemy_from_server(enemy.id)
         self.enemies = [
             enemy for enemy in self.enemies if enemy.should_display]
+        if self.wipe_flag:
+            for enemy in self.enemies:
+                enemy.health = 0
 
     def _update_ranger_opponents(self):
         if self.game_state != 'multiplayer':
@@ -458,13 +471,58 @@ class Game:
             self.player.ranger.x = 0.5 * SCREEN_WIDTH
             self.player.ranger.y = 0.9 * SCREEN_HEIGHT
             self.spawn_counter = self.max_spawn_counter
+            self.controller.voice.reset_words()
 
         # update display
         pygame.display.update()
 
     def play(self):
         self.clock.tick(FRAME_RATE)
+
+        # background render
         self.screen_manager.render_background()
+
+        # fast powerup
+        wants_fast = self.controller.voice.fast_flag
+        self.fast_timer = max(self.fast_timer - 1, 0)
+        if wants_fast:
+            if self.player.current_score >= FIRE_SCORE and self.fast_timer == 0:
+                self.fast_timer = self.max_fast_timer
+                self.player.acceleration = MAX_RANGER_ACCELERATION
+                self.player.max_speed = MAX_FAST_SPEED
+                self.player.ranger.particle_cloud.is_coin_bursting = True
+            else:
+                point_diff = abs(self.player.current_score - FIRE_SCORE)
+                say_string = f"you can't speed up yet you need {point_diff} more points"
+                self.speech_engine.say(say_string)
+                self.speech_engine.startLoop(False)
+                self.speech_engine.iterate()
+        elif self.fast_timer == 0:
+            self.player.acceleration = RANGER_ACCELERATION
+            self.player.max_speed = MAX_RANGER_SPEED
+            self.player.ranger.particle_cloud.is_coin_bursting = False
+
+        wants_wipe = self.controller.voice.wipe_flag
+        self.wipe_cooldown = max(self.wipe_cooldown - 1, 0)
+        if wants_wipe and self.player.current_score >= WIPE_SCORE:
+            self.wipe_flag = True
+            self.wipe_cooldown = self.max_wipe_cooldown
+        elif wants_wipe:
+            point_diff = abs(self.player.current_score - WIPE_SCORE)
+            say_string = f'you need {point_diff} more points to clear enemies'
+            self.speech_engine.say(say_string)
+            self.speech_engine.startLoop(False)
+            self.speech_engine.iterate()
+        if self.wipe_cooldown < self.max_wipe_cooldown:
+            self.wipe_flag = False
+        if self.wipe_cooldown > self.max_wipe_cooldown - 10:
+            self.screen_manager.render_background(RED)
+
+        if not self.speech_engine.isBusy():
+            self.speech_engine.endLoop()
+
+        # end powerups
+        self.controller.voice.reset_words()
 
         if self.game_state == 'play':
             self.current_time = pygame.time.get_ticks()
@@ -616,13 +674,6 @@ class Game:
                     print('error in game state')
                     sys.exit(1)
                 print(self.game_state)
-
-            # print('\r',
-            #       'pc:', len(self.dead_enemy_particle_clouds),
-            #       'en:', len(self.enemies),
-            #       'ori:', len(self.opponent_ranger_ids),
-            #       'cl', len(self.clouds),
-            #       end='')
 
         print('quitting')
         self.controller.disconnect()

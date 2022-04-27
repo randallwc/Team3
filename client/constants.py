@@ -17,6 +17,16 @@ GAME_STATES = [
     'multiplayer',
     'game_over']
 
+# ranger speeds
+MAX_RANGER_SPEED = 20.0
+MAX_FAST_SPEED = 40.0
+RANGER_ACCELERATION = 1.1
+MAX_RANGER_ACCELERATION = 5.0
+
+# powerup scores
+WIPE_SCORE = 20
+FIRE_SCORE = 10
+
 # colors
 BLACK = (0, 0, 0)
 BLUE = (0, 0, 255)

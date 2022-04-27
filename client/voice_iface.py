@@ -1,40 +1,52 @@
 import speech_recognition as sr
 
 
-class VoiceIface:
+class VoiceIface():
     def __init__(self):
-        self.recognizer = sr.Recognizer()
+        # debug
+        print(sr.Microphone.list_microphone_names())
+
+        # vars
         self.timeout = 5
-        self.recognizer.operation_timeout = self.timeout
-        self.recognizer.dynamic_energy_threshold = True
+        self.recognizer = sr.Recognizer()
+        self.mic = sr.Microphone(1)
+        self.stop_listening = None
+        self.fast_flag = False
+        self.fast_word = 'fast'
+        self.wipe_flag = False
+        self.wipe_word = 'wipe'
+        self.fast_word = 'fast'
+        with self.mic as source:
+            self.recognizer.adjust_for_ambient_noise(source, duration=1)
 
-    def listen(self):
-        with sr.Microphone() as source:
-            self.recognizer.adjust_for_ambient_noise(source, duration=5)
-            print('listening... ', end='', flush=True)
-            audio = self.recognizer.listen(source, timeout=self.timeout)
-            print('processing... ')
-        out = ''
+        self.recognizer.energy_threshold = 100
+        print(self.recognizer.dynamic_energy_threshold)
+        self.start_voice()
+
+    def reset_words(self):
+        self.fast_flag = False
+        self.wipe_flag = False
+
+    def _voice_callback(self, recognizer, audio):
+        print('callback')
         try:
-            out = str(self.recognizer.recognize_google(audio))
-            print(out)
+            said = str(recognizer.recognize_google(audio)).lower().split()
+            print(said)
+            if self.fast_word in said:
+                self.fast_flag = True
+            if self.wipe_word in said:
+                self.wipe_flag = True
         except sr.UnknownValueError:
-            print('saying not recognized')
+            print('[ERROR] unknown')
         except sr.RequestError as e:
-            print(f'network error: {e}')
-        return out
+            print(f'[ERROR]; {e}')
 
-    def get_last_word(self):
-        phrase = self.listen()
-        word = ''
-        if phrase:
-            word = phrase.rsplit(' ', maxsplit=1)[-1]
-        if word:
-            return word
-        return None
+    def start_voice(self):
+        self.stop_listening = self.recognizer.listen_in_background(
+            self.mic, self._voice_callback, phrase_time_limit=self.timeout)
 
-    def find_word(self, word: str):
-        phrase = self.listen().lower()
-        if phrase:
-            return word.lower() in phrase.split(' ')
-        return False
+    def stop_voice(self):
+        if self.stop_listening is not None:
+            self.stop_listening(wait_for_stop=False)
+        else:
+            print('not started')

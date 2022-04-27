@@ -1,4 +1,5 @@
-from constants import SCREEN_HEIGHT, SCREEN_WIDTH
+from constants import (MAX_RANGER_SPEED, RANGER_ACCELERATION, SCREEN_HEIGHT,
+                       SCREEN_WIDTH)
 from paths import point_gain_sound_path, point_loss_sound_path
 from ranger import Ranger
 from sounds import play_sound
@@ -18,9 +19,9 @@ class Player:
             num_z_levels
         )
         self.min_speed = 5.0
-        self.max_speed = 20.0
+        self.max_speed = MAX_RANGER_SPEED
         self.speed = self.min_speed
-        self.acceleration = 1.1
+        self.acceleration = RANGER_ACCELERATION
 
     def handle_point_change(self, delta: int):
         if delta < 0:
