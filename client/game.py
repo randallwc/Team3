@@ -209,6 +209,8 @@ class Game:
         self.player.ranger.x = 0.5 * SCREEN_WIDTH
         self.player.ranger.y = 0.9 * SCREEN_HEIGHT
         self.spawn_counter = self.max_spawn_counter
+        if not self.speech_engine.isBusy():
+            self.speech_engine.endLoop()
 
     def _start_screen(self):
         # clear all variables
@@ -525,6 +527,9 @@ class Game:
         # background render
         self.screen_manager.render_background()
 
+        if not self.speech_engine.isBusy():
+            self.speech_engine.endLoop()
+
         # fast powerup
         wants_fast = self.controller.voice.fast_flag
         self.fast_timer = max(self.fast_timer - 1, 0)
@@ -551,7 +556,7 @@ class Game:
         if wants_wipe and self.player.current_score >= CLEAR_SCORE:
             self.clear_flag = True
             self.clear_cooldown = self.max_clear_cooldown
-        elif wants_wipe:
+        elif not wants_fast and wants_wipe:
             point_diff = abs(self.player.current_score - CLEAR_SCORE)
             say_string = f'you need {point_diff} more points to kill all enemies'
             self.speech_engine.say(say_string)
@@ -561,9 +566,6 @@ class Game:
             self.clear_flag = False
         if self.clear_cooldown > self.max_clear_cooldown - 10:
             self.screen_manager.render_background(RED)
-
-        if not self.speech_engine.isBusy():
-            self.speech_engine.endLoop()
 
         # end powerups
         self.controller.voice.reset_words()
