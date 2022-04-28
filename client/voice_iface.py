@@ -4,12 +4,17 @@ import speech_recognition as sr
 class VoiceIface():
     def __init__(self):
         # debug
-        print(sr.Microphone.list_microphone_names())
+        mics = sr.Microphone.list_microphone_names()
+        print(mics)
 
         # vars
         self.timeout = 5
         self.recognizer = sr.Recognizer()
-        self.mic = sr.Microphone(0)
+        # mic_index = 1
+        # mic_index = int(
+        #     input(f'choose right mic by index [0,{len(mics)-1}]: '))
+        # self.mic = sr.Microphone(mic_index)
+        self.mic = sr.Microphone()
         self.stop_listening = None
         self.fast_flag = False
         self.fast_word = 'fast'
@@ -19,7 +24,7 @@ class VoiceIface():
             self.recognizer.adjust_for_ambient_noise(source, duration=1)
 
         self.recognizer.energy_threshold = 100
-        print(self.recognizer.dynamic_energy_threshold)
+        self.recognizer.dynamic_energy_threshold = True
         self.start_voice()
 
     def reset_words(self):
