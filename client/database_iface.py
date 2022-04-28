@@ -1,3 +1,5 @@
+import json
+
 import requests
 
 
@@ -14,8 +16,8 @@ class DatabaseIface:
 
     def get_highscores(self, n_scores, mode, score_kind):
         # n_scores, number of scores to return
-        #mode, 'multiplayer' or 'singleplayer'
-        #score_kind, 'lifetime' or 'singlegame'
+        # mode, 'multiplayer' or 'singleplayer'
+        # score_kind, 'lifetime' or 'singlegame'
 
         # let me answer that for you, no it has to be nScores and not n_scores
         # bad practice to send underscores through http requests,
@@ -26,17 +28,19 @@ class DatabaseIface:
             'mode': mode
         }
         res = None
+        assert score_kind in ('lifetime', 'singlegame')
+        assert mode in ('multiplayer', 'singleplayer')
         if score_kind == 'lifetime':
             url = self.used_uri + '/api/v1/fetch/lifetime/highscores'
             res = requests.get(url, obj)
         elif score_kind == 'singlegame':
             url = self.used_uri + '/api/v1/fetch/singlegame/highscores'
             res = requests.get(url, obj)
-        print('api res:', res)  # TODO -- remove debug
-        # return res
-        return [1] * n_scores  # TODO -- remove when highscores work
+
+        return json.loads(res.text)['scores']
 
     def add_highscore(self, new_score, username, mode):
+        assert mode in ('multiplayer', 'singleplayer')
         obj = {
             'username': username,
             'mode': mode,

@@ -12,5 +12,5 @@ Thumbs.db
 node_modules
 venv
 .replit
-server/localDB
+**/localDB
 server/.env

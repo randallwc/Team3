@@ -78,7 +78,7 @@ dependencies:
   - mccabe=0.7.0=pyhd8ed1ab_0
   - ncurses=6.3=h07bb92c_1
   - nettle=3.6=hc6a1b29_0
-  - numpy=1.22.3=py310h2e04ed8_2
+  - numpy=1.22.3=py310h99fd38b_2
   - opencv=4.5.5=py310hb6292c7_9
   - openh264=2.1.1=habe5f53_0
   - openssl=1.1.1n=h90dfc92_0
@@ -101,7 +101,6 @@ dependencies:
   - readline=8.1=hedafd6a_0
   - requests=2.27.1=pyhd8ed1ab_0
   - setuptools=62.1.0=py310hbe9552e_0
-  - speechrecognition=3.7.1=pyhd8ed1ab_4
   - sqlite=3.38.2=h7e3ccbd_0
   - svt-av1=0.9.1=h07bb92c_0
   - tk=8.6.12=he1e0b03_0
@@ -119,5 +118,148 @@ dependencies:
   - zlib=1.2.11=h90dfc92_1014
   - zstd=1.5.2=h861e0a7_0
   - pip:
+    - pyaudio==0.2.11
     - pygame==2.1.2
+    - pygame-gui==0.6.4
+    - pyobjc==8.5
+    - pyobjc-core==8.5
+    - pyobjc-framework-accessibility==8.5
+    - pyobjc-framework-accounts==8.5
+    - pyobjc-framework-addressbook==8.5
+    - pyobjc-framework-adservices==8.5
+    - pyobjc-framework-adsupport==8.5
+    - pyobjc-framework-applescriptkit==8.5
+    - pyobjc-framework-applescriptobjc==8.5
+    - pyobjc-framework-applicationservices==8.5
+    - pyobjc-framework-apptrackingtransparency==8.5
+    - pyobjc-framework-audiovideobridging==8.5
+    - pyobjc-framework-authenticationservices==8.5
+    - pyobjc-framework-automaticassessmentconfiguration==8.5
+    - pyobjc-framework-automator==8.5
+    - pyobjc-framework-avfoundation==8.5
+    - pyobjc-framework-avkit==8.5
+    - pyobjc-framework-businesschat==8.5
+    - pyobjc-framework-calendarstore==8.5
+    - pyobjc-framework-callkit==8.5
+    - pyobjc-framework-cfnetwork==8.5
+    - pyobjc-framework-classkit==8.5
+    - pyobjc-framework-cloudkit==8.5
+    - pyobjc-framework-cocoa==8.5
+    - pyobjc-framework-collaboration==8.5
+    - pyobjc-framework-colorsync==8.5
+    - pyobjc-framework-contacts==8.5
+    - pyobjc-framework-contactsui==8.5
+    - pyobjc-framework-coreaudio==8.5
+    - pyobjc-framework-coreaudiokit==8.5
+    - pyobjc-framework-corebluetooth==8.5
+    - pyobjc-framework-coredata==8.5
+    - pyobjc-framework-corehaptics==8.5
+    - pyobjc-framework-corelocation==8.5
+    - pyobjc-framework-coremedia==8.5
+    - pyobjc-framework-coremediaio==8.5
+    - pyobjc-framework-coremidi==8.5
+    - pyobjc-framework-coreml==8.5
+    - pyobjc-framework-coremotion==8.5
+    - pyobjc-framework-coreservices==8.5
+    - pyobjc-framework-corespotlight==8.5
+    - pyobjc-framework-coretext==8.5
+    - pyobjc-framework-corewlan==8.5
+    - pyobjc-framework-cryptotokenkit==8.5
+    - pyobjc-framework-datadetection==8.5
+    - pyobjc-framework-devicecheck==8.5
+    - pyobjc-framework-dictionaryservices==8.5
+    - pyobjc-framework-discrecording==8.5
+    - pyobjc-framework-discrecordingui==8.5
+    - pyobjc-framework-diskarbitration==8.5
+    - pyobjc-framework-dvdplayback==8.5
+    - pyobjc-framework-eventkit==8.5
+    - pyobjc-framework-exceptionhandling==8.5
+    - pyobjc-framework-executionpolicy==8.5
+    - pyobjc-framework-externalaccessory==8.5
+    - pyobjc-framework-fileprovider==8.5
+    - pyobjc-framework-fileproviderui==8.5
+    - pyobjc-framework-findersync==8.5
+    - pyobjc-framework-fsevents==8.5
+    - pyobjc-framework-gamecenter==8.5
+    - pyobjc-framework-gamecontroller==8.5
+    - pyobjc-framework-gamekit==8.5
+    - pyobjc-framework-gameplaykit==8.5
+    - pyobjc-framework-imagecapturecore==8.5
+    - pyobjc-framework-imserviceplugin==8.5
+    - pyobjc-framework-inputmethodkit==8.5
+    - pyobjc-framework-installerplugins==8.5
+    - pyobjc-framework-instantmessage==8.5
+    - pyobjc-framework-intents==8.5
+    - pyobjc-framework-intentsui==8.5
+    - pyobjc-framework-iosurface==8.5
+    - pyobjc-framework-ituneslibrary==8.5
+    - pyobjc-framework-kernelmanagement==8.5
+    - pyobjc-framework-latentsemanticmapping==8.5
+    - pyobjc-framework-launchservices==8.5
+    - pyobjc-framework-libdispatch==8.5
+    - pyobjc-framework-linkpresentation==8.5
+    - pyobjc-framework-localauthentication==8.5
+    - pyobjc-framework-localauthenticationembeddedui==8.5
+    - pyobjc-framework-mailkit==8.5
+    - pyobjc-framework-mapkit==8.5
+    - pyobjc-framework-mediaaccessibility==8.5
+    - pyobjc-framework-medialibrary==8.5
+    - pyobjc-framework-mediaplayer==8.5
+    - pyobjc-framework-mediatoolbox==8.5
+    - pyobjc-framework-metal==8.5
+    - pyobjc-framework-metalkit==8.5
+    - pyobjc-framework-metalperformanceshaders==8.5
+    - pyobjc-framework-metalperformanceshadersgraph==8.5
+    - pyobjc-framework-metrickit==8.5
+    - pyobjc-framework-mlcompute==8.5
+    - pyobjc-framework-modelio==8.5
+    - pyobjc-framework-multipeerconnectivity==8.5
+    - pyobjc-framework-naturallanguage==8.5
+    - pyobjc-framework-netfs==8.5
+    - pyobjc-framework-network==8.5
+    - pyobjc-framework-networkextension==8.5
+    - pyobjc-framework-notificationcenter==8.5
+    - pyobjc-framework-opendirectory==8.5
+    - pyobjc-framework-osakit==8.5
+    - pyobjc-framework-oslog==8.5
+    - pyobjc-framework-passkit==8.5
+    - pyobjc-framework-pencilkit==8.5
+    - pyobjc-framework-photos==8.5
+    - pyobjc-framework-photosui==8.5
+    - pyobjc-framework-preferencepanes==8.5
+    - pyobjc-framework-pushkit==8.5
+    - pyobjc-framework-quartz==8.5
+    - pyobjc-framework-quicklookthumbnailing==8.5
+    - pyobjc-framework-replaykit==8.5
+    - pyobjc-framework-safariservices==8.5
+    - pyobjc-framework-scenekit==8.5
+    - pyobjc-framework-screencapturekit==8.5
+    - pyobjc-framework-screensaver==8.5
+    - pyobjc-framework-screentime==8.5
+    - pyobjc-framework-scriptingbridge==8.5
+    - pyobjc-framework-searchkit==8.5
+    - pyobjc-framework-security==8.5
+    - pyobjc-framework-securityfoundation==8.5
+    - pyobjc-framework-securityinterface==8.5
+    - pyobjc-framework-servicemanagement==8.5
+    - pyobjc-framework-shazamkit==8.5
+    - pyobjc-framework-social==8.5
+    - pyobjc-framework-soundanalysis==8.5
+    - pyobjc-framework-speech==8.5
+    - pyobjc-framework-spritekit==8.5
+    - pyobjc-framework-storekit==8.5
+    - pyobjc-framework-syncservices==8.5
+    - pyobjc-framework-systemconfiguration==8.5
+    - pyobjc-framework-systemextensions==8.5
+    - pyobjc-framework-uniformtypeidentifiers==8.5
+    - pyobjc-framework-usernotifications==8.5
+    - pyobjc-framework-usernotificationsui==8.5
+    - pyobjc-framework-videosubscriberaccount==8.5
+    - pyobjc-framework-videotoolbox==8.5
+    - pyobjc-framework-virtualization==8.5
+    - pyobjc-framework-vision==8.5
+    - pyobjc-framework-webkit==8.5
+    - python-i18n==0.3.9
+    - pyttsx3==2.90
+    - speechrecognition==3.8.1
 prefix: /opt/homebrew/Caskroom/miniconda/base/envs/team3

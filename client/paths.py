@@ -2,7 +2,7 @@ import os
 
 
 def join_base(s: str):
-    return os.path.join('static', s)
+    return os.path.join(os.path.join(os.path.dirname(__file__), 'static'), s)
 
 
 anton_death_sound_path = join_base('anton.mp3')

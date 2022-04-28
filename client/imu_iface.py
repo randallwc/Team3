@@ -21,7 +21,7 @@ class ImuIface:
         self.new_time = 0
 
         def on_connect(client, userdata, flags, rc):
-            print("Connection returned result: " + str(rc))
+            # print("\nConnection returned result: " + str(rc))
             client.subscribe(self.room, qos=self.qos)
 
         def on_message(client, userdata, message):

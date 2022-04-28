@@ -1,13 +1,17 @@
 import sys
-import uuid
 from random import choice, randrange
 from typing import List
 
 import pygame
+import pygame_gui
+import pyttsx3
 
 from cloud import Cloud
-from constants import (DARK_BLUE, ENEMY_INFO, FRAME_RATE, GAME_STATES,
-                       GAME_TIMER, LIGHT_BLUE, SCREEN_HEIGHT, SCREEN_WIDTH)
+from constants import (CLEAR_SCORE, DARK_BLUE, ENEMY_INFO, FIRE_SCORE,
+                       FRAME_RATE, GAME_STATES, GAME_TIMER, LIGHT_BLUE,
+                       MAX_FAST_SPEED, MAX_RANGER_ACCELERATION,
+                       MAX_RANGER_SPEED, RANGER_ACCELERATION, RED,
+                       SCREEN_HEIGHT, SCREEN_WIDTH)
 from controller import Controller
 from database_iface import DatabaseIface
 from enemy import Enemy
@@ -23,12 +27,51 @@ from sounds import is_playing_sounds, play_music, stop_music
 class Game:
     def __init__(self):
         # pygame initialization
+        self.display_caption = 'Sky Danger Ranger'
         pygame.init()
         show_mouse(True)
-        pygame.display.set_caption('Sky Danger Ranger')
+        pygame.display.set_caption(self.display_caption)
         pygame.display.set_icon(
             pygame.image.load(ranger_path)
         )
+
+        # ui stuff
+        self.manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT))
+        # self.manager.set_visual_debug_mode(True)
+
+        # username
+        width = SCREEN_WIDTH // 4
+        height = SCREEN_HEIGHT // 12
+        left = SCREEN_WIDTH // 2 - width // 2
+        top = SCREEN_HEIGHT // 2 - height // 2
+        unamerect = pygame.Rect(left, top, width, height)
+        self.username_gui = pygame_gui.elements.UITextEntryLine(
+            unamerect, self.manager)
+        self.username_gui.set_text('enter username')
+
+        # is host
+        width = SCREEN_WIDTH // 4
+        height = SCREEN_HEIGHT // 12
+        left = SCREEN_WIDTH // 2 - width // 2
+        top = SCREEN_HEIGHT // 2 - height // 2 - 50
+        ishostrect = pygame.Rect(left, top, width, height)
+        self.is_host_gui = pygame_gui.elements.UIDropDownMenu(
+            ['host', 'player'], 'choose one', ishostrect, self.manager)
+        self.is_host_gui.hide()
+
+        # room id
+        width = SCREEN_WIDTH // 4
+        height = SCREEN_HEIGHT // 12
+        left = SCREEN_WIDTH // 2 - width // 2
+        top = SCREEN_HEIGHT // 2 - height // 2 + 50
+        unamerect = pygame.Rect(left, top, width, height)
+        self.roomid_gui = pygame_gui.elements.UITextEntryLine(
+            unamerect, self.manager)
+        self.roomid_gui.set_text('enter roomid')
+        self.roomid_gui.hide()
+
+        # Screen Manager settings
+        self.screen_manager = ScreenManager(sky_path)
 
         # enemies
         self.enemies: List[Enemy] = []
@@ -44,6 +87,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.current_time = 0
         self.start_time = 0
+        self.time_delta = None
 
         # clouds
         self.clouds: List[Cloud] = []
@@ -64,37 +108,109 @@ class Game:
         self.play_music = False
         self.use_camera = False
 
+        # powerup flags
+        self.fast_timer = 0
+        self.max_fast_timer = 500
+        self.clear_flag = False
+        self.max_clear_cooldown = 500
+        self.clear_cooldown = 0
+        self.speech_engine = pyttsx3.init()
+
         # Controller settings
         self.controller = Controller(self.num_z_levels, self.use_camera)
-
-        # Screen Manager settings
-        self.screen_manager = ScreenManager(sky_path)
 
         # Player Settings
         self.player = Player(self.num_z_levels)
 
         # Multiplayer Information
-        self.username = uuid.getnode()
-        self.room_id = ''
-        self.is_host = False
+        self.username = None
+        self.room_id = None
+        self.is_host = None
         self.server = None
         self.enemy_id_count = 0
         self.opponent_ranger_ids = []
 
         # Database Settings
         self.db = DatabaseIface()
-        # n_scores, number of scores to return
-        self.n_scores = 3
-        # mode, 'multiplayer' or 'singleplayer'
-        self.mode = 'singleplayer'
-        # score_kind, 'lifetime' or 'singlegame'
-        self.score_kind = 'lifetime'
-        self.scores = self.db.get_highscores(
-            self.n_scores, self.mode, self.score_kind)
+        self.scores_singlegame = []
+        self.scores_lifetime = []
+
+    def _ask_for_username(self):
+        # break out if got username
+        if self.username is not None:
+            self.game_state = 'start'
+            self.username_gui.hide()
+            set_caption(f'{self.username} {self.display_caption}')
+            return
+
+        # display background
+        self.screen_manager.render_background()
+
+        # show elements
+        self.username_gui.show()
+
+        # render clouds
+        for cloud in self.clouds:
+            cloud.show(
+                self.screen_manager.surface,
+                self.screen_manager.transparent_surface)
+            cloud.loop_around()
+
+        self.manager.draw_ui(self.screen_manager.surface)
+
+        # update display
+        pygame.display.update()
+
+    def _ask_player_info(self):
+        # break out if got is host and room name
+        if self.username is not None and self.room_id is not None and self.is_host is not None:
+            cap = f'{"host" if self.is_host else "player"} in '
+            cap += f'"{self.room_id}" named "{self.username}"'
+            set_caption(cap)
+            self.game_state = 'multiplayer'
+            self.server = ServerIface(self.username)
+            self.server.connect(self.room_id, self.is_host)
+            self.is_host_gui.hide()
+            self.roomid_gui.hide()
+            return
+
+        # display background
+        self.screen_manager.render_background()
+
+        # show elements
+        self.is_host_gui.show()
+        self.roomid_gui.show()
+
+        # render clouds
+        for cloud in self.clouds:
+            cloud.show(
+                self.screen_manager.surface,
+                self.screen_manager.transparent_surface)
+            cloud.loop_around()
+
+        self.manager.draw_ui(self.screen_manager.surface)
+
+        # update display
+        pygame.display.update()
+
+    def _clear_variables(self):
+        # clear variables
+        self.controller.voice.reset_words()
+        self.dead_enemy_particle_clouds = []
+        self.enemies = []
+        self.opponent_ranger_ids = []
+        self.player.acceleration = RANGER_ACCELERATION
+        self.player.current_score = 0
+        self.player.max_speed = MAX_RANGER_SPEED
+        self.player.ranger.particle_cloud.is_coin_bursting = False
+        self.player.ranger.particle_cloud.reset()
+        self.player.ranger.x = 0.5 * SCREEN_WIDTH
+        self.player.ranger.y = 0.9 * SCREEN_HEIGHT
+        self.spawn_counter = self.max_spawn_counter
 
     def _start_screen(self):
-        # tick clock
-        self.clock.tick(FRAME_RATE)
+        # clear all variables
+        self._clear_variables()
 
         # display background
         self.screen_manager.render_background()
@@ -161,39 +277,6 @@ class Game:
 
         # update display
         pygame.display.update()
-
-    def _ask_player_info(self):
-        prompt = "Would you like to join an existing game(join) "
-        prompt += "or create a new game(create)?: "
-        retry_prompt = "Lets try that again :/"
-        print(prompt)
-        room_join_status = input().lower().strip()
-        self.is_host = bool(room_join_status == 'create')
-
-        # to make sure that 'other' isn't classified as 'join', a previous
-        # bug
-        while room_join_status not in ('create', 'join'):
-            print(retry_prompt, prompt, sep='\n')
-            room_join_status = input().lower()
-            self.is_host = bool(room_join_status == 'create')
-
-        if self.is_host:
-            room_id_question = "Pick a room ID for everyone to join!: "
-        else:
-            room_id_question = "What is the room ID that you'd like to join?: "
-        print(room_id_question)
-        self.room_id = "".join(input().split())
-        print("What username would you like to use?")
-        self.username = "".join(input().split())
-        print("is host:", 'yes' if self.is_host else 'no')
-        print("room id:", self.room_id)
-        print("username:", self.username)
-        # server setup
-        self.server = ServerIface(self.username)
-        self.server.connect(self.room_id, self.is_host)  # connect to room
-        set_caption(
-            f'{"host" if self.is_host else "player"} in "{self.room_id}" named "{self.username}"')
-        self.game_state = 'multiplayer'
 
     def _spawn_enemies(self):
         # if you joined a game
@@ -338,10 +421,10 @@ class Game:
             # do logic on enemies in same level
             if enemy.z == self.player.ranger.z:
                 enemy = self._handle_enemy_collision(enemy)
+                enemy = self._handle_enemy_laser_hit(enemy)
                 enemy.show(
                     self.screen_manager.surface,
                     self.screen_manager.transparent_surface)
-                self._handle_enemy_laser_hit(enemy)
             else:
                 # display enemies on other levels
                 is_above = enemy.z > self.player.ranger.z
@@ -353,6 +436,9 @@ class Game:
                 self.server.remove_enemy_from_server(enemy.id)
         self.enemies = [
             enemy for enemy in self.enemies if enemy.should_display]
+        if self.clear_flag:
+            for enemy in self.enemies:
+                enemy.health = 0
 
     def _update_ranger_opponents(self):
         if self.game_state != 'multiplayer':
@@ -394,9 +480,6 @@ class Game:
             self.controller.is_firing())
 
     def _game_over(self):
-        # tick clock
-        self.clock.tick(FRAME_RATE)
-
         # display background
         self.screen_manager.render_background()
 
@@ -417,7 +500,9 @@ class Game:
             cloud.loop_around()
 
         self.screen_manager.render_final_scores(
-            self.player.current_score, self.scores)
+            self.player.current_score,
+            self.scores_singlegame,
+            self.scores_lifetime)
 
         message = 'Main Menu'
         if self.screen_manager.button(
@@ -427,31 +512,76 @@ class Game:
                 DARK_BLUE,
                 LIGHT_BLUE):
             self.game_state = 'start'
-            # clear variables
-            self.enemies = []
-            start_x = 0.5 * SCREEN_WIDTH
-            start_y = 0.9 * SCREEN_HEIGHT
-            self.player.ranger.x = start_x
-            self.player.ranger.y = start_y
-            self.player.current_score = 0
-            self.opponent_ranger_ids = []
-            self.dead_enemy_particle_clouds = []
-            self.spawn_counter = self.max_spawn_counter
+
+        # render fps
+        self.screen_manager.render_fps(round(self.clock.get_fps()))
 
         # update display
         pygame.display.update()
 
     def play(self):
-        self.clock.tick(FRAME_RATE)
+        # background render
         self.screen_manager.render_background()
 
-        # TODO -- if timer is over game over and display score
+        # fast powerup
+        wants_fast = self.controller.voice.fast_flag
+        self.fast_timer = max(self.fast_timer - 1, 0)
+        if wants_fast:
+            if self.player.current_score >= FIRE_SCORE and self.fast_timer == 0:
+                self.fast_timer = self.max_fast_timer
+                self.player.acceleration = MAX_RANGER_ACCELERATION
+                self.player.max_speed = MAX_FAST_SPEED
+                self.player.ranger.particle_cloud.is_coin_bursting = True
+            else:
+                point_diff = abs(self.player.current_score - FIRE_SCORE)
+                say_string = f"you can't speed up yet you need {point_diff} more points"
+                self.speech_engine.say(say_string)
+                self.speech_engine.startLoop(False)
+                self.speech_engine.iterate()
+        elif self.fast_timer == 0:
+            self.player.acceleration = RANGER_ACCELERATION
+            self.player.max_speed = MAX_RANGER_SPEED
+            self.player.ranger.particle_cloud.is_coin_bursting = False
+
+        # wipe powerup
+        wants_wipe = self.controller.voice.clear_flag
+        self.clear_cooldown = max(self.clear_cooldown - 1, 0)
+        if wants_wipe and self.player.current_score >= CLEAR_SCORE:
+            self.clear_flag = True
+            self.clear_cooldown = self.max_clear_cooldown
+        elif wants_wipe:
+            point_diff = abs(self.player.current_score - CLEAR_SCORE)
+            say_string = f'you need {point_diff} more points to kill all enemies'
+            self.speech_engine.say(say_string)
+            self.speech_engine.startLoop(False)
+            self.speech_engine.iterate()
+        if self.clear_cooldown < self.max_clear_cooldown:
+            self.clear_flag = False
+        if self.clear_cooldown > self.max_clear_cooldown - 10:
+            self.screen_manager.render_background(RED)
+
+        if not self.speech_engine.isBusy():
+            self.speech_engine.endLoop()
+
+        # end powerups
+        self.controller.voice.reset_words()
+
         if self.game_state == 'play':
             self.current_time = pygame.time.get_ticks()
             if abs(self.current_time - self.start_time) > GAME_TIMER:
-                # TODO -- add score as high score
-                # TODO -- fetch high scores
                 self.game_state = 'game_over'
+
+                # add highscores
+                assert self.username is not None
+                mode = 'singleplayer' if self.game_state == 'play' else 'multiplayer'
+                self.db.add_highscore(
+                    self.player.current_score, self.username, mode)
+
+                # get highscores
+                self.scores_singlegame = self.db.get_highscores(
+                    5, mode, 'singlegame')
+                self.scores_lifetime = self.db.get_highscores(
+                    5, mode, 'lifetime')
 
         # remove all particles
         self.screen_manager.reset_particles()
@@ -558,6 +688,9 @@ class Game:
         # game loop
         running = True
         while running:
+            # tick clock
+            self.time_delta = self.clock.tick(FRAME_RATE) / 1000.0
+
             # event handler
             self.mouseup = False
             self.mousedown = False
@@ -569,10 +702,25 @@ class Game:
                     break
                 if event.type == pygame.MOUSEBUTTONUP:
                     self.mouseup = True
-                elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.type == pygame.MOUSEBUTTONDOWN:
                     self.mousedown = True
+                if event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED:
+                    if event.ui_element == self.username_gui:
+                        self.username = event.text
+                    if event.ui_element == self.roomid_gui:
+                        self.room_id = event.text
+                if event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
+                    if event.ui_element == self.is_host_gui:
+                        self.is_host = event.text == 'host'
+
+                self.manager.process_events(event)
+
+            self.manager.update(self.time_delta)
+
             # game states
-            if self.game_state == 'start':
+            if self.game_state == 'ask_username':
+                self._ask_for_username()
+            elif self.game_state == 'start':
                 self._start_screen()
             elif self.game_state == 'play':
                 self.play()
@@ -587,13 +735,6 @@ class Game:
                     print('error in game state')
                     sys.exit(1)
                 print(self.game_state)
-
-            # print('\r',
-            #       'pc:', len(self.dead_enemy_particle_clouds),
-            #       'en:', len(self.enemies),
-            #       'ori:', len(self.opponent_ranger_ids),
-            #       'cl', len(self.clouds),
-            #       end='')
 
         print('quitting')
         self.controller.disconnect()

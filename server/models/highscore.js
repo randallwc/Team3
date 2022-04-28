@@ -138,24 +138,9 @@ HighscoreSchema.statics.handleScoreForLifetimeScore = function (
                 //1 if it is, add to the score
                 let scorerFound = false;
                 for (const scoreObject of scores) {
-                    console.log(
-                        scoreObject,
-                        username,
-                        playerID,
-                        score,
-                        "magic trick",
-                        playerID,
-                        "batic",
-                        scoreObject.playerID.toString()
-                    );
                     const thisIsTheUser =
                         scoreObject.username === username &&
                         scoreObject.playerID.toString() === playerID.toString();
-                    console.log(
-                        "HEREHREKLR;ALEKJFSAL;DKFJASD ",
-                        scoreObject.username === username,
-                        scoreObject.playerID.toString() === playerID
-                    );
                     if (thisIsTheUser) {
                         scoreObject.score = score;
                         scorerFound = true;
