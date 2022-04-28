@@ -30,7 +30,7 @@ class ScreenManager:
     def show_particles(self):
         self.surface.blit(self.transparent_surface, (0, 0))
 
-    def set_background(self, image_path):
+    def _set_background(self, image_path):
         self.background_image_path = image_path
         self.pygame_loaded_background = pygame.image.load(image_path)
 

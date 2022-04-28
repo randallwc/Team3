@@ -3,7 +3,7 @@ import dlib
 
 
 class CameraIface:
-    def __init__(self, num_levels, use_camera: bool, show_cam=False):
+    def __init__(self, num_levels, use_camera: bool, show_cam=True):
         self.show_cam = show_cam
         self.camera_width = 640
         self.camera_height = 480
