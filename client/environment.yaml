@@ -48,7 +48,7 @@ dependencies:
   - lerc=3.0=hbdafb3b_0
   - libblas=3.9.0=14_osxarm64_openblas
   - libcblas=3.9.0=14_osxarm64_openblas
-  - libcurl=7.82.0=hb0e6552_0
+  - libcurl=7.83.0=h2fcd78c_0
   - libcxx=13.0.1=h6a5c8ee_0
   - libdeflate=1.10=h3422bc3_0
   - libedit=3.1.20191231=hc8eb9b7_2
