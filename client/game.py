@@ -117,7 +117,7 @@ class Game:
         self.speech_engine = pyttsx3.init()
 
         # Controller settings
-        self.controller = Controller(self.num_z_levels, self.use_camera)
+        self.controller = None
 
         # Player Settings
         self.player = Player(self.num_z_levels)
@@ -141,6 +141,8 @@ class Game:
             self.game_state = 'start'
             self.username_gui.hide()
             set_caption(f'{self.username} {self.display_caption}')
+            self.controller = Controller(
+                self.num_z_levels, self.use_camera, self.username)
             return
 
         # display background
@@ -694,7 +696,8 @@ class Game:
             # event handler
             self.mouseup = False
             self.mousedown = False
-            self.fire_edge = self.controller.fire_edge()
+            if self.controller is not None:
+                self.fire_edge = self.controller.fire_edge()
             for event in pygame.event.get():
                 # check for window close
                 if event.type == pygame.QUIT:

@@ -7,12 +7,12 @@ from voice_iface import VoiceIface
 
 
 class Controller:
-    def __init__(self, num_z_levels: int, use_camera: bool):
+    def __init__(self, num_z_levels: int, use_camera: bool, username: str):
         self.num_z_levels = num_z_levels
 
         self._use_camera = use_camera
         self.current_z = None
-        self.imu = ImuIface()
+        self.imu = ImuIface(username)
         self.camera = CameraIface(self.num_z_levels, self._use_camera)
         self.voice = VoiceIface()
         self.pressing_down_level = False
