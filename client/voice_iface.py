@@ -34,16 +34,16 @@ class VoiceIface():
     def _voice_callback(self, recognizer, audio):
         try:
             said = str(recognizer.recognize_google(audio)).lower().split()
-            # print(said)
+            print(said)
             if self.fast_word in said:
                 self.fast_flag = True
             if self.clear_word in said:
                 self.clear_flag = True
         except sr.UnknownValueError:
-            # print('[ERROR] unknown')
+            print('[ERROR] unknown')
             pass
         except sr.RequestError as e:
-            # print(f'[ERROR]; {e}')
+            print(f'[ERROR]; {e}')
             pass
 
     def start_voice(self):
