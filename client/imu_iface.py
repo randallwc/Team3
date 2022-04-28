@@ -5,20 +5,19 @@ import paho.mqtt.client as mqtt
 
 
 class ImuIface:
-    def __init__(self):
+    def __init__(self, username):
         self.tilt_direction = ""
         self.imu_dict = {}
         self.is_idle = False
         self.is_upward_push = False
         self.is_downward_push = False
         self.is_shooting = False
-        self.x_gyro = 0.0
-        self.y_gyro = 0.0
-        self.room = 'team3/controller/will'
+        self.room = f'team3/controller/{username}'
         self.server = 'test.mosquitto.org'
         self.qos = 0
         self.previous_time = 0
         self.new_time = 0
+        print(self.server, self.room)
 
         def on_connect(client, userdata, flags, rc):
             # print("\nConnection returned result: " + str(rc))
@@ -27,10 +26,8 @@ class ImuIface:
         def on_message(client, userdata, message):
             self.new_time = time.time()
             self.imu_dict = json.loads(message.payload)
-            self.x_gyro = self.imu_dict['x_gyro']
-            self.y_gyro = self.imu_dict['y_gyro']
             self.is_idle = self.imu_dict['is_idle']
-            self.is_upward_push = self.imu_dict['is_forward_push']
+            self.is_upward_push = self.imu_dict['is_upward_push']
             self.is_downward_push = self.imu_dict['is_downward_push']
             self.is_shooting = self.imu_dict['is_shooting']
 

@@ -19,9 +19,9 @@
 import datetime
 import json
 import math
-import socket
 import sys
 import time
+
 import paho.mqtt.client as mqtt
 
 import IMU
@@ -220,7 +220,7 @@ def on_message(client, userdata, message):
 
 
 server = 'test.mosquitto.org'
-room = 'team3/controller/will'
+room = f'team3/controller/{sys.argv[1]}'
 publisher = mqtt.Client()
 publisher.on_connect = on_connect
 publisher.on_disconnect = on_disconnect
