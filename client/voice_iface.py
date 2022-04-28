@@ -41,10 +41,8 @@ class VoiceIface():
                 self.clear_flag = True
         except sr.UnknownValueError:
             print('[ERROR] unknown')
-            pass
         except sr.RequestError as e:
             print(f'[ERROR]; {e}')
-            pass
 
     def start_voice(self):
         self.stop_listening = self.recognizer.listen_in_background(
