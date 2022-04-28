@@ -1,14 +1,15 @@
 .ONESHELL:
+
 SHELL=/bin/bash
-SHELLOPTS=pipefail
 CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
 
 # CLIENT STUFF #
 
 default: run
 run:
-	$(CONDA_ACTIVATE) team3 \
-		&& python3 client/main.py
+	$(CONDA_ACTIVATE) team3
+	conda info
+	python client/main.py
 
 setup:
 	conda env create --file cleint/environment.yaml 2> /dev/null \
