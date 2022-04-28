@@ -40,11 +40,21 @@ class Controller:
 
     def get_direction(self):
         keys = pygame.key.get_pressed()
+        camup = False
+        camdown = False
+        camleft = False
+        camright = False
+        if self._use_camera:
+            dirs = self.camera.get_directions()
+            camup = dirs['up']
+            camdown = dirs['down']
+            camleft = dirs['left']
+            camright = dirs['right']
         return {
-            'up': keys[pygame.K_UP] or keys[pygame.K_w],
-            'down': keys[pygame.K_DOWN] or keys[pygame.K_s],
-            'left': keys[pygame.K_LEFT] or keys[pygame.K_a],
-            'right': keys[pygame.K_RIGHT] or keys[pygame.K_d],
+            'up': keys[pygame.K_UP] or keys[pygame.K_w] or camup,
+            'down': keys[pygame.K_DOWN] or keys[pygame.K_s] or camdown,
+            'left': keys[pygame.K_LEFT] or keys[pygame.K_a] or camleft,
+            'right': keys[pygame.K_RIGHT] or keys[pygame.K_d] or camright,
             'space': keys[pygame.K_SPACE] or self.imu.is_shooting,
             'down_level': keys[pygame.K_q] or self.imu.is_downward_push,
             'up_level': keys[pygame.K_e] or self.imu.is_upward_push,
@@ -68,34 +78,33 @@ class Controller:
         return False
 
     def get_z(self, current_z: int):
-        if self._use_camera:
-            self.current_z = self.camera.get_level()
+        assert 0 <= current_z < self.num_z_levels
+        self.current_z = current_z
+        if self.get_direction()['down_level']:
+            if not self.pressing_down_level:
+                self.pressing_down_level = True
+                self.current_z -= 1
         else:
-            assert 0 <= current_z < self.num_z_levels
-            self.current_z = current_z
-            if self.get_direction()['down_level']:
-                if not self.pressing_down_level:
-                    self.pressing_down_level = True
-                    self.current_z -= 1
-            else:
-                self.pressing_down_level = False
+            self.pressing_down_level = False
 
-            if self.get_direction()['up_level']:
-                if not self.pressing_up_level:
-                    self.pressing_up_level = True
-                    self.current_z += 1
-            else:
-                self.pressing_up_level = False
+        if self.get_direction()['up_level']:
+            if not self.pressing_up_level:
+                self.pressing_up_level = True
+                self.current_z += 1
+        else:
+            self.pressing_up_level = False
 
-            if self.current_z < 0:
-                self.current_z = 0
-            elif self.current_z >= self.num_z_levels:
-                self.current_z = self.num_z_levels - 1
+        if self.current_z < 0:
+            self.current_z = 0
+        elif self.current_z >= self.num_z_levels:
+            self.current_z = self.num_z_levels - 1
         return self.current_z
 
-    @staticmethod
-    def is_moving():
-        return any(pygame.key.get_pressed())
+    def is_moving(self):
+        out = any(pygame.key.get_pressed())
+        if self._use_camera:
+            out |= any(self.camera.directions.values())
+        return out
 
     def disconnect(self):
         self.imu.client.disconnect()
