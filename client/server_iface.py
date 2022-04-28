@@ -9,7 +9,7 @@ import socketio.exceptions
 class ServerIface:
     def __init__(self, username):
         self.socket = socketio.Client()
-        self.is_local = True
+        self.is_local = False
         self.local_uri = 'http://localhost:8000'
         self.prod_uri = 'https://skydangerranger.herokuapp.com/'
         try:

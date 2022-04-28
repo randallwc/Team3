@@ -5,7 +5,7 @@ import requests
 
 class DatabaseIface:
     def __init__(self):
-        self.is_local = True
+        self.is_local = False
         self.local_uri = 'http://localhost:8000'
         self.prod_uri = 'https://skydangerranger.herokuapp.com'
         self.used_uri = ''
