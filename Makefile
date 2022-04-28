@@ -14,12 +14,12 @@ setup:
 	conda env create --file cleint/environment.yaml 2> /dev/null \
 		|| echo "team3 environment already exists"
 
-lint: setup
+lint:
 	$(CONDA_ACTIVATE) team3 \
 		&& autoflake --in-place --recursive --remove-all-unused-imports --remove-unused-variables --expand-star-imports client/*.py \
 		&& pylint --recursive=y client/*.py
 
-remove-env: setup
+remove-env:
 	conda env remove -n team3
 
 update:
