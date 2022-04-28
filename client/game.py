@@ -105,7 +105,7 @@ class Game:
 
         # game settings
         self.num_z_levels = 3
-        self.play_music = False
+        self.play_music = True
         self.use_camera = False
 
         # powerup flags
