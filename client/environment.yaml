@@ -12,9 +12,10 @@ dependencies:
   - pip
   - py-opencv
   - pylint
-  - python=3.10.4=hfc7342c_0_cpython
+  - python
   - python-socketio
   - requests
+  - websocket-client
   - pip:
     - pyaudio
     - pygame
