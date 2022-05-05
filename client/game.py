@@ -297,7 +297,8 @@ class Game:
                         self.num_z_levels,
                         new_enemy['enemy_type'],
                         ENEMY_INFO,
-                        new_enemy['id'])
+                        new_enemy['id'],
+                        new_enemy['health'])
                 )
         # if you are the host or in single player
         elif self.spawn_counter <= 0 and len(self.enemies) < self.max_num_enemies:
