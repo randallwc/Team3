@@ -107,8 +107,8 @@ class CameraIface:
                  self.lower_horizontal_line_y),
                 self.color_green,
                 self.line_width)
-            # cv2.imshow('webcam', cv2.flip(img, 1))
-            cv2.imshow('webcam', img)
+            cv2.imshow('webcam', cv2.flip(img, 1))
+            # cv2.imshow('webcam', img)
 
         # update previous center
         self.previous_center = center
