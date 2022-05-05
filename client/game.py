@@ -742,7 +742,8 @@ class Game:
                 print(self.game_state)
 
         print('quitting')
-        self.controller.disconnect()
+        if self.controller is not None:
+            self.controller.disconnect()
         if self.server is not None:
             self.server.disconnect()
         pygame.quit()
