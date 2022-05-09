@@ -174,6 +174,7 @@ class Game:
             self.server.connect(self.room_id, self.is_host)
             self.is_host_gui.hide()
             self.roomid_gui.hide()
+            self.start_time = pygame.time.get_ticks()
             return
 
         # display background
@@ -571,7 +572,7 @@ class Game:
         # end powerups
         self.controller.voice.reset_words()
 
-        if self.game_state == 'play':
+        if self.game_state in ('play', 'multiplayer'):
             self.current_time = pygame.time.get_ticks()
             if abs(self.current_time - self.start_time) > GAME_TIMER:
                 self.game_state = 'game_over'
@@ -656,7 +657,8 @@ class Game:
         self.screen_manager.render_fps(round(self.clock.get_fps()))
 
         # show timer
-        if self.game_state == 'play':
+        if self.game_state in ('play', 'multiplayer'):
+
             self.screen_manager.render_time(
                 (GAME_TIMER - (self.current_time - self.start_time)) // 1000)
 
