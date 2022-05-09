@@ -3,8 +3,8 @@
 # Requirements
 
 -   https://people.csail.mit.edu/hubert/pyaudio/
-  - mac `brew install portaudio`
-  - linux `sudo apt-get install portaudio19-dev`
+-   mac `brew install portaudio`
+-   linux `sudo apt-get install portaudio19-dev`
 
 run these commands to use the client
 
