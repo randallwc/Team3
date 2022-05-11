@@ -40,9 +40,11 @@ class VoiceIface():
             if self.clear_word in said:
                 self.clear_flag = True
         except sr.UnknownValueError:
-            print('[ERROR] unknown')
+            # print(f'[ERROR] unknown value {e}')
+            # error when no words detected
+            pass
         except sr.RequestError as e:
-            print(f'[ERROR]; {e}')
+            print(f'[ERROR] {e}')
 
     def start_voice(self):
         self.stop_listening = self.recognizer.listen_in_background(
