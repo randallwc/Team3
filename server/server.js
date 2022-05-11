@@ -33,7 +33,11 @@ const cors = require("cors");
 
 // default
 app.get("*", (_, response) => {
-    response.status(200).send('<h1><a href="https://github.com/ECE-180D-WS-2022/Team3">sky danger ranger</a></h1>');
+    response
+        .status(200)
+        .send(
+            '<h1><a href="https://github.com/ECE-180D-WS-2022/Team3">sky danger ranger</a></h1>'
+        );
 });
 
 // initializing socket.io
