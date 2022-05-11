@@ -32,7 +32,6 @@ update:
 ##############
 
 server: npm-install
-	echo '[OPEN WHEN CREATING DB] http://localhost:8000/api/v1/createhighscoresobject'
 	cd server && nodemon server.js
 
 npm-install:
@@ -40,6 +39,9 @@ npm-install:
 
 database:
 	mkdir server/localDB; mongod --dbpath server/localDB
+
+heroku-status:
+	watch -d --color 'heroku ps --color; heroku logs --tail --color'
 
 clean:
 	rm -rf server/localDB
