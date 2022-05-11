@@ -59,7 +59,7 @@ let routes = require("./routes/routes");
 app.use("/api/v1/", routes);
 
 /////////////// DB initialization
-let URI = `mongodb+srv://${process.env.DBUSERNAME}:${process.env.DBPASSWORD}@skydangerrangerdb.ozahe.mongodb.net/${process.env.DBNAME}?retryWrites=true&w=majority`;
+let URI = `mongodb+srv://${process.env.DBUSERNAME}:${process.env.DBPASSWORD}@${process.env.DBURI}/${process.env.DBNAME}?retryWrites=true&w=majority`;
 // Connect to database
 mongoose.connect(process.env.DBLOCALURI || URI, {
     useNewUrlParser: true,
