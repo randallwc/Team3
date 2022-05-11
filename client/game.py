@@ -210,7 +210,7 @@ class Game:
         self.player.ranger.x = 0.5 * SCREEN_WIDTH
         self.player.ranger.y = 0.9 * SCREEN_HEIGHT
         self.spawn_counter = self.max_spawn_counter
-        #reset room info
+        # reset room info
         self.room_id = None
         self.is_host = None
         if not self.speech_engine.isBusy():
