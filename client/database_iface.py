@@ -38,9 +38,11 @@ class DatabaseIface:
             return json.loads(res.text)['scores']
         except json.JSONDecodeError:
             print('[ERROR] database not set up')
-            print('trying to set up database')
-            print(
-                requests.get(f'{self.used_uri}/api/v1/createhighscoresobject'))
+            if requests.get(
+                    f'{self.used_uri}/api/v1/createhighscoresobject').ok:
+                print('[DEBUG] database successfully setup relaunch')
+            else:
+                print('[ERROR] big dog database issue idk what\' up')
             sys.exit(1)
 
     def add_highscore(self, new_score, username, mode):
