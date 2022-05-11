@@ -5,14 +5,10 @@ import requests
 
 class DatabaseIface:
     def __init__(self):
-        self.is_local = False
         self.local_uri = 'http://localhost:8000'
-        self.prod_uri = 'https://skydangerranger.herokuapp.com'
-        self.used_uri = ''
-        if self.is_local:
-            self.used_uri = self.local_uri
-        else:
-            self.used_uri = self.prod_uri
+        self.jc_uri = 'https://skydangerranger.herokuapp.com'
+        self.will_uri = 'https://skydr.herokuapp.com'
+        self.used_uri = self.will_uri
 
     def get_highscores(self, n_scores, mode, score_kind):
         # n_scores, number of scores to return

@@ -9,14 +9,12 @@ import socketio.exceptions
 class ServerIface:
     def __init__(self, username):
         self.socket = socketio.Client()
-        self.is_local = False
         self.local_uri = 'http://localhost:8000'
-        self.prod_uri = 'https://skydangerranger.herokuapp.com/'
+        self.jc_uri = 'https://skydangerranger.herokuapp.com'
+        self.will_uri = 'https://skydr.herokuapp.com'
+        self.used_uri = self.will_uri
         try:
-            if self.is_local:
-                self.socket.connect(self.local_uri, transports=['websocket'])
-            else:
-                self.socket.connect(self.prod_uri, transports=['websocket'])
+            self.socket.connect(self.used_uri, transports=['websocket'])
         except socketio.exceptions.ConnectionError as err:
             print(err, ": can't connect to server! :(")
             sys.exit(1)
