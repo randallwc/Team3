@@ -210,6 +210,9 @@ class Game:
         self.player.ranger.x = 0.5 * SCREEN_WIDTH
         self.player.ranger.y = 0.9 * SCREEN_HEIGHT
         self.spawn_counter = self.max_spawn_counter
+        #reset room info
+        self.room_id = None
+        self.is_host = None
         if not self.speech_engine.isBusy():
             self.speech_engine.endLoop()
 
@@ -520,9 +523,6 @@ class Game:
                 DARK_BLUE,
                 LIGHT_BLUE):
             self.game_state = 'start'
-            #reset room info
-            self.room_id = None
-            self.is_host = None
 
         # render fps
         self.screen_manager.render_fps(round(self.clock.get_fps()))
