@@ -10,8 +10,8 @@ class ServerIface:
     def __init__(self, username):
         self.socket = socketio.Client()
         self.local_uri = 'http://localhost:8000'
-        self.jc_uri = 'https://skydangerranger.herokuapp.com/'
-        self.will_uri = 'https://skydr.herokuapp.com/'
+        self.jc_uri = 'https://skydangerranger.herokuapp.com'
+        self.will_uri = 'https://skydr.herokuapp.com'
         self.used_uri = self.will_uri
         try:
             self.socket.connect(self.used_uri, transports=['websocket'])
