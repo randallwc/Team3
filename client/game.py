@@ -349,7 +349,7 @@ class Game:
                 and self.player.ranger.z == enemy.z
 
         if _hit_enemy():
-            damage = 0.5
+            damage = 1
             enemy.got_hit(damage)
             if self.game_state == 'multiplayer':
                 self.server.send_enemy_was_hit(enemy.id, enemy.health)
