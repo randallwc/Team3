@@ -52,7 +52,8 @@ ENEMY_INFO = {
         'max_time_alive': 1000,
         'x_speed': 3,
         'y_speed': 60,
-        'direction': 'left'
+        'direction': 'left',
+        'health': 3
     },
     'cow': {
         'is_good': True,
@@ -61,7 +62,8 @@ ENEMY_INFO = {
         'max_time_alive': 1000,
         'x_speed': 1,
         'y_speed': 98,
-        'direction': 'right'
+        'direction': 'right',
+        'health': 1
     },
     'ricky': {
         'is_good': False,
@@ -70,7 +72,8 @@ ENEMY_INFO = {
         'max_time_alive': 1000,
         'x_speed': 2,
         'y_speed': 86,
-        'direction': 'left'
+        'direction': 'left',
+        'health': 2
     },
     'david': {
         'is_good': False,
@@ -79,7 +82,8 @@ ENEMY_INFO = {
         'max_time_alive': 1000,
         'x_speed': 3,
         'y_speed': 65,
-        'direction': 'right'
+        'direction': 'right',
+        'health': 3
     },
     'anton': {
         'is_good': False,
@@ -88,7 +92,8 @@ ENEMY_INFO = {
         'max_time_alive': 1000,
         'x_speed': 4,
         'y_speed': 81,
-        'direction': 'right'
+        'direction': 'right',
+        'health': 1
     },
     'armando': {
         'is_good': True,
@@ -97,7 +102,8 @@ ENEMY_INFO = {
         'max_time_alive': 1000,
         'x_speed': 3,
         'y_speed': 69,
-        'direction': 'left'
+        'direction': 'left',
+        'health': 2
     },
     'david2': {
         'is_good': False,
@@ -106,6 +112,7 @@ ENEMY_INFO = {
         'max_time_alive': 1000,
         'x_speed': 20,
         'y_speed': 50,
-        'direction': 'right'
+        'direction': 'right',
+        'health': 1
     },
 }
