@@ -210,6 +210,9 @@ class Game:
         self.player.ranger.x = 0.5 * SCREEN_WIDTH
         self.player.ranger.y = 0.9 * SCREEN_HEIGHT
         self.spawn_counter = self.max_spawn_counter
+        #reset room info
+        self.room_id = None
+        self.is_host = None
         if not self.speech_engine.isBusy():
             self.speech_engine.endLoop()
 
@@ -307,14 +310,16 @@ class Game:
             self.spawn_counter = self.max_spawn_counter
             # add to enemy id count
             self.enemy_id_count += 1
+            new_enemy_type = choice(self.enemy_types)
             new_enemy = Enemy(
                 randrange(0, SCREEN_WIDTH, 1),
                 100,
                 randrange(0, self.num_z_levels, 1),
                 self.num_z_levels,
-                choice(self.enemy_types),
+                new_enemy_type,
                 ENEMY_INFO,
-                self.enemy_id_count
+                self.enemy_id_count,
+                ENEMY_INFO[new_enemy_type]['health']
             )
             self.enemies.append(new_enemy)
             if self.game_state == 'multiplayer' and self.is_host:
@@ -347,7 +352,7 @@ class Game:
                 and self.player.ranger.z == enemy.z
 
         if _hit_enemy():
-            damage = 0.5
+            damage = 1
             enemy.got_hit(damage)
             if self.game_state == 'multiplayer':
                 self.server.send_enemy_was_hit(enemy.id, enemy.health)
@@ -367,7 +372,7 @@ class Game:
                     particle_cloud.fire_burst(10)
                     self.dead_enemy_particle_clouds.append(particle_cloud)
             # hurt
-            elif enemy.health < 1:
+            elif enemy.health < ENEMY_INFO[enemy.enemy_type]['health']:
                 # any enemy that is hurt smokes
                 enemy.particle_cloud.is_smoking = True
                 # good enemy hurt
@@ -396,7 +401,7 @@ class Game:
                                 new_particle_cloud)
                         # TODO -- if enemy is good make ranger that hit it have
                         # a fire cloud
-                    elif enemy.health < 1:
+                    elif enemy.health < ENEMY_INFO[enemy.enemy_type]['health']:
                         enemy.particle_cloud.is_smoking = True
                     del self.server.enemies_hurt[enemy.id]
                 # check if it has been removed from server, set should_display to
