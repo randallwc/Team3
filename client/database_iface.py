@@ -1,5 +1,4 @@
 import json
-import sys
 
 import requests
 
@@ -34,16 +33,8 @@ class DatabaseIface:
             url = self.used_uri + '/api/v1/fetch/singlegame/highscores'
             res = requests.get(url, obj)
 
-        try:
-            return json.loads(res.text)['scores']
-        except json.JSONDecodeError:
-            print('[ERROR] database not set up')
-            if requests.get(
-                    f'{self.used_uri}/api/v1/createhighscoresobject').ok:
-                print('[DEBUG] database successfully setup relaunch')
-            else:
-                print('[ERROR] big dog database issue idk what\' up')
-            sys.exit(1)
+        res.raise_for_status()
+        return json.loads(res.text)['scores']
 
     def add_highscore(self, new_score, username, mode):
         assert mode in ('multiplayer', 'singleplayer')
@@ -53,4 +44,15 @@ class DatabaseIface:
             'score': new_score
         }
         url = self.used_uri + '/api/v1/insertscore'
-        requests.post(url, obj)
+        res = requests.post(url, obj)
+        if not res.ok:
+            create_db_res = requests.get(
+                f'{self.used_uri}/api/v1/createhighscoresobject')
+            if create_db_res.ok:
+                print(create_db_res.text)
+                print(json.loads(create_db_res.text)['message'])
+                print('[DEBUG] database successfully setup relaunch')
+                res = requests.post(url, obj)
+                res.raise_for_status()
+            else:
+                print('[ERROR] big dog database issue idk what\' up')

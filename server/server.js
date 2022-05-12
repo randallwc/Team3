@@ -31,15 +31,6 @@ const app = express();
 const server = http.createServer(app);
 const cors = require("cors");
 
-// default
-app.get("*", (_, response) => {
-    response
-        .status(200)
-        .send(
-            '<h1><a href="https://github.com/ECE-180D-WS-2022/Team3">sky danger ranger</a></h1>'
-        );
-});
-
 // initializing socket.io
 const io = require("socket.io")(server, {
     pingTimeout: 300000,
@@ -66,6 +57,15 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 let routes = require("./routes/routes");
 app.use("/api/v1/", routes);
+
+// default
+app.get("*", (_, response) => {
+    response
+        .status(200)
+        .send(
+            '<h1><a href="https://github.com/ECE-180D-WS-2022/Team3">sky danger ranger</a></h1>'
+        );
+});
 
 /////////////// DB initialization
 let URI = `mongodb+srv://${process.env.DBUSERNAME}:${process.env.DBPASSWORD}@${process.env.DBURI}/${process.env.DBNAME}?retryWrites=true&w=majority`;
