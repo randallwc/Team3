@@ -2,9 +2,9 @@
 
 # Requirements
 
--   https://people.csail.mit.edu/hubert/pyaudio/
--   mac `brew install portaudio`
--   linux `sudo apt-get install portaudio19-dev`
+- https://people.csail.mit.edu/hubert/pyaudio/
+- mac `brew install portaudio`
+- linux `sudo apt-get install portaudio19-dev`
 
 run these commands to use the client
 
@@ -42,7 +42,7 @@ https://kiwidamien.github.io/save-the-environment-with-conda-and-how-to-let-othe
 
 # Sources
 
--   https://ak.picdn.net/shutterstock/videos/1036373483/thumb/1.jpg
--   https://wallpaper.dog/large/10896556.png
--   https://cartoonsmartstreaming.s3.amazonaws.com/wp-content/uploads/2014/12/05001234/plane_preview.png
--   https://www.vhv.rs/dpng/d/118-1189537_clouds-png-animated-cute-cartoon-cloud-png-transparent.png
+- https://ak.picdn.net/shutterstock/videos/1036373483/thumb/1.jpg
+- https://wallpaper.dog/large/10896556.png
+- https://cartoonsmartstreaming.s3.amazonaws.com/wp-content/uploads/2014/12/05001234/plane_preview.png
+- https://www.vhv.rs/dpng/d/118-1189537_clouds-png-animated-cute-cartoon-cloud-png-transparent.png
