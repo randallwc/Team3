@@ -5,92 +5,91 @@ const Player = require("../models/player");
 
 // Going to localhost:8000/api/sky will return this
 router.get("/sky", (request, response, next) => {
-    return response.status(200).send({
-        message: "Sky Danger Ranger is about to be the BEEZ knees",
-    });
+  return response.status(200).send({
+    message: "Sky Danger Ranger is about to be the BEEZ knees",
+  });
 });
 
 router.get("/createhighscoresobject", (request, response, next) => {
-    const MASTERKEY = "MasterKey";
-    let highscoreObject = {
-        key: MASTERKEY,
-    };
+  const MASTERKEY = "MasterKey";
+  let highscoreObject = {
+    key: MASTERKEY,
+  };
 
-    Highscore.create(highscoreObject)
-        .then((highscores) => {
-            return response.status(200).send({
-                highscoresObject: highscores,
-                message:
-                    "successfully made highscores object, only do this one time",
-            });
-        })
-        .catch((err) => {
-            return next(err);
-        });
+  Highscore.create(highscoreObject)
+    .then((highscores) => {
+      return response.status(200).send({
+        highscoresObject: highscores,
+        message: "successfully made highscores object, only do this one time",
+      });
+    })
+    .catch((err) => {
+      return next(err);
+    });
 });
 
 router.get("/fetch/lifetime/highscores", (request, response, next) => {
-    try {
-        // to be sent by client
-        let { nScores } = request.query;
-        const { mode } = request.query;
+  try {
+    // to be sent by client
+    let { nScores } = request.query;
+    const { mode } = request.query;
 
-        // will default to this if not passed in
-        if (!nScores) {
-            nScores = "5";
-        }
-
-        // trycatch will catch error if nscores isn't an integer
-        nScores = parseInt(nScores);
-
-        if (nScores > 50 || nScores < 1) {
-            return next(new Error("Please enter a number 1-50, inclusive"));
-        }
-
-        Highscore.fetchNHighestLifetimeScores(nScores, mode)
-            .then((scores) => {
-                return response.status(200).send({
-                    scores: scores,
-                });
-            })
-            .catch((err) => {
-                return next(err);
-            });
-    } catch (err) {
-        return next(err);
+    // will default to this if not passed in
+    if (!nScores) {
+      nScores = "5";
     }
+
+    // trycatch will catch error if nscores isn't an integer
+    nScores = parseInt(nScores);
+
+    if (nScores > 50 || nScores < 1) {
+      return next(new Error("Please enter a number 1-50, inclusive"));
+    }
+
+    Highscore.fetchNHighestLifetimeScores(nScores, mode)
+      .then((scores) => {
+        return response.status(200).send({
+          scores: scores,
+        });
+      })
+      .catch((err) => {
+        return next(err);
+      });
+  } catch (err) {
+    return next(err);
+  }
 });
 
 router.get("/fetch/singlegame/highscores", (request, response, next) => {
-    try {
-        // to be sent by client
-        let { nScores } = request.query;
-        const { mode } = request.query;
+  try {
+    // to be sent by client
+    let { nScores } = request.query;
+    const { mode } = request.query;
 
-        // if not passed in, will default to this
-        if (!nScores) {
-            nScores = "5";
-        }
-
-        // trycatch will catch error if nscores isn't an integer
-        nScores = parseInt(nScores);
-
-        if (nScores > 50 || nScores < 1) {
-            return next(new Error("Please enter a number 1-50, inclusive"));
-        }
-
-        Highscore.fetchNHighestSingleGameScores(nScores, mode)
-            .then((scores) => {
-                return response.status(200).send({
-                    scores: scores,
-                });
-            })
-            .catch((err) => {
-                return next(err);
-            });
-    } catch (err) {
-        return next(err);
+    // if not passed in, will default to this
+    if (!nScores) {
+      nScores = "5";
     }
+
+    // trycatch will catch error if nscores isn't an integer
+    nScores = parseInt(nScores);
+
+    if (nScores > 50 || nScores < 1) {
+      return next(new Error("Please enter a number 1-50, inclusive"));
+    }
+
+    Highscore.fetchNHighestSingleGameScores(nScores, mode)
+      .then((scores) => {
+        return response.status(200).send({
+          scores: scores,
+        });
+      })
+      .catch((err) => {
+        return next(err);
+      });
+  } catch (err) {
+    return next(err);
+  }
 });
 
 // TODO: delete this once everything works, python client will send highscores
@@ -111,41 +110,39 @@ router.get("/fetch/singlegame/highscores", (request, response, next) => {
 // });
 
 router.post("/insertscore", (request, response, next) => {
-    const { username } = request.body;
-    let { score } = request.body;
-    const { mode } = request.body;
+  const { username } = request.body;
+  let { score } = request.body;
+  const { mode } = request.body;
 
-    if (!username) {
-        return next(new Error("Please pass in username"));
-    }
+  if (!username) {
+    return next(new Error("Please pass in username"));
+  }
 
-    if (!score) {
-        return next(new Error("Please pass in score"));
-    }
+  if (!score) {
+    return next(new Error("Please pass in score"));
+  }
 
-    if (mode !== "multiplayer" && mode !== "singleplayer") {
-        return next(
-            new Error(
-                'Available modes to pass in: "singleplayer" & "multiplayer"'
-            )
-        );
-    }
+  if (mode !== "multiplayer" && mode !== "singleplayer") {
+    return next(
+      new Error('Available modes to pass in: "singleplayer" & "multiplayer"')
+    );
+  }
 
-    try {
-        const intScore = parseInt(score);
+  try {
+    const intScore = parseInt(score);
 
-        Player.addScore(username, intScore, mode)
-            .then((player) => {
-                return response.status(200).send({
-                    player: player,
-                });
-            })
-            .catch((err) => {
-                return next(err);
-            });
-    } catch (err) {
+    Player.addScore(username, intScore, mode)
+      .then((player) => {
+        return response.status(200).send({
+          player: player,
+        });
+      })
+      .catch((err) => {
         return next(err);
-    }
+      });
+  } catch (err) {
+    return next(err);
+  }
 });
 
 module.exports = router;
