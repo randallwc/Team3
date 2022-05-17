@@ -13,6 +13,7 @@ class ServerIface:
         self.jc_uri = 'https://skydangerranger.herokuapp.com'
         self.will_uri = 'https://skydr.herokuapp.com'
         self.used_uri = self.will_uri
+        self.previously_connected = False
         try:
             self.socket.connect(self.used_uri, transports=['websocket'])
         except socketio.exceptions.ConnectionError as err:
@@ -20,6 +21,7 @@ class ServerIface:
             sys.exit(1)
         else:
             print('Connected to:', self.socket.connection_url)
+            self.previously_connected = True
         self.is_host = False
         self.room_id = ''
         self.socket_id = ''
@@ -86,7 +88,10 @@ class ServerIface:
         @self.socket.on('new_player_joined_room')
         def new_player_joined_actions(data):
             print(data)
-            self.new_players_awaiting_enemies.append(data['socket_id'])
+            # if a user previously_connected, then they disconnected from game
+            # still have local versions of enemies, don't send
+            if not data['previously_connected']:
+                self.new_players_awaiting_enemies.append(data['socket_id'])
             if len(self.curr_metadata) > 0:
                 self.socket.emit("update_my_coordinates_and_meta", {
                     'x': self.curr_metadata[0],
@@ -102,21 +107,30 @@ class ServerIface:
             self.enemies_hurt[enemy_id] = new_health
 
     def connect(self, room_id, is_host):
-        event_name = "join_new_room" if is_host else "join_existing_room"
-        self.is_host = is_host
-        self.room_id = room_id
-        self.epoch_time = int(time.time())
-        self.user_id = uuid.getnode()
-        # concatinating for local testing, so user id is still unique
-        self.time_user_id = self.epoch_time + self.user_id
+        try:
+            if not self.socket.connected:
+                self.socket.connect(self.used_uri, transports=['websocket'])
+        except socketio.exceptions.ConnectionError as err:
+            print(err, ": can't connect to server! :(")
+        else:
+            print('Connected to:', self.socket.connection_url)
+            event_name = "join_new_room" if is_host else "join_existing_room"
+            self.is_host = is_host
+            self.room_id = room_id
+            self.epoch_time = int(time.time())
+            self.user_id = uuid.getnode()
+            # concatinating for local testing, so user id is still unique
+            self.time_user_id = self.epoch_time + self.user_id
 
-        self.socket.emit(event_name, {
-            'room_id': room_id,
-            'user_id': self.user_id,
-            'epoch_time': self.epoch_time,
-            'time_user_id': self.time_user_id,  # epoch_time + user_id
-            'username': self.username
-        })
+            self.socket.emit(event_name, {
+                'room_id': room_id,
+                'user_id': self.user_id,
+                'epoch_time': self.epoch_time,
+                'time_user_id': self.time_user_id,  # epoch_time + user_id
+                'username': self.username,
+                'previously_connected': self.previously_connected
+            })
+
 
     def send_location_and_meta(self, x, y, z, is_firing):
         # modulo counter
@@ -178,6 +192,9 @@ class ServerIface:
             "health": new_health,
             "room_id": self.room_id
         })
+
+    def set_previously_connected(self, bool_value):
+        self.server.previously_connected = bool_value
 
     def disconnect(self):
         self.socket.disconnect()
