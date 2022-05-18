@@ -211,6 +211,7 @@ const listenForJoiningExistingRoom = (socket, roomTracker) => {
       socket.broadcast.to(request.room_id).emit("new_player_joined_room", {
         room_id: request.room_id,
         socket_id: socket.id,
+        previously_connected: request.previously_connected,
       });
 
       console.log("After Joining existing room", roomTracker);
