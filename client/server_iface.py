@@ -193,8 +193,5 @@ class ServerIface:
             "room_id": self.room_id
         })
 
-    def set_previously_connected(self, bool_value):
-        self.server.previously_connected = bool_value
-
     def disconnect(self):
         self.socket.disconnect()

@@ -215,7 +215,7 @@ class Game:
         self.is_host = None
         # reset server variables
         if self.server is not None:
-            self.server.set_previously_connected(False)
+            self.server.previously_connected = False
         if not self.speech_engine.isBusy():
             self.speech_engine.endLoop()
 
