@@ -683,12 +683,12 @@ class Game:
         # update display
         pygame.display.update()
 
-        #TODO: remove, just here to demonstrate how I tested disconnecting & reconnecting
-        #if not self.is_host and (GAME_TIMER - (self.current_time - self.start_time)) // 1000 == 15:
+        # TODO: remove, just here to demonstrate how I tested disconnecting & reconnecting
+        # if not self.is_host and (GAME_TIMER - (self.current_time - self.start_time)) // 1000 == 15:
         #    self.server.socket.disconnect()
 
         # if in multiplayer, ensure connected
-        #if game_state is 'multiplayer', self.server will be defined
+        # if game_state is 'multiplayer', self.server will be defined
         if self.game_state == 'multiplayer' and not self.server.socket.connected:
             self.server.connect(self.room_id, self.is_host)
 

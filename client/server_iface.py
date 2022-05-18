@@ -131,7 +131,6 @@ class ServerIface:
                 'previously_connected': self.previously_connected
             })
 
-
     def send_location_and_meta(self, x, y, z, is_firing):
         # modulo counter
         self.send_location_counter += 1
