@@ -97,9 +97,9 @@ ENEMY_INFO = {
         'death_sound_path': anton_death_sound_path,
         'image_path': anton_path,
         'max_time_alive': 1000,
-        'x_speed': 4,
-        'y_speed': 81,
-        'direction': 'right',
+        'x_speed': 0,
+        'y_speed': 3,
+        'direction': 'down',
         'health': 1
     },
     'armando': {

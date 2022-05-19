@@ -118,27 +118,30 @@ class Enemy(Entity):
             # if dead it shouldn't display
             self.should_display = False
 
-    # TODO -- make this take a pattern argument e.g. circle or snake and then
-    # make it move in those patterns
     def step(self):
         super().update_coordinates(self.x, self.y)
 
-        if self.current_direction == 'right':
-            self.x += self.x_speed
-        elif self.current_direction == 'left':
-            self.x -= self.x_speed
+        if self.current_direction in ('right', 'left'):
+            if self.current_direction == 'right':
+                self.x += self.x_speed
+            elif self.current_direction == 'left':
+                self.x -= self.x_speed
 
-        if self.x >= SCREEN_WIDTH:
-            self.y += self.y_speed
-            self.current_direction = self.directions[0]  # left
-            self.x = SCREEN_WIDTH
-        if self.x <= 0:
-            self.y += self.y_speed
-            self.current_direction = self.directions[1]
-            self.x = 0
+            self.x = min(SCREEN_WIDTH, max(0, self.x))
 
-        # keep y within the screen
-        if self.y >= SCREEN_HEIGHT // 2:
-            self.y = SCREEN_HEIGHT // 2
-        elif self.y <= 0:
-            self.y = 0
+            if self.x == SCREEN_WIDTH:
+                self.current_direction = 'left'
+                self.y += self.y_speed
+            if self.x == 0:
+                self.current_direction = 'right'
+                self.y += self.y_speed
+
+            # keep y within the screen
+            self.y = min(SCREEN_HEIGHT * 3 // 4, max(0, self.y))
+        elif self.current_direction == 'down':
+            self.y += self.y_speed
+            if self.y >= SCREEN_HEIGHT:
+                return False
+        else:
+            raise Exception('invalid direction')
+        return True
