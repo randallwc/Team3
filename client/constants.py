@@ -23,6 +23,9 @@ MAX_RANGER_SPEED = 20.0
 MAX_FAST_SPEED = 30.0
 RANGER_ACCELERATION = 1.1
 MAX_RANGER_ACCELERATION = 5.0
+RANGER_DAMAGE = 1
+RANGER_START_HEALTH = 1
+MAX_RANGER_HEALTH = 2
 
 # powerup scores
 CLEAR_SCORE = 20
@@ -44,6 +47,10 @@ YELLOW = (255, 255, 0)
 FONT = 'Comic Sans'
 FONT_SIZE = 20
 
+
+ENEMY_DIRECTIONS = ['left', 'right', 'down']
+ENEMY_DAMAGE_TO_RANGER_ON_COLLIDE = 0.5
+ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT = 0.25
 ENEMY_INFO = {
     'jc': {
         'is_good': False,
@@ -90,9 +97,9 @@ ENEMY_INFO = {
         'death_sound_path': anton_death_sound_path,
         'image_path': anton_path,
         'max_time_alive': 1000,
-        'x_speed': 4,
-        'y_speed': 81,
-        'direction': 'right',
+        'x_speed': 0,
+        'y_speed': 3,
+        'direction': 'down',
         'health': 1
     },
     'armando': {

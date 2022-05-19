@@ -1,3 +1,4 @@
+import os
 import sys
 from random import choice, randrange
 from typing import List
@@ -7,11 +8,14 @@ import pygame_gui
 import pyttsx3
 
 from cloud import Cloud
-from constants import (CLEAR_SCORE, DARK_BLUE, ENEMY_INFO, FIRE_SCORE,
-                       FRAME_RATE, GAME_STATES, GAME_TIMER, LIGHT_BLUE,
-                       MAX_FAST_SPEED, MAX_RANGER_ACCELERATION,
-                       MAX_RANGER_SPEED, RANGER_ACCELERATION, RED,
-                       SCREEN_HEIGHT, SCREEN_WIDTH)
+from constants import (CLEAR_SCORE, DARK_BLUE,
+                       ENEMY_DAMAGE_TO_RANGER_ON_COLLIDE,
+                       ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT, ENEMY_INFO,
+                       FIRE_SCORE, FRAME_RATE, GAME_STATES, GAME_TIMER,
+                       LIGHT_BLUE, MAX_FAST_SPEED, MAX_RANGER_ACCELERATION,
+                       MAX_RANGER_HEALTH, MAX_RANGER_SPEED,
+                       RANGER_ACCELERATION, RANGER_DAMAGE, RANGER_START_HEALTH,
+                       RED, SCREEN_HEIGHT, SCREEN_WIDTH)
 from controller import Controller
 from database_iface import DatabaseIface
 from enemy import Enemy
@@ -36,8 +40,10 @@ class Game:
         )
 
         # ui stuff
-        self.manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT))
-        # self.manager.set_visual_debug_mode(True)
+        self.ui_manager = pygame_gui.UIManager(
+            (SCREEN_WIDTH, SCREEN_HEIGHT), os.path.join(
+                os.path.dirname(__file__), 'theme.json'))
+        # self.ui_manager.set_visual_debug_mode(True)
 
         # username
         width = SCREEN_WIDTH // 4
@@ -46,7 +52,7 @@ class Game:
         top = SCREEN_HEIGHT // 2 - height // 2
         unamerect = pygame.Rect(left, top, width, height)
         self.username_gui = pygame_gui.elements.UITextEntryLine(
-            unamerect, self.manager)
+            unamerect, self.ui_manager)
         self.username_gui.set_text('enter username')
 
         # is host
@@ -56,7 +62,7 @@ class Game:
         top = SCREEN_HEIGHT // 2 - height // 2 - 50
         ishostrect = pygame.Rect(left, top, width, height)
         self.is_host_gui = pygame_gui.elements.UIDropDownMenu(
-            ['host', 'player'], 'choose one', ishostrect, self.manager)
+            ['host', 'join'], 'choose one', ishostrect, self.ui_manager)
         self.is_host_gui.hide()
 
         # room id
@@ -66,9 +72,35 @@ class Game:
         top = SCREEN_HEIGHT // 2 - height // 2 + 50
         unamerect = pygame.Rect(left, top, width, height)
         self.roomid_gui = pygame_gui.elements.UITextEntryLine(
-            unamerect, self.manager)
+            unamerect, self.ui_manager)
         self.roomid_gui.set_text('enter roomid')
         self.roomid_gui.hide()
+
+        # health bar
+        width = SCREEN_WIDTH // 5
+        height = SCREEN_HEIGHT // 20
+        left = 10
+        top = SCREEN_HEIGHT - 10 - height
+        healthbarrect = pygame.Rect(left, top, width, height)
+        self.health_bar = pygame_gui.elements.UIStatusBar(
+            healthbarrect,
+            self.ui_manager,
+            object_id=pygame_gui.core.ObjectID(
+                object_id='#healthbar'))
+        self.health_bar.hide()
+
+        # shield bar
+        width = SCREEN_WIDTH // 5
+        height = SCREEN_HEIGHT // 20
+        left = 10
+        top = SCREEN_HEIGHT - 10 - 2 * height
+        shieldbarrect = pygame.Rect(left, top, width, height)
+        self.shield_bar = pygame_gui.elements.UIStatusBar(
+            shieldbarrect,
+            self.ui_manager,
+            object_id=pygame_gui.core.ObjectID(
+                object_id='#shieldbar'))
+        self.shield_bar.hide()
 
         # Screen Manager settings
         self.screen_manager = ScreenManager(sky_path)
@@ -158,7 +190,7 @@ class Game:
                 self.screen_manager.transparent_surface)
             cloud.loop_around()
 
-        self.manager.draw_ui(self.screen_manager.surface)
+        self.ui_manager.draw_ui(self.screen_manager.surface)
 
         # update display
         pygame.display.update()
@@ -191,7 +223,7 @@ class Game:
                 self.screen_manager.transparent_surface)
             cloud.loop_around()
 
-        self.manager.draw_ui(self.screen_manager.surface)
+        self.ui_manager.draw_ui(self.screen_manager.surface)
 
         # update display
         pygame.display.update()
@@ -201,28 +233,26 @@ class Game:
         self.controller.voice.reset_words()
         self.dead_enemy_particle_clouds = []
         self.enemies = []
+        self.is_host = None
         self.opponent_ranger_ids = []
         self.player.acceleration = RANGER_ACCELERATION
         self.player.current_score = 0
         self.player.max_speed = MAX_RANGER_SPEED
+        self.player.ranger.health = RANGER_START_HEALTH
         self.player.ranger.particle_cloud.is_coin_bursting = False
         self.player.ranger.particle_cloud.reset()
         self.player.ranger.x = 0.5 * SCREEN_WIDTH
         self.player.ranger.y = 0.9 * SCREEN_HEIGHT
-        self.spawn_counter = self.max_spawn_counter
-        # reset room info
         self.room_id = None
-        self.is_host = None
-        # reset server variables
+        self.spawn_counter = self.max_spawn_counter
+        self.shield_bar.hide()
+        self.health_bar.hide()
         if self.server is not None:
             self.server.previously_connected = False
         if not self.speech_engine.isBusy():
             self.speech_engine.endLoop()
 
     def _start_screen(self):
-        # clear all variables
-        self._clear_variables()
-
         # display background
         self.screen_manager.render_background()
 
@@ -295,7 +325,6 @@ class Game:
             # if there are enemies from server to be appended.
             while len(self.server.awaiting_new_enemies) > 0:
                 new_enemy = self.server.awaiting_new_enemies.pop()
-                # TODO -- get each enemies' health
                 self.enemies.append(
                     Enemy(
                         new_enemy['x'],
@@ -303,7 +332,6 @@ class Game:
                         new_enemy['z'],
                         self.num_z_levels,
                         new_enemy['enemy_type'],
-                        ENEMY_INFO,
                         new_enemy['id'],
                         new_enemy['health'])
                 )
@@ -320,7 +348,6 @@ class Game:
                 randrange(0, self.num_z_levels, 1),
                 self.num_z_levels,
                 new_enemy_type,
-                ENEMY_INFO,
                 self.enemy_id_count,
                 ENEMY_INFO[new_enemy_type]['health']
             )
@@ -335,15 +362,15 @@ class Game:
             if enemy.enemy_type in enemy.bad_enemies:
                 # TODO -- lower health instead of points
                 self.player.handle_point_change(-10)
+                self.player.ranger.health -= ENEMY_DAMAGE_TO_RANGER_ON_COLLIDE
                 # TODO -- send server that ranger was damaged
-                # despawn bad enemy if touched
-                enemy.health = 0
             if enemy.enemy_type in enemy.good_enemies:
-                # TODO -- get back health if you pick up a good enemy
                 self.player.handle_point_change(10)
                 self.player.ranger.particle_cloud.coin_burst(10)
+                self.player.ranger.health += ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT
                 # TODO -- send server that ranger gained health
-                enemy.health = 0
+            # despawn bad enemy if touched
+            enemy.health = 0
         return enemy
 
     def _handle_enemy_laser_hit(self, enemy: Enemy):
@@ -355,8 +382,7 @@ class Game:
                 and self.player.ranger.z == enemy.z
 
         if _hit_enemy():
-            damage = 1
-            enemy.got_hit(damage)
+            enemy.got_hit(RANGER_DAMAGE)
             if self.game_state == 'multiplayer':
                 self.server.send_enemy_was_hit(enemy.id, enemy.health)
             # dead
@@ -365,6 +391,7 @@ class Game:
                 if enemy.enemy_type in enemy.good_enemies:
                     # auto get hurt if enemy is good and you killed it
                     self.player.handle_point_change(enemy.handle_death())
+                    self.player.ranger.health -= ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT
                     # TODO -- server send player was damaged
                 # bad enemy dead
                 else:
@@ -382,6 +409,7 @@ class Game:
                 if enemy.enemy_type in enemy.good_enemies:
                     # auto get hurt if enemy is good
                     self.player.handle_point_change(enemy.handle_death())
+                    self.player.ranger.health -= ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT
                     # TODO -- server send player was damaged
                 # bad enemy hurt
                 else:
@@ -431,7 +459,11 @@ class Game:
                             # current enemies
                             self.server.new_players_awaiting_enemies.pop(index)
 
-            enemy.step()
+            # move enemy
+            if not enemy.step():
+                # enemy hit bottom of screen
+                enemy.health = 0
+                self.player.handle_point_change(-5)
             # do logic on enemies in same level
             if enemy.z == self.player.ranger.z:
                 enemy = self._handle_enemy_collision(enemy)
@@ -526,6 +558,8 @@ class Game:
                 DARK_BLUE,
                 LIGHT_BLUE):
             self.game_state = 'start'
+            # clear all variables
+            self._clear_variables()
 
         # render fps
         self.screen_manager.render_fps(round(self.clock.get_fps()))
@@ -549,6 +583,7 @@ class Game:
                 self.player.acceleration = MAX_RANGER_ACCELERATION
                 self.player.max_speed = MAX_FAST_SPEED
                 self.player.ranger.particle_cloud.is_coin_bursting = True
+                self.player.ranger.health = MAX_RANGER_HEALTH
             else:
                 point_diff = abs(self.player.current_score - FIRE_SCORE)
                 say_string = f"you can't speed up yet you need {point_diff} more points"
@@ -580,22 +615,22 @@ class Game:
         # end powerups
         self.controller.voice.reset_words()
 
-        if self.game_state in ('play', 'multiplayer'):
-            self.current_time = pygame.time.get_ticks()
-            if abs(self.current_time - self.start_time) > GAME_TIMER:
-                self.game_state = 'game_over'
+        self.current_time = pygame.time.get_ticks()
+        if self.player.ranger.health <= 0 or abs(
+                self.current_time - self.start_time) > GAME_TIMER:
+            self.game_state = 'game_over'
 
-                # add highscores
-                assert self.username is not None
-                mode = 'singleplayer' if self.game_state == 'play' else 'multiplayer'
-                self.db.add_highscore(
-                    self.player.current_score, self.username, mode)
+            # add highscores
+            assert self.username is not None
+            mode = 'singleplayer' if self.game_state == 'play' else 'multiplayer'
+            self.db.add_highscore(
+                self.player.current_score, self.username, mode)
 
-                # get highscores
-                self.scores_singlegame = self.db.get_highscores(
-                    5, mode, 'singlegame')
-                self.scores_lifetime = self.db.get_highscores(
-                    5, mode, 'lifetime')
+            # get highscores
+            self.scores_singlegame = self.db.get_highscores(
+                5, mode, 'singlegame')
+            self.scores_lifetime = self.db.get_highscores(
+                5, mode, 'lifetime')
 
         # remove all particles
         self.screen_manager.reset_particles()
@@ -665,12 +700,22 @@ class Game:
         self.screen_manager.render_fps(round(self.clock.get_fps()))
 
         # show timer
-        if self.game_state in ('play', 'multiplayer'):
+        self.screen_manager.render_time(
+            (GAME_TIMER - (self.current_time - self.start_time)) // 1000)
 
-            self.screen_manager.render_time(
-                (GAME_TIMER - (self.current_time - self.start_time)) // 1000)
-
-        # TODO -- show current health
+        # show ranger health and shield
+        self.health_bar.show()
+        if self.player.ranger.health > RANGER_START_HEALTH:
+            self.shield_bar.show()
+            self.shield_bar.percent_full = min(
+                self.player.ranger.health,
+                MAX_RANGER_HEALTH) - RANGER_START_HEALTH
+            self.health_bar.percent_full = 1
+        else:
+            self.shield_bar.hide()
+            self.health_bar.percent_full = min(
+                self.player.ranger.health, RANGER_START_HEALTH)
+            self.shield_bar.percent_full = 0
 
         # show particles
         for particle_cloud in self.dead_enemy_particle_clouds:
@@ -681,6 +726,7 @@ class Game:
         self.screen_manager.show_particles()
 
         # update display
+        self.ui_manager.draw_ui(self.screen_manager.surface)
         pygame.display.update()
 
         # TODO: remove, just here to demonstrate how I tested disconnecting & reconnecting
@@ -738,9 +784,9 @@ class Game:
                     if event.ui_element == self.is_host_gui:
                         self.is_host = event.text == 'host'
 
-                self.manager.process_events(event)
+                self.ui_manager.process_events(event)
 
-            self.manager.update(self.time_delta)
+            self.ui_manager.update(self.time_delta)
 
             # game states
             if self.game_state == 'ask_username':

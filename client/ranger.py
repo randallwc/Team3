@@ -1,6 +1,7 @@
 import pygame
 
-from constants import RED, SCREEN_HEIGHT, SCREEN_WIDTH
+from constants import (MAX_RANGER_HEALTH, RANGER_START_HEALTH, RED,
+                       SCREEN_HEIGHT, SCREEN_WIDTH)
 from entity import Entity
 from paths import ranger_path
 from sounds import play_laser_sound
@@ -12,16 +13,25 @@ class Ranger(Entity):
         self.delta_laser_width = 1
         self.max_laser_width = 20
         self.min_laser_width = 7
-        self.laser_color = None
+        self.laser_color = RED
         self.inner_laser_color = (255, 255, 255)
         self.current_laser_width = self.max_laser_width
         self.frames_clicking = 0
         self.laser_is_deadly = False
-        self.health = 1
+        self.health = RANGER_START_HEALTH
         self.is_alive = True
 
-    # TODO -- add got damaged function that decreases health and changes
-    # is_alive
+    @property
+    def health(self):
+        return self._health
+
+    @health.setter
+    def health(self, value):
+        self._health = max(0, min(MAX_RANGER_HEALTH, value))
+        if self._health <= 0:
+            self.is_alive = False
+        else:
+            self.is_alive = True
 
     def update_coordinates(self, x, y):
         super().update_coordinates(min(max(x, 0), SCREEN_WIDTH), min(max(y, 0), SCREEN_HEIGHT))
@@ -34,7 +44,7 @@ class Ranger(Entity):
         if is_firing:
             self.frames_clicking += self.delta_laser_width
 
-            # only fire once per click
+            # only fire once per action
             if fire_edge:
                 play_laser_sound()
 
