@@ -581,6 +581,7 @@ class Game:
                 self.player.acceleration = MAX_RANGER_ACCELERATION
                 self.player.max_speed = MAX_FAST_SPEED
                 self.player.ranger.particle_cloud.is_coin_bursting = True
+                self.player.ranger.health = MAX_RANGER_HEALTH
             else:
                 point_diff = abs(self.player.current_score - FIRE_SCORE)
                 say_string = f"you can't speed up yet you need {point_diff} more points"
