@@ -463,7 +463,6 @@ class Game:
             if not enemy.step():
                 # enemy hit bottom of screen
                 enemy.health = 0
-                # TODO: figure out what to do for this in multiplayer
                 self.player.handle_point_change(-5)
             # do logic on enemies in same level
             if enemy.z == self.player.ranger.z:
