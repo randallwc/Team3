@@ -332,7 +332,6 @@ class Game:
                         new_enemy['z'],
                         self.num_z_levels,
                         new_enemy['enemy_type'],
-                        ENEMY_INFO,
                         new_enemy['id'],
                         new_enemy['health'])
                 )
@@ -349,7 +348,6 @@ class Game:
                 randrange(0, self.num_z_levels, 1),
                 self.num_z_levels,
                 new_enemy_type,
-                ENEMY_INFO,
                 self.enemy_id_count,
                 ENEMY_INFO[new_enemy_type]['health']
             )

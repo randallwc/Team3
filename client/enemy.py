@@ -1,6 +1,6 @@
 import pygame
 
-from constants import SCREEN_HEIGHT, SCREEN_WIDTH
+from constants import ENEMY_DIRECTIONS, ENEMY_INFO, SCREEN_HEIGHT, SCREEN_WIDTH
 from entity import Entity
 from sounds import play_sound
 
@@ -13,17 +13,13 @@ class Enemy(Entity):
             z,
             num_z_levels,
             enemy_type,
-            enemy_info,
             enemy_id,
             health,
             image_dimensions=(
                 100,
                 100)):
-        self.enemy_info = enemy_info
         self.enemy_type = enemy_type
         self.health = health
-        self.directions = ['left', 'right']
-
         self.good_enemies = self.get_good_enemies()
         self.bad_enemies = self.get_bad_enemies()
         self.image_path = self.get_image_path()
@@ -35,36 +31,38 @@ class Enemy(Entity):
 
         super().__init__(x, y, z, num_z_levels, self.image_path, image_dimensions)
 
-    def get_good_enemies(self):
+    @staticmethod
+    def get_good_enemies():
         def is_good(key):
-            return self.enemy_info[key]['is_good']
+            return ENEMY_INFO[key]['is_good']
 
-        return list(filter(is_good, self.enemy_info))
+        return list(filter(is_good, ENEMY_INFO))
 
-    def get_bad_enemies(self):
+    @staticmethod
+    def get_bad_enemies():
         def is_bad(key):
-            return not self.enemy_info[key]['is_good']
+            return not ENEMY_INFO[key]['is_good']
 
-        return list(filter(is_bad, self.enemy_info))
+        return list(filter(is_bad, ENEMY_INFO))
 
     def get_image_path(self):
-        return self.enemy_info[self.enemy_type]['image_path']
+        return ENEMY_INFO[self.enemy_type]['image_path']
 
     def get_death_sound(self):
-        return self.enemy_info[self.enemy_type]['death_sound_path']
+        return ENEMY_INFO[self.enemy_type]['death_sound_path']
 
     def get_max_time_alive(self):
-        return self.enemy_info[self.enemy_type]['max_time_alive']
+        return ENEMY_INFO[self.enemy_type]['max_time_alive']
 
     def get_x_speed(self):
-        return self.enemy_info[self.enemy_type]['x_speed']
+        return ENEMY_INFO[self.enemy_type]['x_speed']
 
     def get_y_speed(self):
-        return self.enemy_info[self.enemy_type]['y_speed']
+        return ENEMY_INFO[self.enemy_type]['y_speed']
 
     def get_direction(self):
-        direction = self.enemy_info[self.enemy_type]['direction']
-        if direction not in self.directions:
+        direction = ENEMY_INFO[self.enemy_type]['direction']
+        if direction not in ENEMY_DIRECTIONS:
             raise Exception('invalid direction')
         return direction
 
