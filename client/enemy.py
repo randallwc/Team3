@@ -119,6 +119,12 @@ class Enemy(Entity):
             self.should_display = False
 
     def step(self):
+        """Move enemy based on current_direction.
+
+        Returns:
+            False if enemy hits the bottom of the screen.
+            True otherwise.
+        """
         super().update_coordinates(self.x, self.y)
 
         if self.current_direction in ('right', 'left'):
