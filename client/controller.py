@@ -107,4 +107,5 @@ class Controller:
         return out
 
     def disconnect(self):
+        print('controller disconnect')
         self.imu.client.disconnect()

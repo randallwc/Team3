@@ -193,4 +193,5 @@ class ServerIface:
         })
 
     def disconnect(self):
+        print('server disconnect')
         self.socket.disconnect()
