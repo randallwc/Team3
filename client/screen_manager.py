@@ -2,8 +2,8 @@ import math
 
 import pygame
 
-from constants import (BACKGROUND_BLUE, BLACK, FONT, FONT_SIZE, SCREEN_HEIGHT,
-                       SCREEN_WIDTH, WHITE)
+from constants import (BACKGROUND_BLUE, BLACK, FONT, FONT_SIZE, GAME_TIMER,
+                       LIGHT_BLUE, SCREEN_HEIGHT, SCREEN_WIDTH, WHITE)
 from paths import gameover_path, logo_path
 
 
@@ -103,21 +103,40 @@ class ScreenManager:
         self.surface.blit(rendered_final_score, (left, top))
 
     def render_time(self, current_time: int):
+        diameter = 50
+        outer_arc_width = 5
+        inner_arc_width = 100
+        distance_from_top_of_screen = 100
         foreground_color = BLACK
-        background_color = WHITE
+        percent = current_time / GAME_TIMER
         font = pygame.font.SysFont(FONT, FONT_SIZE)
         rendered_font = font.render(
-            f'time: {current_time}',
-            True,
-            foreground_color,
-            background_color)
-        self.surface.blit(
-            rendered_font,
-            (SCREEN_WIDTH //
-             2 -
-             rendered_font.get_width() //
-             2,
-             100))
+            f'{current_time // 1000}', True, foreground_color)
+        center = (SCREEN_WIDTH // 2, distance_from_top_of_screen)
+        font_center = (
+            center[0] - rendered_font.get_width() // 2,
+            center[1] - rendered_font.get_height() // 2)
+        rect = pygame.Rect(0, 0, diameter, diameter)
+        rect.center = center
+        pygame.draw.arc(
+            self.surface,
+            WHITE,
+            rect,
+            0,
+            math.radians(
+                360 *
+                percent),
+            inner_arc_width)
+        self.surface.blit(rendered_font, font_center)
+        pygame.draw.arc(
+            self.surface,
+            LIGHT_BLUE,
+            rect,
+            0,
+            math.radians(
+                360 *
+                percent),
+            outer_arc_width)
 
     def render_level(self, current_level: int, num_z_levels: int, enemies):
         def dist(p1, p2):

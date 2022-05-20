@@ -702,7 +702,7 @@ class Game:
 
         # show timer
         self.screen_manager.render_time(
-            (GAME_TIMER - (self.current_time - self.start_time)) // 1000)
+            (GAME_TIMER - (self.current_time - self.start_time)))
 
         # show ranger health and shield
         self.health_bar.show()
