@@ -21,7 +21,8 @@ from database_iface import DatabaseIface
 from enemy import Enemy
 from opponent_ranger import OpponentRanger
 from particle_cloud import ParticleCloud
-from paths import background_music_path, cloud_path, ranger_path, sky_path, theme_path
+from paths import (background_music_path, cloud_path, ranger_path, sky_path,
+                   theme_path)
 from player import Player
 from screen_manager import ScreenManager, set_caption, show_mouse
 from server_iface import ServerIface
@@ -729,9 +730,11 @@ class Game:
         self.ui_manager.draw_ui(self.screen_manager.surface)
         pygame.display.update()
 
-        # TODO: remove, just here to demonstrate how I tested disconnecting & reconnecting
-        # if not self.is_host and (GAME_TIMER - (self.current_time - self.start_time)) // 1000 == 15:
-        #    self.server.socket.disconnect()
+        # TODO: remove, just here to demonstrate how I tested disconnecting &
+        # reconnecting
+        # if not self.is_host and (
+        #         GAME_TIMER - (self.current_time - self.start_time)) // 1000 == 15:
+        #     self.server.socket.disconnect()
 
         # if in multiplayer, ensure connected
         # if game_state is 'multiplayer', self.server will be defined
