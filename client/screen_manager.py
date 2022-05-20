@@ -23,6 +23,9 @@ class ScreenManager:
         self.surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.transparent_surface = pygame.Surface(
             (SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        self.game_over_logo = pygame.transform.rotozoom(
+            pygame.image.load(gameover_path), 0, 0.1)
+        self.game_over_rect = self.game_over_logo.get_rect()
 
     def reset_particles(self):
         self.transparent_surface.fill((0, 0, 0, 0))
@@ -211,13 +214,10 @@ class ScreenManager:
              100 + logo_height // 2))
 
     def show_game_over(self):
-        rendered_logo = pygame.image.load(gameover_path)
-        rendered_logo = pygame.transform.rotozoom(rendered_logo, 0, 0.1)
-        rendered_logo_rect = rendered_logo.get_rect()
-        logo_height = rendered_logo_rect.height
-        logo_width = rendered_logo_rect.width
+        logo_height = self.game_over_rect.height
+        logo_width = self.game_over_rect.width
         self.surface.blit(
-            rendered_logo,
+            self.game_over_logo,
             (SCREEN_WIDTH // 2 - logo_width // 2,
              logo_height // 2))
 
