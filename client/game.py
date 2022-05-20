@@ -54,6 +54,7 @@ class Game:
         self.username_gui = pygame_gui.elements.UITextEntryLine(
             unamerect, self.ui_manager)
         self.username_gui.set_text('enter username')
+        self.username_gui.hide()
 
         # is host
         width = SCREEN_WIDTH // 4
