@@ -40,7 +40,8 @@ class Game:
         )
 
         # ui stuff
-        self.ui_manager = pygame_gui.UIManager( (SCREEN_WIDTH, SCREEN_HEIGHT), theme_path)
+        self.ui_manager = pygame_gui.UIManager(
+            (SCREEN_WIDTH, SCREEN_HEIGHT), theme_path)
         # self.ui_manager.set_visual_debug_mode(True)
 
         # username
