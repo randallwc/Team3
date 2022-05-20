@@ -8,7 +8,7 @@ import pygame_gui
 import pyttsx3
 
 from cloud import Cloud
-from constants import (CLEAR_SCORE, DARK_BLUE,
+from constants import (CLEAR_SCORE, DARK_BLUE, DODGE_ENEMY_COLISION_DAMAGE,
                        ENEMY_DAMAGE_TO_RANGER_ON_COLLIDE,
                        ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT, ENEMY_INFO,
                        FIRE_SCORE, FRAME_RATE, GAME_STATES, GAME_TIMER,
@@ -370,7 +370,11 @@ class Game:
                 self.player.ranger.particle_cloud.coin_burst(10)
                 self.player.ranger.health += ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT
                 # TODO -- send server that ranger gained health
-            # despawn bad enemy if touched
+            if enemy.enemy_type in enemy.dodge_enemies:
+                self.player.handle_point_change(-10)
+                # kill if hit dodge enemy
+                self.player.ranger.health -= DODGE_ENEMY_COLISION_DAMAGE
+            # despawn any enemy if touched
             enemy.health = 0
         return enemy
 
@@ -395,7 +399,7 @@ class Game:
                     self.player.ranger.health -= ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT
                     # TODO -- server send player was damaged
                 # bad enemy dead
-                else:
+                if enemy.enemy_type in enemy.bad_enemies:
                     # gain points
                     self.player.handle_point_change(enemy.handle_death())
                     # show fire cloud
@@ -404,17 +408,16 @@ class Game:
                     self.dead_enemy_particle_clouds.append(particle_cloud)
             # hurt
             elif enemy.health < ENEMY_INFO[enemy.enemy_type]['health']:
-                # any enemy that is hurt smokes
-                enemy.particle_cloud.is_smoking = True
                 # good enemy hurt
                 if enemy.enemy_type in enemy.good_enemies:
+                    enemy.particle_cloud.is_smoking = True
                     # auto get hurt if enemy is good
                     self.player.handle_point_change(enemy.handle_death())
                     self.player.ranger.health -= ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT
                     # TODO -- server send player was damaged
                 # bad enemy hurt
-                else:
-                    pass
+                if enemy.enemy_type in enemy.bad_enemies:
+                    enemy.particle_cloud.is_smoking = True
         return enemy
 
     def _display_enemies(self):
@@ -431,8 +434,10 @@ class Game:
                             new_particle_cloud.fire_burst(10)
                             self.dead_enemy_particle_clouds.append(
                                 new_particle_cloud)
-                        # TODO -- if enemy is good make ranger that hit it have
-                        # a fire cloud
+                        if enemy.enemy_type in enemy.good_enemies:
+                            # TODO -- if enemy is good make ranger that hit it have
+                            # a fire cloud
+                            pass
                     elif enemy.health < ENEMY_INFO[enemy.enemy_type]['health']:
                         enemy.particle_cloud.is_smoking = True
                     del self.server.enemies_hurt[enemy.id]
@@ -461,10 +466,11 @@ class Game:
                             self.server.new_players_awaiting_enemies.pop(index)
 
             # move enemy
-            if not enemy.step():
-                # enemy hit bottom of screen
-                enemy.health = 0
-                self.player.handle_point_change(-5)
+            enemy.step()
+            if enemy.hit_bottom:
+                if enemy.enemy_type not in enemy.dodge_enemies:
+                    # non dodge enemy hit bottom
+                    self.player.handle_point_change(-5)
             # do logic on enemies in same level
             if enemy.z == self.player.ranger.z:
                 enemy = self._handle_enemy_collision(enemy)

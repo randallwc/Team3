@@ -1,6 +1,7 @@
 import pygame
 
-from constants import ENEMY_DIRECTIONS, ENEMY_INFO, SCREEN_HEIGHT, SCREEN_WIDTH
+from constants import (ENEMY_CATEGORIES, ENEMY_DIRECTIONS, ENEMY_INFO,
+                       SCREEN_HEIGHT, SCREEN_WIDTH)
 from entity import Entity
 from sounds import play_sound
 
@@ -19,6 +20,7 @@ class Enemy(Entity):
         self.health = health
         self.good_enemies = self.get_good_enemies()
         self.bad_enemies = self.get_bad_enemies()
+        self.dodge_enemies = self.get_dodge_enemies()
         self.image_path = self.get_image_path()
         self.time_alive_countdown = self.get_max_time_alive()
         self.x_speed = self.get_x_speed()
@@ -26,22 +28,30 @@ class Enemy(Entity):
         self.current_direction = self.get_direction()
         self.id = enemy_id  # only used in multiplayer
         self.image_dimensions = self.get_image_dimensions()
+        self.hit_bottom = False
 
         super().__init__(x, y, z, num_z_levels, self.image_path, self.image_dimensions)
 
     @staticmethod
     def get_good_enemies():
         def is_good(key):
-            return ENEMY_INFO[key]['is_good']
+            return ENEMY_INFO[key]['category'] == ENEMY_CATEGORIES[0]
 
         return list(filter(is_good, ENEMY_INFO))
 
     @staticmethod
     def get_bad_enemies():
         def is_bad(key):
-            return not ENEMY_INFO[key]['is_good']
+            return ENEMY_INFO[key]['category'] == ENEMY_CATEGORIES[1]
 
         return list(filter(is_bad, ENEMY_INFO))
+
+    @staticmethod
+    def get_dodge_enemies():
+        def is_dodge(key):
+            return ENEMY_INFO[key]['category'] == ENEMY_CATEGORIES[2]
+
+        return list(filter(is_dodge, ENEMY_INFO))
 
     def get_image_dimensions(self):
         return ENEMY_INFO[self.enemy_type]['image_dimensions']
@@ -111,21 +121,18 @@ class Enemy(Entity):
              self.rect.bottom))
 
     def got_hit(self, damage_amount):
-        self.health -= damage_amount
+        if self.enemy_type not in self.dodge_enemies:
+            # dodge enemies cannot be shot
+            self.health -= damage_amount
 
-        if self.health <= 0:
-            # no negative healths
-            self.health = 0
-            # if dead it shouldn't display
-            self.should_display = False
+            if self.health <= 0:
+                # no negative healths
+                self.health = 0
+                # if dead it shouldn't display
+                self.should_display = False
 
     def step(self):
-        """Move enemy based on current_direction.
-
-        Returns:
-            False if enemy hits the bottom of the screen.
-            True otherwise.
-        """
+        """Move enemy based on current_direction."""
         super().update_coordinates(self.x, self.y)
 
         if self.current_direction in ('right', 'left'):
@@ -148,7 +155,7 @@ class Enemy(Entity):
         elif self.current_direction == 'down':
             self.y += self.y_speed
             if self.y >= SCREEN_HEIGHT:
-                return False
+                self.should_display = False
+                self.hit_bottom = True
         else:
             raise Exception('invalid direction')
-        return True
