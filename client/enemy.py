@@ -14,10 +14,7 @@ class Enemy(Entity):
             num_z_levels,
             enemy_type,
             enemy_id,
-            health,
-            image_dimensions=(
-                100,
-                100)):
+            health):
         self.enemy_type = enemy_type
         self.health = health
         self.good_enemies = self.get_good_enemies()
@@ -28,8 +25,9 @@ class Enemy(Entity):
         self.y_speed = self.get_y_speed()
         self.current_direction = self.get_direction()
         self.id = enemy_id  # only used in multiplayer
+        self.image_dimensions = self.get_image_dimensions()
 
-        super().__init__(x, y, z, num_z_levels, self.image_path, image_dimensions)
+        super().__init__(x, y, z, num_z_levels, self.image_path, self.image_dimensions)
 
     @staticmethod
     def get_good_enemies():
@@ -44,6 +42,9 @@ class Enemy(Entity):
             return not ENEMY_INFO[key]['is_good']
 
         return list(filter(is_bad, ENEMY_INFO))
+
+    def get_image_dimensions(self):
+        return ENEMY_INFO[self.enemy_type]['image_dimensions']
 
     def get_image_path(self):
         return ENEMY_INFO[self.enemy_type]['image_path']
