@@ -60,7 +60,8 @@ ENEMY_INFO = {
         'x_speed': 3,
         'y_speed': 60,
         'direction': 'left',
-        'health': 3
+        'health': 3,
+        'image_dimensions': (100, 100),
     },
     'cow': {
         'is_good': True,
@@ -70,7 +71,8 @@ ENEMY_INFO = {
         'x_speed': 1,
         'y_speed': 98,
         'direction': 'right',
-        'health': 1
+        'health': 1,
+        'image_dimensions': (100, 100),
     },
     'ricky': {
         'is_good': False,
@@ -80,7 +82,8 @@ ENEMY_INFO = {
         'x_speed': 2,
         'y_speed': 86,
         'direction': 'left',
-        'health': 2
+        'health': 2,
+        'image_dimensions': (100, 100),
     },
     'david': {
         'is_good': False,
@@ -90,7 +93,8 @@ ENEMY_INFO = {
         'x_speed': 3,
         'y_speed': 65,
         'direction': 'right',
-        'health': 3
+        'health': 3,
+        'image_dimensions': (100, 100),
     },
     'anton': {
         'is_good': False,
@@ -100,7 +104,8 @@ ENEMY_INFO = {
         'x_speed': 0,
         'y_speed': 3,
         'direction': 'down',
-        'health': 1
+        'health': 1,
+        'image_dimensions': (100, 100),
     },
     'armando': {
         'is_good': True,
@@ -110,7 +115,8 @@ ENEMY_INFO = {
         'x_speed': 3,
         'y_speed': 69,
         'direction': 'left',
-        'health': 2
+        'health': 2,
+        'image_dimensions': (100, 100),
     },
     'david2': {
         'is_good': False,
@@ -120,6 +126,7 @@ ENEMY_INFO = {
         'x_speed': 20,
         'y_speed': 50,
         'direction': 'right',
-        'health': 1
+        'health': 1,
+        'image_dimensions': (100, 100),
     },
 }
