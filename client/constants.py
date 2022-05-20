@@ -14,6 +14,7 @@ GAME_TIMER = 30_000
 GAME_STATES = [
     'ask_username',
     'start',
+    'levels',
     'play',
     'multiplayer_start',
     'multiplayer',
@@ -48,7 +49,10 @@ YELLOW = (255, 255, 0)
 FONT = 'Comic Sans'
 FONT_SIZE = 20
 
-
+# enemies
+START_SPAWN_COUNT = 10
+DEFAULT_MAX_NUM_ENEMIES = 3
+DEFAULT_MAX_SPAWN_COUNTER = 100 * DEFAULT_MAX_NUM_ENEMIES
 ENEMY_DIRECTIONS = ['left', 'right', 'down']
 ENEMY_CATEGORIES = ['good', 'bad', 'dodge']
 ENEMY_DAMAGE_TO_RANGER_ON_COLLIDE = 0.5
