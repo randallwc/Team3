@@ -54,6 +54,7 @@ class Game:
         self.username_gui = pygame_gui.elements.UITextEntryLine(
             unamerect, self.ui_manager)
         self.username_gui.set_text('enter username')
+        self.username_gui.hide()
 
         # is host
         width = SCREEN_WIDTH // 4
@@ -701,7 +702,7 @@ class Game:
 
         # show timer
         self.screen_manager.render_time(
-            (GAME_TIMER - (self.current_time - self.start_time)) // 1000)
+            (GAME_TIMER - (self.current_time - self.start_time)))
 
         # show ranger health and shield
         self.health_bar.show()
