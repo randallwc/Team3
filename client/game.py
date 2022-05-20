@@ -1,4 +1,3 @@
-import os
 import sys
 from random import choice, randrange
 from typing import List
@@ -8,14 +7,15 @@ import pygame_gui
 import pyttsx3
 
 from cloud import Cloud
-from constants import (CLEAR_SCORE, DARK_BLUE, DODGE_ENEMY_COLISION_DAMAGE,
+from constants import (CLEAR_SCORE, DARK_BLUE, DEFAULT_MAX_NUM_ENEMIES,
+                       DEFAULT_MAX_SPAWN_COUNTER, DODGE_ENEMY_COLISION_DAMAGE,
                        ENEMY_DAMAGE_TO_RANGER_ON_COLLIDE,
                        ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT, ENEMY_INFO,
                        FIRE_SCORE, FRAME_RATE, GAME_STATES, GAME_TIMER,
                        LIGHT_BLUE, MAX_FAST_SPEED, MAX_RANGER_ACCELERATION,
                        MAX_RANGER_HEALTH, MAX_RANGER_SPEED,
                        RANGER_ACCELERATION, RANGER_DAMAGE, RANGER_START_HEALTH,
-                       RED, SCREEN_HEIGHT, SCREEN_WIDTH)
+                       RED, SCREEN_HEIGHT, SCREEN_WIDTH, START_SPAWN_COUNT)
 from controller import Controller
 from database_iface import DatabaseIface
 from enemy import Enemy
@@ -103,15 +103,25 @@ class Game:
                 object_id='#shieldbar'))
         self.shield_bar.hide()
 
+        # levels
+        width = SCREEN_WIDTH // 4
+        height = SCREEN_HEIGHT // 12
+        left = SCREEN_WIDTH // 2 - width // 2
+        top = SCREEN_HEIGHT // 2 - height // 2 - 50
+        levelsrect = pygame.Rect(left, top, width, height)
+        self.levels_gui = pygame_gui.elements.UIDropDownMenu(
+            ['3', '5', '10'], 'choose one', levelsrect, self.ui_manager)
+        self.levels_gui.hide()
+
         # Screen Manager settings
         self.screen_manager = ScreenManager(sky_path)
 
         # enemies
         self.enemies: List[Enemy] = []
         self.enemy_types = list(ENEMY_INFO.keys())
-        self.max_num_enemies = 3
-        self.max_spawn_counter = 100
-        self.spawn_counter = self.max_spawn_counter
+        self.max_num_enemies = DEFAULT_MAX_NUM_ENEMIES
+        self.max_spawn_counter = DEFAULT_MAX_SPAWN_COUNTER
+        self.spawn_counter = START_SPAWN_COUNT
 
         # game state
         self.game_state = GAME_STATES[0]
@@ -140,6 +150,7 @@ class Game:
         self.num_z_levels = 3
         self.play_music = True
         self.use_camera = False
+        self.level = None
 
         # powerup flags
         self.fast_timer = 0
@@ -173,7 +184,7 @@ class Game:
         if self.username is not None:
             self.game_state = 'start'
             self.username_gui.hide()
-            set_caption(f'{self.username} {self.display_caption}')
+            set_caption(f'"{self.username}" {self.display_caption}')
             self.controller = Controller(
                 self.num_z_levels, self.use_camera, self.username)
             return
@@ -183,6 +194,33 @@ class Game:
 
         # show elements
         self.username_gui.show()
+
+        # render clouds
+        for cloud in self.clouds:
+            cloud.show(
+                self.screen_manager.surface,
+                self.screen_manager.transparent_surface)
+            cloud.loop_around()
+
+        self.ui_manager.draw_ui(self.screen_manager.surface)
+
+        # update display
+        pygame.display.update()
+
+    def _levels_screen(self):
+        # break out if got level
+        if self.level is not None:
+            self.game_state = 'play'
+            self.max_num_enemies = self.level
+            self.max_spawn_counter = DEFAULT_MAX_SPAWN_COUNTER // self.level
+            self.levels_gui.hide()
+            return
+
+        # display background
+        self.screen_manager.render_background()
+
+        # show elements
+        self.levels_gui.show()
 
         # render clouds
         for cloud in self.clouds:
@@ -234,7 +272,11 @@ class Game:
         self.controller.voice.reset_words()
         self.dead_enemy_particle_clouds = []
         self.enemies = []
+        self.health_bar.hide()
         self.is_host = None
+        self.level = None
+        self.max_num_enemies = DEFAULT_MAX_NUM_ENEMIES
+        self.max_spawn_counter = DEFAULT_MAX_SPAWN_COUNTER
         self.opponent_ranger_ids = []
         self.player.acceleration = RANGER_ACCELERATION
         self.player.current_score = 0
@@ -245,9 +287,8 @@ class Game:
         self.player.ranger.x = 0.5 * SCREEN_WIDTH
         self.player.ranger.y = 0.9 * SCREEN_HEIGHT
         self.room_id = None
-        self.spawn_counter = self.max_spawn_counter
         self.shield_bar.hide()
-        self.health_bar.hide()
+        self.spawn_counter = START_SPAWN_COUNT
         if self.server is not None:
             self.server.previously_connected = False
         if not self.speech_engine.isBusy():
@@ -281,7 +322,7 @@ class Game:
                 SCREEN_WIDTH // 2,
                 DARK_BLUE,
                 LIGHT_BLUE):
-            self.game_state = 'play'
+            self.game_state = 'levels'
             self.start_time = pygame.time.get_ticks()
 
         # multiplayer button
@@ -792,6 +833,8 @@ class Game:
                 if event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
                     if event.ui_element == self.is_host_gui:
                         self.is_host = event.text == 'host'
+                    if event.ui_element == self.levels_gui:
+                        self.level = int(event.text)
 
                 self.ui_manager.process_events(event)
 
@@ -802,6 +845,8 @@ class Game:
                 self._ask_for_username()
             elif self.game_state == 'start':
                 self._start_screen()
+            elif self.game_state == 'levels':
+                self._levels_screen()
             elif self.game_state == 'play':
                 self.play()
             elif self.game_state == 'multiplayer_start':
