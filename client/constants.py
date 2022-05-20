@@ -1,7 +1,8 @@
 from paths import (anton_death_sound_path, anton_path, armando_path, cow_path,
                    david2_death_sound_path, david2_path, david_path,
                    friendly_fire_sound_path, jc_death_sound_path, jc_path,
-                   ricky_death_sound_path, ricky_path)
+                   meteor_path, meteor_sound_path, ricky_death_sound_path,
+                   ricky_path)
 
 # screen stuff
 SCREEN_WIDTH = 1280
@@ -82,7 +83,7 @@ ENEMY_INFO = {
         'image_path': ricky_path,
         'max_time_alive': 1000,
         'x_speed': 0,
-        'y_speed': 1,
+        'y_speed': 5,
         'direction': ENEMY_DIRECTIONS[2],
         'health': 10,
         'image_dimensions': (300, 100),
@@ -103,9 +104,9 @@ ENEMY_INFO = {
         'death_sound_path': anton_death_sound_path,
         'image_path': anton_path,
         'max_time_alive': 1000,
-        'x_speed': 0,
-        'y_speed': 3,
-        'direction': ENEMY_DIRECTIONS[2],
+        'x_speed': 5,
+        'y_speed': 68,
+        'direction': ENEMY_DIRECTIONS[0],
         'health': 1,
         'image_dimensions': (100, 100),
     },
@@ -127,8 +128,19 @@ ENEMY_INFO = {
         'max_time_alive': 1000,
         'x_speed': 20,
         'y_speed': 50,
-        'direction': 'right',
+        'direction': ENEMY_DIRECTIONS[1],
         'health': 1,
         'image_dimensions': (100, 100),
+    },
+    'meteor': {
+        'category': ENEMY_CATEGORIES[1],
+        'death_sound_path': meteor_sound_path,
+        'image_path': meteor_path,
+        'max_time_alive': 1000,
+        'x_speed': 0,
+        'y_speed': 3,
+        'direction': ENEMY_DIRECTIONS[2],
+        'health': 1,
+        'image_dimensions': (100, 200),
     },
 }
