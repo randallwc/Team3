@@ -21,7 +21,7 @@ from database_iface import DatabaseIface
 from enemy import Enemy
 from opponent_ranger import OpponentRanger
 from particle_cloud import ParticleCloud
-from paths import background_music_path, cloud_path, ranger_path, sky_path
+from paths import background_music_path, cloud_path, ranger_path, sky_path, theme_path
 from player import Player
 from screen_manager import ScreenManager, set_caption, show_mouse
 from server_iface import ServerIface
@@ -40,9 +40,7 @@ class Game:
         )
 
         # ui stuff
-        self.ui_manager = pygame_gui.UIManager(
-            (SCREEN_WIDTH, SCREEN_HEIGHT), os.path.join(
-                os.path.dirname(__file__), 'theme.json'))
+        self.ui_manager = pygame_gui.UIManager( (SCREEN_WIDTH, SCREEN_HEIGHT), theme_path)
         # self.ui_manager.set_visual_debug_mode(True)
 
         # username
