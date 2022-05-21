@@ -27,6 +27,13 @@ update:
 	$(CONDA_ACTIVATE) team3
 	conda env export > client/environment.yaml
 
+build:
+	cd client && pyinstaller main.py --debug=imports --onefile --add-data='static:static' --hidden-import=websocket --hidden-import engineio.async_drivers.aiohttp --hidden-import engineio.async_aiohttp
+
+build-clean:
+	rm -rf ./client/build/
+	rm -rf ./client/dist/
+
 ##############
 # SERVER STUFF
 ##############

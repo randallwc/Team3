@@ -1,3 +1,5 @@
+import sys
+
 import cv2
 import dlib
 
@@ -39,8 +41,15 @@ class CameraIface:
     def toggle_camera(self):
         if self.use_camera and self.cam is None:
             self.cam = cv2.VideoCapture(0)
+            if not self.cam.isOpened():
+                print("Could not open video device")
+                sys.exit(1)
             self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, self.camera_width)
             self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, self.camera_height)
+            cv2.startWindowThread()
+            cv2.namedWindow('webcam', cv2.WINDOW_AUTOSIZE)
+            cv2.setWindowProperty('webcam', cv2.WND_PROP_VISIBLE, 1)
+            # cv2.setWindowProperty('webcam', cv2.WND_PROP_TOPMOST, 1)
         elif not self.use_camera and self.cam is not None:
             self.cam.release()
             self.cam = None
@@ -109,6 +118,7 @@ class CameraIface:
                 self.line_width)
             cv2.imshow('webcam', cv2.flip(img, 1))
             # cv2.imshow('webcam', img)
+            cv2.waitKey(1)
 
         # update previous center
         self.previous_center = center
@@ -168,3 +178,13 @@ class CameraIface:
             self.directions['left'] = True
 
         return self.directions
+
+
+if __name__ == "__main__":
+    cam = CameraIface(3, True, True)
+    prev = []
+    while True:
+        val = [key for key, value in cam.get_directions().items() if value]
+        if prev != val and len(val) > 0:
+            print(val)
+        prev = val
