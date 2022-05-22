@@ -107,5 +107,7 @@ class Controller:
         return out
 
     def disconnect(self):
-        print('controller disconnect')
         self.imu.client.disconnect()
+        print('[debug] controller disconnect')
+        self.voice.stop_listening()
+        print('[debug] voice disconnect')

@@ -5,7 +5,7 @@ class VoiceIface():
     def __init__(self):
         # debug
         mics = sr.Microphone.list_microphone_names()
-        print(mics)
+        print('[debug]', mics)
 
         # vars
         self.timeout = 5

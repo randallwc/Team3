@@ -17,7 +17,7 @@ class ImuIface:
         self.qos = 0
         self.previous_time = 0
         self.new_time = 0
-        print(self.server, self.room)
+        print('[debug] imu', self.server, self.room)
 
         def on_connect(client, userdata, flags, rc):
             # print("\nConnection returned result: " + str(rc))
@@ -33,9 +33,9 @@ class ImuIface:
 
         def on_disconnect(client, userdata, rc):
             if rc != 0:
-                print('Unexpected Disconnect')
+                print('[error] unexpected imu disconnect')
             else:
-                print('Expected Disconnect')
+                print('[debug] expected imu disconnect')
 
         self.client = mqtt.Client()
         self.client.on_connect = on_connect

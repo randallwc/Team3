@@ -8,7 +8,8 @@ import pyttsx3
 
 from cloud import Cloud
 from constants import (CLEAR_SCORE, DARK_BLUE, DEFAULT_MAX_NUM_ENEMIES,
-                       DEFAULT_MAX_SPAWN_COUNTER, DODGE_ENEMY_COLISION_DAMAGE,
+                       DEFAULT_MAX_SPAWN_COUNTER, DEFAULT_ROOM,
+                       DEFAULT_USERNAME, DODGE_ENEMY_COLISION_DAMAGE,
                        ENEMY_DAMAGE_TO_RANGER_ON_COLLIDE,
                        ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT, ENEMY_INFO,
                        FIRE_SCORE, FRAME_RATE, GAME_STATES, GAME_TIMER,
@@ -53,7 +54,7 @@ class Game:
         unamerect = pygame.Rect(left, top, width, height)
         self.username_gui = pygame_gui.elements.UITextEntryLine(
             unamerect, self.ui_manager)
-        self.username_gui.set_text('enter username')
+        self.username_gui.set_text(DEFAULT_USERNAME)
         self.username_gui.hide()
 
         # is host
@@ -74,7 +75,7 @@ class Game:
         unamerect = pygame.Rect(left, top, width, height)
         self.roomid_gui = pygame_gui.elements.UITextEntryLine(
             unamerect, self.ui_manager)
-        self.roomid_gui.set_text('enter roomid')
+        self.roomid_gui.set_text(DEFAULT_ROOM)
         self.roomid_gui.hide()
 
         # health bar
@@ -289,8 +290,10 @@ class Game:
         self.room_id = None
         self.shield_bar.hide()
         self.spawn_counter = START_SPAWN_COUNT
+        self.roomid_gui.set_text(DEFAULT_ROOM)
         if self.server is not None:
             self.server.previously_connected = False
+            self.server.disconnect()
         if not self.speech_engine.isBusy():
             self.speech_engine.endLoop()
 
@@ -825,6 +828,13 @@ class Game:
                     self.mouseup = True
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     self.mousedown = True
+                if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
+                    if event.ui_element == self.username_gui \
+                            and str(event.text).find(DEFAULT_USERNAME[1:-1]) != -1:
+                        self.username_gui.set_text('')
+                    if event.ui_element == self.roomid_gui \
+                            and str(event.text).find(DEFAULT_ROOM[1:-1]) != -1:
+                        self.roomid_gui.set_text('')
                 if event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED:
                     if event.ui_element == self.username_gui:
                         self.username = event.text

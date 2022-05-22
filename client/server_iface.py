@@ -20,7 +20,7 @@ class ServerIface:
             print(err, ": can't connect to server! :(")
             sys.exit(1)
         else:
-            print('Connected to:', self.socket.connection_url)
+            print('[debug] Connected to:', self.socket.connection_url)
             self.previously_connected = True
         self.is_host = False
         self.room_id = ''
@@ -53,8 +53,8 @@ class ServerIface:
 
         @self.socket.on("welcome_client")
         def on_welcome(data):
-            print("Server: ", data['message'])
-            print("Socket ID: ", data['socket_id'])
+            print("[debug] Server: ", data['message'])
+            print("[debug] Socket ID: ", data['socket_id'])
             self.socket_id = data['socket_id']
 
         @self.socket.on("server_sending_opponent_rangers_in_game")
@@ -87,7 +87,7 @@ class ServerIface:
 
         @self.socket.on('new_player_joined_room')
         def new_player_joined_actions(data):
-            print(data)
+            print('[debug]', data)
             # if a user previously_connected, then they disconnected from game
             # still have local versions of enemies, don't send
             if not data['previously_connected']:
@@ -111,9 +111,9 @@ class ServerIface:
             if not self.socket.connected:
                 self.socket.connect(self.used_uri, transports=['websocket'])
         except socketio.exceptions.ConnectionError as err:
-            print(err, ": can't connect to server! :(")
+            print('[error]', err, ": can't connect to server! :(")
         else:
-            print('Connected to:', self.socket.connection_url)
+            print('[debug] Connected to:', self.socket.connection_url)
             event_name = "join_new_room" if is_host else "join_existing_room"
             self.is_host = is_host
             self.room_id = room_id
@@ -193,5 +193,5 @@ class ServerIface:
         })
 
     def disconnect(self):
-        print('server disconnect')
+        print('[debug] server disconnect')
         self.socket.disconnect()
