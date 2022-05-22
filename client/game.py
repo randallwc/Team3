@@ -646,13 +646,13 @@ class Game:
             self.player.max_speed = MAX_RANGER_SPEED
             self.player.ranger.particle_cloud.is_coin_bursting = False
 
-        # wipe powerup
-        wants_wipe = self.controller.voice.clear_flag
+        # clear powerup
+        wants_clear = self.controller.voice.clear_flag
         self.clear_cooldown = max(self.clear_cooldown - 1, 0)
-        if wants_wipe and self.player.current_score >= CLEAR_SCORE:
+        if wants_clear and self.player.current_score >= CLEAR_SCORE:
             self.clear_flag = True
             self.clear_cooldown = self.max_clear_cooldown
-        elif not wants_fast and wants_wipe:
+        elif not wants_fast and wants_clear:
             point_diff = abs(self.player.current_score - CLEAR_SCORE)
             say_string = f'you need {point_diff} more points to kill all enemies'
             self.speech_engine.say(say_string)
