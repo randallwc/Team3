@@ -829,8 +829,8 @@ class Game:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     self.mousedown = True
                 if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
-                    if event.ui_element == self.username_gui \
-                            and str(event.text).find(DEFAULT_USERNAME[1:-1]) != -1:
+                    if event.ui_element == self.username_gui and str(
+                            event.text).find(DEFAULT_USERNAME[1:-1]) != -1:
                         self.username_gui.set_text('')
                     if event.ui_element == self.roomid_gui \
                             and str(event.text).find(DEFAULT_ROOM[1:-1]) != -1:
