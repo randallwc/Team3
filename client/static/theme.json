@@ -3,6 +3,11 @@
     "colours": {
       "normal_border": "#FFFFFF",
       "unfilled_bar": "#CCCCCC"
+    }
+  },
+  "#shieldbar": {
+    "colours": {
+      "filled_bar": "#0000FF"
     },
     "misc": {
       "shape": "rounded_rectangle",
@@ -10,14 +15,14 @@
       "shape_corner_radius": "16"
     }
   },
-  "#shieldbar": {
-    "colours": {
-      "filled_bar": "#0000FF"
-    }
-  },
   "#healthbar": {
     "colours": {
       "filled_bar": "#FF0000"
+    },
+    "misc": {
+      "shape": "rounded_rectangle",
+      "border_width": "2",
+      "shape_corner_radius": "16"
     }
   }
 }
