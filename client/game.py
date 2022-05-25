@@ -867,11 +867,11 @@ class Game:
                 self._game_over()
             else:
                 if self.game_state not in GAME_STATES:
-                    print('error in game state')
+                    print('[error] error in game state')
                     sys.exit(1)
                 print(self.game_state)
 
-        print('quitting')
+        print('[debug] quitting')
         if self.controller is not None:
             self.controller.disconnect()
         if self.server is not None:
