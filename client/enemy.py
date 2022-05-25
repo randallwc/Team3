@@ -1,4 +1,5 @@
 import pygame
+import pygame_gui
 
 from constants import (ENEMY_CATEGORIES, ENEMY_DIRECTIONS, ENEMY_INFO,
                        SCREEN_HEIGHT, SCREEN_WIDTH)
@@ -15,7 +16,8 @@ class Enemy(Entity):
             num_z_levels,
             enemy_type,
             enemy_id,
-            health):
+            health,
+            ui_manager: pygame_gui.UIManager):
         self.enemy_type = enemy_type
         self.health = health
         self.good_enemies = self.get_good_enemies()
@@ -29,8 +31,32 @@ class Enemy(Entity):
         self.id = enemy_id  # only used in multiplayer
         self.image_dimensions = self.get_image_dimensions()
         self.hit_bottom = False
+        self._font = pygame.font.SysFont('Comic Sans', 20)
+        self._ui_manager = ui_manager
+
+        # jank way of doing this but it is either this or you rewrite
+        # `show` and `show_diff_level` which are also in `game.py`
+        self._on_diff_level = False
 
         super().__init__(x, y, z, num_z_levels, self.image_path, self.image_dimensions)
+
+        self.hbar = pygame_gui.elements.UIStatusBar(
+            pygame.Rect(0, 0, 0, 0), self._ui_manager)
+        self.hbar.rect.width = self.rect.width
+        self.hbar.rect.height = 10
+        self.update_hbar()
+        self.hbar.hide()
+
+    def update_hbar(self):
+        self.hbar.percent_full = self.health / \
+            ENEMY_INFO[self.enemy_type]['health']
+        self.hbar.rect.top = self.top - 10
+        self.hbar.rect.left = self.left
+        if self.should_display and not self._on_diff_level and self.enemy_type not in (
+                *self.get_dodge_enemies(), *self.get_good_enemies()):
+            self.hbar.show()
+        else:
+            self.hbar.hide()
 
     @staticmethod
     def get_good_enemies():
@@ -96,6 +122,7 @@ class Enemy(Entity):
         self.time_alive_countdown -= 1
         if self.time_alive_countdown <= 0 or self.health <= 0:
             self.should_display = False
+        self.update_hbar()
 
     def show_diff_level(
             self,
@@ -108,11 +135,12 @@ class Enemy(Entity):
         else:
             self.shape.set_alpha(255 // 4)
             text = 'below'
+        self._on_diff_level = True
         self.show(surface, particle_surface)
+        self._on_diff_level = False
         self.shape.set_alpha(255)
         # indicate above or below
-        font = pygame.font.SysFont('Comic Sans', 20)
-        rendered_font = font.render(f'{text}', True, (255, 255, 255))
+        rendered_font = self._font.render(f'{text}', True, (255, 255, 255))
         surface.blit(
             rendered_font,
             (self.rect.centerx -
@@ -159,3 +187,6 @@ class Enemy(Entity):
                 self.hit_bottom = True
         else:
             raise Exception('invalid direction')
+
+    def destroy(self):
+        self.hbar.hide()
