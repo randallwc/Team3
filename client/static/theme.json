@@ -2,22 +2,28 @@
   "status_bar": {
     "colours": {
       "normal_border": "#FFFFFF",
-      "unfilled_bar": "#CCCCCC"
+      "unfilled_bar": "#CCCCCC",
+      "filled_bar": "#FF0000"
     },
     "misc": {
-      "shape": "rounded_rectangle",
-      "border_width": "2",
-      "shape_corner_radius": "16"
+      "border_width": "0"
     }
   },
   "#shieldbar": {
     "colours": {
       "filled_bar": "#0000FF"
+    },
+    "misc": {
+      "shape": "rounded_rectangle",
+      "shape_corner_radius": "16",
+      "border_width": "2"
     }
   },
   "#healthbar": {
-    "colours": {
-      "filled_bar": "#FF0000"
+    "misc": {
+      "shape": "rounded_rectangle",
+      "shape_corner_radius": "16",
+      "border_width": "2"
     }
   }
 }

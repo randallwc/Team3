@@ -272,6 +272,8 @@ class Game:
         # clear variables
         self.controller.voice.reset_words()
         self.dead_enemy_particle_clouds = []
+        for enemy in self.enemies:
+            enemy.destroy()
         self.enemies = []
         self.health_bar.hide()
         self.is_host = None
@@ -378,7 +380,8 @@ class Game:
                         self.num_z_levels,
                         new_enemy['enemy_type'],
                         new_enemy['id'],
-                        new_enemy['health'])
+                        new_enemy['health'],
+                        self.ui_manager)
                 )
         # if you are the host or in single player
         elif self.spawn_counter <= 0 and len(self.enemies) < self.max_num_enemies:
@@ -394,7 +397,8 @@ class Game:
                 self.num_z_levels,
                 new_enemy_type,
                 self.enemy_id_count,
-                ENEMY_INFO[new_enemy_type]['health']
+                ENEMY_INFO[new_enemy_type]['health'],
+                self.ui_manager
             )
             self.enemies.append(new_enemy)
             if self.game_state == 'multiplayer' and self.is_host:
@@ -867,11 +871,11 @@ class Game:
                 self._game_over()
             else:
                 if self.game_state not in GAME_STATES:
-                    print('error in game state')
+                    print('[error] error in game state')
                     sys.exit(1)
                 print(self.game_state)
 
-        print('quitting')
+        print('[debug] quitting')
         if self.controller is not None:
             self.controller.disconnect()
         if self.server is not None:
