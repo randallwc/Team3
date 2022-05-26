@@ -50,7 +50,7 @@ class Enemy(Entity):
     def update_hbar(self):
         self.hbar.percent_full = self.health / \
             ENEMY_INFO[self.enemy_type]['health']
-        self.hbar.rect.top = self.top - 10
+        self.hbar.rect.top = self.rect.bottom + self.hbar.rect.height // 2
         self.hbar.rect.left = self.left
         if self.should_display and not self._on_diff_level and self.enemy_type not in (
                 *self.get_dodge_enemies(), *self.get_good_enemies()):
