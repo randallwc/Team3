@@ -671,8 +671,10 @@ class Game:
         self.controller.voice.reset_words()
 
         self.current_time = pygame.time.get_ticks()
-        if self.player.ranger.health <= 0 or (abs(
-                self.current_time - self.start_time) > GAME_TIMER) or self.server.game_over:
+        player_is_dead = self.player.ranger.health <= 0
+        timer_over = abs( self.current_time - self.start_time) > GAME_TIMER
+        server_game_over = self.server.game_over if self.server is not None else False
+        if player_is_dead or timer_over or server_game_over:
             self.game_state = 'game_over'
 
             # add highscores
