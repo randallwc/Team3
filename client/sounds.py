@@ -3,8 +3,10 @@ import pygame
 from paths import laser_sound_path
 
 
-def play_sound(file_path):
-    pygame.mixer.Sound(file_path).play()
+def play_sound(file_path, vol=1):
+    sound = pygame.mixer.Sound(file_path)
+    sound.set_volume(vol)
+    sound.play()
 
 
 def play_laser_sound():
