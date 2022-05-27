@@ -22,7 +22,6 @@ class ServerIface:
             sys.exit(1)
         else:
             print('[debug] Connected to:', self.socket.connection_url)
-            self.previously_connected = True
         self.is_host = False
         self.room_id = ''
         self.socket_id = ''
@@ -108,7 +107,7 @@ class ServerIface:
             self.enemies_hurt[enemy_id] = new_health
 
         @self.socket.on('game_over')
-        def game_over(data):
+        def game_over():
             self.game_over = True
 
     def connect(self, room_id, is_host):
@@ -140,6 +139,9 @@ class ServerIface:
                 'username': self.username,
                 'previously_connected': self.previously_connected
             })
+            #need to do this after having sent state
+            if not self.previously_connected:
+                self.previously_connected = True
 
     def send_location_and_meta(self, x, y, z, is_firing):
         # modulo counter

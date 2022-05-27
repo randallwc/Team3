@@ -671,8 +671,8 @@ class Game:
         self.controller.voice.reset_words()
 
         self.current_time = pygame.time.get_ticks()
-        if self.player.ranger.health <= 0 or abs(
-                self.current_time - self.start_time) > GAME_TIMER:
+        if self.player.ranger.health <= 0 or (abs(
+                self.current_time - self.start_time) > GAME_TIMER) or self.server.game_over:
             self.game_state = 'game_over'
 
             # add highscores
@@ -794,6 +794,10 @@ class Game:
         # if game_state is 'multiplayer', self.server will be defined
         if self.game_state == 'multiplayer' and not self.server.socket.connected and not self.server.game_over:
             self.server.connect(self.room_id, self.is_host)
+
+        if self.game_state == 'game_over':
+            if self.server is not None:
+                self.server.disconnect()
 
     def run(self):
         # create clouds
