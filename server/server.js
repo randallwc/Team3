@@ -230,7 +230,7 @@ const listenForJoiningExistingRoom = (socket, roomTracker) => {
       socket.handshake.session.save();
 
       emitWelcome(socket);
-    }else{
+    } else {
       // roomdoesnt exist
       io.to(socket.id).emit("game_over");
     }
