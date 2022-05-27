@@ -207,3 +207,4 @@ class ServerIface:
     def disconnect(self):
         print('[debug] server disconnect')
         self.socket.disconnect()
+        self.game_over = False
