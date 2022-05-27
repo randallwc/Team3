@@ -139,7 +139,7 @@ class ServerIface:
                 'username': self.username,
                 'previously_connected': self.previously_connected
             })
-            #need to do this after having sent state
+            # need to do this after having sent state
             if not self.previously_connected:
                 self.previously_connected = True
 
