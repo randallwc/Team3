@@ -7,13 +7,17 @@ import pygame_gui
 import pyttsx3
 
 from cloud import Cloud
-from constants import (CLEAR_SCORE, DARK_BLUE, DEFAULT_MAX_NUM_ENEMIES,
+from constants import (BAD_ENEMY_COLLISION_DAMAGE,
+                       BAD_ENEMY_COLLISION_POINT_CHANGE, CLEAR_SCORE,
+                       DARK_BLUE, DEFAULT_MAX_NUM_ENEMIES,
                        DEFAULT_MAX_SPAWN_COUNTER, DEFAULT_ROOM,
-                       DEFAULT_USERNAME, DODGE_ENEMY_COLISION_DAMAGE,
-                       ENEMY_DAMAGE_TO_RANGER_ON_COLLIDE,
-                       ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT, ENEMY_INFO,
+                       DEFAULT_USERNAME, BULLET_ENEMY_COLLISION_DAMAGE,
+                       BULLET_ENEMY_COLLISION_POINT_CHANGE, ENEMY_INFO,
                        FIRE_SCORE, FRAME_RATE, GAME_STATES, GAME_TIMER,
-                       LIGHT_BLUE, MAX_FAST_SPEED, MAX_RANGER_ACCELERATION,
+                       GOOD_ENEMY_COLLISION_HEALTH_CHANGE,
+                       GOOD_ENEMY_COLLISION_POINT_CHANGE,
+                       GOOD_ENEMY_HIT_HEALTH_CHANGE, LIGHT_BLUE,
+                       MAX_FAST_SPEED, MAX_RANGER_ACCELERATION,
                        MAX_RANGER_HEALTH, MAX_RANGER_SPEED,
                        RANGER_ACCELERATION, RANGER_DAMAGE, RANGER_START_HEALTH,
                        RED, SCREEN_HEIGHT, SCREEN_WIDTH, START_SPAWN_COUNT)
@@ -408,31 +412,37 @@ class Game:
         # TODO -- send when enemy is collided with
         if pygame.Rect.colliderect(
                 enemy.rect, self.player.ranger.rect):
-            if enemy.enemy_type in enemy.bad_enemies:
-                # TODO -- lower health instead of points
-                self.player.handle_point_change(-10)
-                self.player.ranger.health -= ENEMY_DAMAGE_TO_RANGER_ON_COLLIDE
-                # TODO -- send server that ranger was damaged
             if enemy.enemy_type in enemy.good_enemies:
-                self.player.handle_point_change(10)
+                self.player.handle_point_change(
+                    GOOD_ENEMY_COLLISION_POINT_CHANGE)
                 self.player.ranger.particle_cloud.coin_burst(10)
-                self.player.ranger.health += ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT
+                self.player.ranger.health += GOOD_ENEMY_COLLISION_HEALTH_CHANGE
                 # TODO -- send server that ranger gained health
-            if enemy.enemy_type in enemy.dodge_enemies:
-                self.player.handle_point_change(-10)
-                # kill if hit dodge enemy
-                self.player.ranger.health -= DODGE_ENEMY_COLISION_DAMAGE
+            if enemy.enemy_type in enemy.bad_enemies:
+                self.player.handle_point_change(
+                    BAD_ENEMY_COLLISION_POINT_CHANGE)
+                self.player.ranger.health += BAD_ENEMY_COLLISION_DAMAGE
+                # TODO -- send server that ranger was damaged
+            if enemy.enemy_type in enemy.bullet_enemies:
+                self.player.handle_point_change(
+                    BULLET_ENEMY_COLLISION_POINT_CHANGE)
+                self.player.ranger.health += BULLET_ENEMY_COLLISION_DAMAGE
             # despawn any enemy if touched
             enemy.health = 0
         return enemy
 
     def _handle_enemy_laser_hit(self, enemy: Enemy):
         def _hit_enemy() -> bool:
+            assert isinstance(self.player.ranger.x, int)
+            assert isinstance(self.player.ranger.y, int)
+            assert isinstance(self.player.ranger.z, int)
+            is_not_bullet = enemy.enemy_type not in enemy.bullet_enemies
+            on_z_level = self.player.ranger.z == enemy.z if is_not_bullet else True
             return enemy.should_display \
                 and self.player.ranger.laser_is_deadly \
                 and self.player.ranger.x in enemy.get_x_hitbox() \
                 and self.player.ranger.y > enemy.y \
-                and self.player.ranger.z == enemy.z
+                and on_z_level
 
         if _hit_enemy():
             enemy.got_hit(RANGER_DAMAGE)
@@ -443,29 +453,34 @@ class Game:
                 # good enemy dead
                 if enemy.enemy_type in enemy.good_enemies:
                     # auto get hurt if enemy is good and you killed it
-                    self.player.handle_point_change(enemy.handle_death())
-                    self.player.ranger.health -= ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT
+                    points = enemy.handle_death()
+                    self.player.handle_point_change(points)
+                    self.player.ranger.health += GOOD_ENEMY_HIT_HEALTH_CHANGE
                     # TODO -- server send player was damaged
-                # bad enemy dead
-                if enemy.enemy_type in enemy.bad_enemies:
+                # bad or bullet enemy dead
+                if enemy.enemy_type in enemy.bad_enemies or enemy.enemy_type in enemy.bullet_enemies:
                     # gain points
-                    self.player.handle_point_change(enemy.handle_death())
+                    points = enemy.handle_death()
+                    self.player.handle_point_change(points)
                     # show fire cloud
                     particle_cloud = ParticleCloud(enemy.x, enemy.y)
                     particle_cloud.fire_burst(10)
                     self.dead_enemy_particle_clouds.append(particle_cloud)
             # hurt
             elif enemy.health < ENEMY_INFO[enemy.enemy_type]['health']:
+                enemy.particle_cloud.is_smoking = True
                 # good enemy hurt
                 if enemy.enemy_type in enemy.good_enemies:
-                    enemy.particle_cloud.is_smoking = True
                     # auto get hurt if enemy is good
                     self.player.handle_point_change(enemy.handle_death())
-                    self.player.ranger.health -= ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT
+                    self.player.ranger.health += GOOD_ENEMY_HIT_HEALTH_CHANGE
                     # TODO -- server send player was damaged
                 # bad enemy hurt
                 if enemy.enemy_type in enemy.bad_enemies:
-                    enemy.particle_cloud.is_smoking = True
+                    ...
+                # bullet enemy hurt
+                if enemy.enemy_type in enemy.bullet_enemies:
+                    ...
         return enemy
 
     def _display_enemies(self):
@@ -516,11 +531,11 @@ class Game:
             # move enemy
             enemy.step()
             if enemy.hit_bottom:
-                if enemy.enemy_type not in enemy.dodge_enemies:
-                    # non dodge enemy hit bottom
+                if enemy.enemy_type in enemy.bullet_enemies:
+                    # non bullet enemy hit bottom
                     self.player.handle_point_change(-5)
             # do logic on enemies in same level
-            if enemy.z == self.player.ranger.z:
+            if enemy.z == self.player.ranger.z or enemy.enemy_type in enemy.bullet_enemies:
                 enemy = self._handle_enemy_collision(enemy)
                 enemy = self._handle_enemy_laser_hit(enemy)
                 enemy.show(

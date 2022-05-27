@@ -26,6 +26,9 @@ class ScreenManager:
         self.game_over_logo = pygame.transform.rotozoom(
             pygame.image.load(gameover_path), 0, 0.1)
         self.game_over_rect = self.game_over_logo.get_rect()
+        self.logo = pygame.transform.rotozoom(
+            pygame.image.load(logo_path), 0, 0.5)
+        self.logo_rect = self.logo.get_rect()
 
     def reset_particles(self):
         self.transparent_surface.fill((0, 0, 0, 0))
@@ -150,7 +153,7 @@ class ScreenManager:
         def num_enemies_on_level(enemies, level):
             count = 0
             for enemy in enemies:
-                if enemy.z == level:
+                if enemy.z == level or enemy.enemy_type in enemy.bullet_enemies:
                     count += 1
             return count
 
@@ -203,15 +206,10 @@ class ScreenManager:
         self.surface.blit(rendered_font, (10, 10))
 
     def show_logo(self):
-        rendered_logo = pygame.image.load(logo_path)
-        rendered_logo = pygame.transform.rotozoom(rendered_logo, 0, 0.5)
-        rendered_logo_rect = rendered_logo.get_rect()
-        logo_height = rendered_logo_rect.height
-        logo_width = rendered_logo_rect.width
         self.surface.blit(
-            rendered_logo,
-            (SCREEN_WIDTH // 2 - logo_width // 2,
-             100 + logo_height // 2))
+            self.logo,
+            (SCREEN_WIDTH // 2 - self.logo_rect.width // 2,
+             100 + self.logo_rect.height // 2))
 
     def show_game_over(self):
         logo_height = self.game_over_rect.height

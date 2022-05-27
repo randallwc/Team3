@@ -53,18 +53,29 @@ YELLOW = (255, 255, 0)
 FONT = 'Comic Sans'
 FONT_SIZE = 20
 
+# health/point changes
+BAD_ENEMY_COLLISION_DAMAGE = -0.5
+BAD_ENEMY_COLLISION_POINT_CHANGE = -10
+# bad enemies return their health as points
+
+BULLET_ENEMY_COLLISION_DAMAGE = -0.75
+BULLET_ENEMY_COLLISION_POINT_CHANGE = -10
+# bullet enemies return their health as points
+
+GOOD_ENEMY_COLLISION_HEALTH_CHANGE = 0.25
+GOOD_ENEMY_COLLISION_POINT_CHANGE = 10
+GOOD_ENEMY_HIT_HEALTH_CHANGE = -0.25
+
 # enemies
 START_SPAWN_COUNT = 10
 DEFAULT_MAX_NUM_ENEMIES = 5
 DEFAULT_MAX_SPAWN_COUNTER = 100
 ENEMY_DIRECTIONS = ['left', 'right', 'down']
-ENEMY_CATEGORIES = ['good', 'bad', 'dodge']
-ENEMY_DAMAGE_TO_RANGER_ON_COLLIDE = 0.5
-ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT = 0.25
-DODGE_ENEMY_COLISION_DAMAGE = 0.75
+ENEMY_CATEGORIES = ['good', 'bad', 'bullet']
+
 ENEMY_INFO = {
     'jc': {
-        'category': ENEMY_CATEGORIES[1],
+        'category': 'bad',
         'death_sound_path': jc_death_sound_path,
         'image_path': jc_path,
         'max_time_alive': 1000,
@@ -75,7 +86,7 @@ ENEMY_INFO = {
         'image_dimensions': (100, 100),
     },
     'cow': {
-        'category': ENEMY_CATEGORIES[0],
+        'category': 'good',
         'death_sound_path': friendly_fire_sound_path,
         'image_path': cow_path,
         'max_time_alive': 1000,
@@ -86,7 +97,7 @@ ENEMY_INFO = {
         'image_dimensions': (100, 100),
     },
     'ricky': {
-        'category': ENEMY_CATEGORIES[2],
+        'category': 'bad',
         'death_sound_path': ricky_death_sound_path,
         'image_path': ricky_path,
         'max_time_alive': 1000,
@@ -97,7 +108,7 @@ ENEMY_INFO = {
         'image_dimensions': (300, 100),
     },
     'david': {
-        'category': ENEMY_CATEGORIES[1],
+        'category': 'bad',
         'death_sound_path': None,
         'image_path': david_path,
         'max_time_alive': 1000,
@@ -108,7 +119,7 @@ ENEMY_INFO = {
         'image_dimensions': (100, 100),
     },
     'anton': {
-        'category': ENEMY_CATEGORIES[1],
+        'category': 'bad',
         'death_sound_path': anton_death_sound_path,
         'image_path': anton_path,
         'max_time_alive': 1000,
@@ -119,7 +130,7 @@ ENEMY_INFO = {
         'image_dimensions': (100, 100),
     },
     'armando': {
-        'category': ENEMY_CATEGORIES[0],
+        'category': 'good',
         'death_sound_path': friendly_fire_sound_path,
         'image_path': armando_path,
         'max_time_alive': 1000,
@@ -130,7 +141,7 @@ ENEMY_INFO = {
         'image_dimensions': (100, 100),
     },
     'david2': {
-        'category': ENEMY_CATEGORIES[1],
+        'category': 'bad',
         'death_sound_path': david2_death_sound_path,
         'image_path': david2_path,
         'max_time_alive': 1000,
@@ -141,7 +152,7 @@ ENEMY_INFO = {
         'image_dimensions': (100, 100),
     },
     'meteor': {
-        'category': ENEMY_CATEGORIES[1],
+        'category': 'bullet',
         'death_sound_path': meteor_sound_path,
         'image_path': meteor_path,
         'max_time_alive': 1000,
