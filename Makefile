@@ -48,7 +48,8 @@ database:
 	mkdir server/localDB; mongod --dbpath server/localDB
 
 heroku-status:
-	watch --color 'heroku ps --color; heroku logs --tail --color'
+	heroku ps
+	heroku logs --tail
 
 clean:
 	rm -rf server/localDB
