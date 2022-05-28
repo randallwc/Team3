@@ -13,8 +13,8 @@ from constants import (BAD_ENEMY_COLLISION_DAMAGE,
                        BULLET_ENEMY_COLLISION_POINT_CHANGE, CLEAR_SCORE,
                        DARK_BLUE, DEFAULT_MAX_NUM_ENEMIES,
                        DEFAULT_MAX_SPAWN_COUNTER, DEFAULT_ROOM,
-                       DEFAULT_USERNAME, ENEMY_INFO, FAST_SCORE, FRAME_RATE,
-                       GAME_STATES, GAME_TIMER,
+                       DEFAULT_USERNAME, ENEMY_CATEGORIES, ENEMY_INFO,
+                       FAST_SCORE, FRAME_RATE, GAME_STATES, GAME_TIMER,
                        GOOD_ENEMY_COLLISION_HEALTH_CHANGE,
                        GOOD_ENEMY_COLLISION_POINT_CHANGE,
                        GOOD_ENEMY_HIT_HEALTH_CHANGE, LIGHT_BLUE,
@@ -400,9 +400,12 @@ class Game:
             # add to enemy id count
             self.enemy_id_count += 1
             new_enemy_type = choice(self.enemy_types)
+            y_spawn = 100
+            if ENEMY_INFO[new_enemy_type]['direction'] is 'down':
+                y_spawn = -10
             new_enemy = Enemy(
                 randrange(0, SCREEN_WIDTH, 1),
-                100,
+                y_spawn,
                 randrange(0, self.num_z_levels, 1),
                 self.num_z_levels,
                 new_enemy_type,
