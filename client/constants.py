@@ -9,6 +9,12 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 FRAME_RATE = 60
 
+# powerups
+FAST_WORD = 'fast'
+CLEAR_WORD = 'clear'
+# how long you are fast
+MAX_FAST_TIMER = 500
+
 # ui
 DEFAULT_USERNAME = 'enter username'
 DEFAULT_ROOM = 'enter roomid'
@@ -35,7 +41,7 @@ MAX_RANGER_HEALTH = 2
 
 # powerup scores
 CLEAR_SCORE = 20
-FIRE_SCORE = 10
+FAST_SCORE = 10
 
 # colors
 BLACK = (0, 0, 0)

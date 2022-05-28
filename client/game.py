@@ -8,16 +8,17 @@ import pyttsx3
 
 from cloud import Cloud
 from constants import (BAD_ENEMY_COLLISION_DAMAGE,
-                       BAD_ENEMY_COLLISION_POINT_CHANGE, CLEAR_SCORE,
+                       BAD_ENEMY_COLLISION_POINT_CHANGE,
+                       BULLET_ENEMY_COLLISION_DAMAGE,
+                       BULLET_ENEMY_COLLISION_POINT_CHANGE, CLEAR_SCORE,
                        DARK_BLUE, DEFAULT_MAX_NUM_ENEMIES,
                        DEFAULT_MAX_SPAWN_COUNTER, DEFAULT_ROOM,
-                       DEFAULT_USERNAME, BULLET_ENEMY_COLLISION_DAMAGE,
-                       BULLET_ENEMY_COLLISION_POINT_CHANGE, ENEMY_INFO,
-                       FIRE_SCORE, FRAME_RATE, GAME_STATES, GAME_TIMER,
+                       DEFAULT_USERNAME, ENEMY_INFO, FAST_SCORE, FRAME_RATE,
+                       GAME_STATES, GAME_TIMER,
                        GOOD_ENEMY_COLLISION_HEALTH_CHANGE,
                        GOOD_ENEMY_COLLISION_POINT_CHANGE,
                        GOOD_ENEMY_HIT_HEALTH_CHANGE, LIGHT_BLUE,
-                       MAX_FAST_SPEED, MAX_RANGER_ACCELERATION,
+                       MAX_FAST_SPEED, MAX_FAST_TIMER, MAX_RANGER_ACCELERATION,
                        MAX_RANGER_HEALTH, MAX_RANGER_SPEED,
                        RANGER_ACCELERATION, RANGER_DAMAGE, RANGER_START_HEALTH,
                        RED, SCREEN_HEIGHT, SCREEN_WIDTH, START_SPAWN_COUNT)
@@ -93,19 +94,22 @@ class Game:
             self.ui_manager,
             object_id=pygame_gui.core.ObjectID(
                 object_id='#healthbar'))
+        self.health_bar.status_text = lambda: 'health'
         self.health_bar.hide()
 
         # shield bar
         width = SCREEN_WIDTH // 5
         height = SCREEN_HEIGHT // 20
         left = 10
-        top = SCREEN_HEIGHT - 10 - 2 * height
+        distance_between_shield_and_health = 15
+        top = SCREEN_HEIGHT - distance_between_shield_and_health - 2 * height
         shieldbarrect = pygame.Rect(left, top, width, height)
         self.shield_bar = pygame_gui.elements.UIStatusBar(
             shieldbarrect,
             self.ui_manager,
             object_id=pygame_gui.core.ObjectID(
                 object_id='#shieldbar'))
+        self.shield_bar.status_text = lambda: 'shield'
         self.shield_bar.hide()
 
         # levels
@@ -119,7 +123,7 @@ class Game:
         self.levels_gui.hide()
 
         # Screen Manager settings
-        self.screen_manager = ScreenManager(sky_path)
+        self.screen_manager = ScreenManager(sky_path, self.ui_manager)
 
         # enemies
         self.enemies: List[Enemy] = []
@@ -159,7 +163,6 @@ class Game:
 
         # powerup flags
         self.fast_timer = 0
-        self.max_fast_timer = 500
         self.clear_flag = False
         self.max_clear_cooldown = 500
         self.clear_cooldown = 0
@@ -274,6 +277,9 @@ class Game:
 
     def _clear_variables(self):
         # clear variables
+        self.screen_manager.render_fast(False)
+        self.screen_manager.render_clear(False)
+        self.screen_manager.score.hide()
         self.controller.voice.reset_words()
         self.dead_enemy_particle_clouds = []
         for enemy in self.enemies:
@@ -647,15 +653,16 @@ class Game:
         # fast powerup
         wants_fast = self.controller.voice.fast_flag
         self.fast_timer = max(self.fast_timer - 1, 0)
+        can_fast = self.player.current_score >= FAST_SCORE and self.fast_timer == 0
         if wants_fast:
-            if self.player.current_score >= FIRE_SCORE and self.fast_timer == 0:
-                self.fast_timer = self.max_fast_timer
+            if can_fast:
+                self.fast_timer = MAX_FAST_TIMER
                 self.player.acceleration = MAX_RANGER_ACCELERATION
                 self.player.max_speed = MAX_FAST_SPEED
                 self.player.ranger.particle_cloud.is_coin_bursting = True
                 self.player.ranger.health = MAX_RANGER_HEALTH
             else:
-                point_diff = abs(self.player.current_score - FIRE_SCORE)
+                point_diff = abs(self.player.current_score - FAST_SCORE)
                 say_string = f"you can't speed up yet you need {point_diff} more points"
                 self.speech_engine.say(say_string)
                 self.speech_engine.startLoop(False)
@@ -666,9 +673,10 @@ class Game:
             self.player.ranger.particle_cloud.is_coin_bursting = False
 
         # clear powerup
-        wants_clear = self.controller.voice.clear_flag
         self.clear_cooldown = max(self.clear_cooldown - 1, 0)
-        if wants_clear and self.player.current_score >= CLEAR_SCORE:
+        wants_clear = self.controller.voice.clear_flag
+        can_clear = self.player.current_score >= CLEAR_SCORE and self.clear_cooldown == 0
+        if wants_clear and can_clear:
             self.clear_flag = True
             self.clear_cooldown = self.max_clear_cooldown
         elif not wants_fast and wants_clear:
@@ -763,6 +771,12 @@ class Game:
 
         # show current score
         self.screen_manager.render_score(self.player.current_score)
+
+        # show if player can go fast
+        self.screen_manager.render_fast(can_fast)
+
+        # show if player can clear
+        self.screen_manager.render_clear(can_clear)
 
         # show current level minimap
         self.screen_manager.render_level(

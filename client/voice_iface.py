@@ -1,5 +1,7 @@
 import speech_recognition as sr
 
+from constants import CLEAR_WORD, FAST_WORD
+
 
 class VoiceIface():
     def __init__(self):
@@ -17,9 +19,9 @@ class VoiceIface():
         self.mic = sr.Microphone()
         self.stop_listening = None
         self.fast_flag = False
-        self.fast_word = 'fast'
+        self.fast_word = FAST_WORD
         self.clear_flag = False
-        self.clear_word = 'clear'
+        self.clear_word = CLEAR_WORD
         with self.mic as source:
             self.recognizer.adjust_for_ambient_noise(source, duration=1)
 

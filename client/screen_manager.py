@@ -1,9 +1,11 @@
 import math
 
 import pygame
+import pygame_gui
 
-from constants import (BACKGROUND_BLUE, BLACK, FONT, FONT_SIZE, GAME_TIMER,
-                       LIGHT_BLUE, SCREEN_HEIGHT, SCREEN_WIDTH, WHITE)
+from constants import (BACKGROUND_BLUE, BLACK, CLEAR_WORD, FAST_WORD, FONT,
+                       FONT_SIZE, GAME_TIMER, LIGHT_BLUE, SCREEN_HEIGHT,
+                       SCREEN_WIDTH, WHITE)
 from paths import gameover_path, logo_path
 
 
@@ -16,7 +18,10 @@ def set_caption(caption: str):
 
 
 class ScreenManager:
-    def __init__(self, background_image_path):
+    def __init__(
+            self,
+            background_image_path,
+            ui_manager: pygame_gui.UIManager):
         self.background_image_path = background_image_path
         self.pygame_loaded_background = pygame.image.load(
             self.background_image_path)
@@ -29,6 +34,28 @@ class ScreenManager:
         self.logo = pygame.transform.rotozoom(
             pygame.image.load(logo_path), 0, 0.5)
         self.logo_rect = self.logo.get_rect()
+
+        self._ui_manager = ui_manager
+        center = (SCREEN_WIDTH - 200, SCREEN_HEIGHT - 100, -1, -1)
+        self.score = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(center),
+            text='score: 0',
+            manager=self._ui_manager)
+        self.score.hide()
+
+        center = (SCREEN_WIDTH - 200, SCREEN_HEIGHT - 175, -1, -1)
+        self.say_fast = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(center),
+            text=f'say "{FAST_WORD}"',
+            manager=self._ui_manager)
+        self.say_fast.hide()
+
+        center = (SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250, -1, -1)
+        self.say_clear = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(center),
+            text=f'say "{CLEAR_WORD}"',
+            manager=self._ui_manager)
+        self.say_clear.hide()
 
     def reset_particles(self):
         self.transparent_surface.fill((0, 0, 0, 0))
@@ -44,18 +71,20 @@ class ScreenManager:
         self.surface.fill(color)
 
     def render_score(self, current_score: int):
-        foreground_color = BLACK
-        background_color = WHITE
-        font = pygame.font.SysFont(FONT, FONT_SIZE)
-        rendered_font = font.render(
-            f'score: {current_score}',
-            True,
-            foreground_color,
-            background_color)
-        self.surface.blit(
-            rendered_font,
-            (SCREEN_WIDTH - 100 - rendered_font.get_width() // 2,
-             SCREEN_HEIGHT - 100))
+        self.score.show()
+        self.score.set_text(f'score: {current_score}')
+
+    def render_fast(self, can_go_fast: bool):
+        if can_go_fast:
+            self.say_fast.show()
+        else:
+            self.say_fast.hide()
+
+    def render_clear(self, can_clear: bool):
+        if can_clear:
+            self.say_clear.show()
+        else:
+            self.say_clear.hide()
 
     def render_final_scores(
             self,
