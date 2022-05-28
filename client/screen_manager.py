@@ -1,9 +1,11 @@
 import math
 
 import pygame
+import pygame_gui
 
-from constants import (BACKGROUND_BLUE, BLACK, FONT, FONT_SIZE, GAME_TIMER,
-                       LIGHT_BLUE, SCREEN_HEIGHT, SCREEN_WIDTH, WHITE)
+from constants import (BACKGROUND_BLUE, BLACK, CLEAR_WORD, FAST_WORD, FONT,
+                       FONT_SIZE, GAME_TIMER, LIGHT_BLUE, SCREEN_HEIGHT,
+                       SCREEN_WIDTH, WHITE)
 from paths import gameover_path, logo_path
 
 
@@ -16,7 +18,10 @@ def set_caption(caption: str):
 
 
 class ScreenManager:
-    def __init__(self, background_image_path):
+    def __init__(
+            self,
+            background_image_path,
+            ui_manager: pygame_gui.UIManager):
         self.background_image_path = background_image_path
         self.pygame_loaded_background = pygame.image.load(
             self.background_image_path)
@@ -26,6 +31,31 @@ class ScreenManager:
         self.game_over_logo = pygame.transform.rotozoom(
             pygame.image.load(gameover_path), 0, 0.1)
         self.game_over_rect = self.game_over_logo.get_rect()
+        self.logo = pygame.transform.rotozoom(
+            pygame.image.load(logo_path), 0, 0.5)
+        self.logo_rect = self.logo.get_rect()
+
+        self._ui_manager = ui_manager
+        center = (SCREEN_WIDTH - 200, SCREEN_HEIGHT - 100, -1, -1)
+        self.score = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(center),
+            text='score: 0',
+            manager=self._ui_manager)
+        self.score.hide()
+
+        center = (SCREEN_WIDTH - 200, SCREEN_HEIGHT - 175, -1, -1)
+        self.say_fast = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(center),
+            text=f'say "{FAST_WORD}"',
+            manager=self._ui_manager)
+        self.say_fast.hide()
+
+        center = (SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250, -1, -1)
+        self.say_clear = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(center),
+            text=f'say "{CLEAR_WORD}"',
+            manager=self._ui_manager)
+        self.say_clear.hide()
 
     def reset_particles(self):
         self.transparent_surface.fill((0, 0, 0, 0))
@@ -41,18 +71,20 @@ class ScreenManager:
         self.surface.fill(color)
 
     def render_score(self, current_score: int):
-        foreground_color = BLACK
-        background_color = WHITE
-        font = pygame.font.SysFont(FONT, FONT_SIZE)
-        rendered_font = font.render(
-            f'score: {current_score}',
-            True,
-            foreground_color,
-            background_color)
-        self.surface.blit(
-            rendered_font,
-            (SCREEN_WIDTH - 100 - rendered_font.get_width() // 2,
-             SCREEN_HEIGHT - 100))
+        self.score.show()
+        self.score.set_text(f'score: {current_score}')
+
+    def render_fast(self, can_go_fast: bool):
+        if can_go_fast:
+            self.say_fast.show()
+        else:
+            self.say_fast.hide()
+
+    def render_clear(self, can_clear: bool):
+        if can_clear:
+            self.say_clear.show()
+        else:
+            self.say_clear.hide()
 
     def render_final_scores(
             self,
@@ -150,7 +182,7 @@ class ScreenManager:
         def num_enemies_on_level(enemies, level):
             count = 0
             for enemy in enemies:
-                if enemy.z == level:
+                if enemy.z == level or enemy.enemy_type in enemy.bullet_enemies:
                     count += 1
             return count
 
@@ -203,15 +235,10 @@ class ScreenManager:
         self.surface.blit(rendered_font, (10, 10))
 
     def show_logo(self):
-        rendered_logo = pygame.image.load(logo_path)
-        rendered_logo = pygame.transform.rotozoom(rendered_logo, 0, 0.5)
-        rendered_logo_rect = rendered_logo.get_rect()
-        logo_height = rendered_logo_rect.height
-        logo_width = rendered_logo_rect.width
         self.surface.blit(
-            rendered_logo,
-            (SCREEN_WIDTH // 2 - logo_width // 2,
-             100 + logo_height // 2))
+            self.logo,
+            (SCREEN_WIDTH // 2 - self.logo_rect.width // 2,
+             100 + self.logo_rect.height // 2))
 
     def show_game_over(self):
         logo_height = self.game_over_rect.height

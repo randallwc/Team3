@@ -26,7 +26,7 @@ class Player:
     def handle_point_change(self, delta: int):
         if delta < 0:
             self.ranger.particle_cloud.fire_burst(10)
-            play_sound(point_loss_sound_path)
+            play_sound(point_loss_sound_path, 0.25)
         if delta > 0:
-            play_sound(point_gain_sound_path)
+            play_sound(point_gain_sound_path, 0.25)
         self.current_score += delta

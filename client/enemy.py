@@ -18,11 +18,12 @@ class Enemy(Entity):
             enemy_id,
             health,
             ui_manager: pygame_gui.UIManager):
+        assert ENEMY_INFO[enemy_type]['category'] in ENEMY_CATEGORIES
         self.enemy_type = enemy_type
         self.health = health
         self.good_enemies = self.get_good_enemies()
         self.bad_enemies = self.get_bad_enemies()
-        self.dodge_enemies = self.get_dodge_enemies()
+        self.bullet_enemies = self.get_bullet_enemies()
         self.image_path = self.get_image_path()
         self.time_alive_countdown = self.get_max_time_alive()
         self.x_speed = self.get_x_speed()
@@ -52,8 +53,9 @@ class Enemy(Entity):
             ENEMY_INFO[self.enemy_type]['health']
         self.hbar.rect.top = self.rect.bottom + self.hbar.rect.height // 2
         self.hbar.rect.left = self.left
-        if self.should_display and not self._on_diff_level and self.enemy_type not in (
-                *self.get_dodge_enemies(), *self.get_good_enemies()):
+        if self.should_display \
+                and not self._on_diff_level \
+                and self.enemy_type not in self.good_enemies:
             self.hbar.show()
         else:
             self.hbar.hide()
@@ -73,11 +75,11 @@ class Enemy(Entity):
         return list(filter(is_bad, ENEMY_INFO))
 
     @staticmethod
-    def get_dodge_enemies():
-        def is_dodge(key):
+    def get_bullet_enemies():
+        def is_bullet(key):
             return ENEMY_INFO[key]['category'] == ENEMY_CATEGORIES[2]
 
-        return list(filter(is_dodge, ENEMY_INFO))
+        return list(filter(is_bullet, ENEMY_INFO))
 
     def get_image_dimensions(self):
         return ENEMY_INFO[self.enemy_type]['image_dimensions']
@@ -114,7 +116,9 @@ class Enemy(Entity):
 
     def handle_death(self):
         self.play_death_sound()
-        return 1 if self.enemy_type in self.bad_enemies else -1
+        points = ENEMY_INFO[self.enemy_type]['health']
+        should_shoot = self.enemy_type not in self.good_enemies
+        return points if should_shoot else -points
 
     def show(self, surface: pygame.surface.Surface,
              particle_surface: pygame.surface.Surface):
@@ -149,15 +153,13 @@ class Enemy(Entity):
              self.rect.bottom))
 
     def got_hit(self, damage_amount):
-        if self.enemy_type not in self.dodge_enemies:
-            # dodge enemies cannot be shot
-            self.health -= damage_amount
+        self.health -= damage_amount
 
-            if self.health <= 0:
-                # no negative healths
-                self.health = 0
-                # if dead it shouldn't display
-                self.should_display = False
+        if self.health <= 0:
+            # no negative healths
+            self.health = 0
+            # if dead it shouldn't display
+            self.should_display = False
 
     def step(self):
         """Move enemy based on current_direction."""

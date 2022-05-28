@@ -7,13 +7,18 @@ import pygame_gui
 import pyttsx3
 
 from cloud import Cloud
-from constants import (CLEAR_SCORE, DARK_BLUE, DEFAULT_MAX_NUM_ENEMIES,
+from constants import (BAD_ENEMY_COLLISION_DAMAGE,
+                       BAD_ENEMY_COLLISION_POINT_CHANGE,
+                       BULLET_ENEMY_COLLISION_DAMAGE,
+                       BULLET_ENEMY_COLLISION_POINT_CHANGE, CLEAR_SCORE,
+                       DARK_BLUE, DEFAULT_MAX_NUM_ENEMIES,
                        DEFAULT_MAX_SPAWN_COUNTER, DEFAULT_ROOM,
-                       DEFAULT_USERNAME, DODGE_ENEMY_COLISION_DAMAGE,
-                       ENEMY_DAMAGE_TO_RANGER_ON_COLLIDE,
-                       ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT, ENEMY_INFO,
-                       FIRE_SCORE, FRAME_RATE, GAME_STATES, GAME_TIMER,
-                       LIGHT_BLUE, MAX_FAST_SPEED, MAX_RANGER_ACCELERATION,
+                       DEFAULT_USERNAME, ENEMY_CATEGORIES, ENEMY_INFO,
+                       FAST_SCORE, FRAME_RATE, GAME_STATES, GAME_TIMER,
+                       GOOD_ENEMY_COLLISION_HEALTH_CHANGE,
+                       GOOD_ENEMY_COLLISION_POINT_CHANGE,
+                       GOOD_ENEMY_HIT_HEALTH_CHANGE, LIGHT_BLUE,
+                       MAX_FAST_SPEED, MAX_FAST_TIMER, MAX_RANGER_ACCELERATION,
                        MAX_RANGER_HEALTH, MAX_RANGER_SPEED,
                        RANGER_ACCELERATION, RANGER_DAMAGE, RANGER_START_HEALTH,
                        RED, SCREEN_HEIGHT, SCREEN_WIDTH, START_SPAWN_COUNT)
@@ -89,19 +94,22 @@ class Game:
             self.ui_manager,
             object_id=pygame_gui.core.ObjectID(
                 object_id='#healthbar'))
+        self.health_bar.status_text = lambda: 'health'
         self.health_bar.hide()
 
         # shield bar
         width = SCREEN_WIDTH // 5
         height = SCREEN_HEIGHT // 20
         left = 10
-        top = SCREEN_HEIGHT - 10 - 2 * height
+        distance_between_shield_and_health = 15
+        top = SCREEN_HEIGHT - distance_between_shield_and_health - 2 * height
         shieldbarrect = pygame.Rect(left, top, width, height)
         self.shield_bar = pygame_gui.elements.UIStatusBar(
             shieldbarrect,
             self.ui_manager,
             object_id=pygame_gui.core.ObjectID(
                 object_id='#shieldbar'))
+        self.shield_bar.status_text = lambda: 'shield'
         self.shield_bar.hide()
 
         # levels
@@ -115,7 +123,7 @@ class Game:
         self.levels_gui.hide()
 
         # Screen Manager settings
-        self.screen_manager = ScreenManager(sky_path)
+        self.screen_manager = ScreenManager(sky_path, self.ui_manager)
 
         # enemies
         self.enemies: List[Enemy] = []
@@ -155,7 +163,6 @@ class Game:
 
         # powerup flags
         self.fast_timer = 0
-        self.max_fast_timer = 500
         self.clear_flag = False
         self.max_clear_cooldown = 500
         self.clear_cooldown = 0
@@ -270,6 +277,9 @@ class Game:
 
     def _clear_variables(self):
         # clear variables
+        self.screen_manager.render_fast(False)
+        self.screen_manager.render_clear(False)
+        self.screen_manager.score.hide()
         self.controller.voice.reset_words()
         self.dead_enemy_particle_clouds = []
         for enemy in self.enemies:
@@ -390,9 +400,12 @@ class Game:
             # add to enemy id count
             self.enemy_id_count += 1
             new_enemy_type = choice(self.enemy_types)
+            y_spawn = 100
+            if ENEMY_INFO[new_enemy_type]['direction'] is 'down':
+                y_spawn = -10
             new_enemy = Enemy(
                 randrange(0, SCREEN_WIDTH, 1),
-                100,
+                y_spawn,
                 randrange(0, self.num_z_levels, 1),
                 self.num_z_levels,
                 new_enemy_type,
@@ -408,31 +421,37 @@ class Game:
         # TODO -- send when enemy is collided with
         if pygame.Rect.colliderect(
                 enemy.rect, self.player.ranger.rect):
-            if enemy.enemy_type in enemy.bad_enemies:
-                # TODO -- lower health instead of points
-                self.player.handle_point_change(-10)
-                self.player.ranger.health -= ENEMY_DAMAGE_TO_RANGER_ON_COLLIDE
-                # TODO -- send server that ranger was damaged
             if enemy.enemy_type in enemy.good_enemies:
-                self.player.handle_point_change(10)
+                self.player.handle_point_change(
+                    GOOD_ENEMY_COLLISION_POINT_CHANGE)
                 self.player.ranger.particle_cloud.coin_burst(10)
-                self.player.ranger.health += ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT
+                self.player.ranger.health += GOOD_ENEMY_COLLISION_HEALTH_CHANGE
                 # TODO -- send server that ranger gained health
-            if enemy.enemy_type in enemy.dodge_enemies:
-                self.player.handle_point_change(-10)
-                # kill if hit dodge enemy
-                self.player.ranger.health -= DODGE_ENEMY_COLISION_DAMAGE
+            if enemy.enemy_type in enemy.bad_enemies:
+                self.player.handle_point_change(
+                    BAD_ENEMY_COLLISION_POINT_CHANGE)
+                self.player.ranger.health += BAD_ENEMY_COLLISION_DAMAGE
+                # TODO -- send server that ranger was damaged
+            if enemy.enemy_type in enemy.bullet_enemies:
+                self.player.handle_point_change(
+                    BULLET_ENEMY_COLLISION_POINT_CHANGE)
+                self.player.ranger.health += BULLET_ENEMY_COLLISION_DAMAGE
             # despawn any enemy if touched
             enemy.health = 0
         return enemy
 
     def _handle_enemy_laser_hit(self, enemy: Enemy):
         def _hit_enemy() -> bool:
+            assert isinstance(self.player.ranger.x, int)
+            assert isinstance(self.player.ranger.y, int)
+            assert isinstance(self.player.ranger.z, int)
+            is_not_bullet = enemy.enemy_type not in enemy.bullet_enemies
+            on_z_level = self.player.ranger.z == enemy.z if is_not_bullet else True
             return enemy.should_display \
                 and self.player.ranger.laser_is_deadly \
                 and self.player.ranger.x in enemy.get_x_hitbox() \
                 and self.player.ranger.y > enemy.y \
-                and self.player.ranger.z == enemy.z
+                and on_z_level
 
         if _hit_enemy():
             enemy.got_hit(RANGER_DAMAGE)
@@ -443,29 +462,34 @@ class Game:
                 # good enemy dead
                 if enemy.enemy_type in enemy.good_enemies:
                     # auto get hurt if enemy is good and you killed it
-                    self.player.handle_point_change(enemy.handle_death())
-                    self.player.ranger.health -= ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT
+                    points = enemy.handle_death()
+                    self.player.handle_point_change(points)
+                    self.player.ranger.health += GOOD_ENEMY_HIT_HEALTH_CHANGE
                     # TODO -- server send player was damaged
-                # bad enemy dead
-                if enemy.enemy_type in enemy.bad_enemies:
+                # bad or bullet enemy dead
+                if enemy.enemy_type in enemy.bad_enemies or enemy.enemy_type in enemy.bullet_enemies:
                     # gain points
-                    self.player.handle_point_change(enemy.handle_death())
+                    points = enemy.handle_death()
+                    self.player.handle_point_change(points)
                     # show fire cloud
                     particle_cloud = ParticleCloud(enemy.x, enemy.y)
                     particle_cloud.fire_burst(10)
                     self.dead_enemy_particle_clouds.append(particle_cloud)
             # hurt
             elif enemy.health < ENEMY_INFO[enemy.enemy_type]['health']:
+                enemy.particle_cloud.is_smoking = True
                 # good enemy hurt
                 if enemy.enemy_type in enemy.good_enemies:
-                    enemy.particle_cloud.is_smoking = True
                     # auto get hurt if enemy is good
                     self.player.handle_point_change(enemy.handle_death())
-                    self.player.ranger.health -= ENEMY_DAMAGE_TO_RANGER_ON_WRONG_HIT
+                    self.player.ranger.health += GOOD_ENEMY_HIT_HEALTH_CHANGE
                     # TODO -- server send player was damaged
                 # bad enemy hurt
                 if enemy.enemy_type in enemy.bad_enemies:
-                    enemy.particle_cloud.is_smoking = True
+                    ...
+                # bullet enemy hurt
+                if enemy.enemy_type in enemy.bullet_enemies:
+                    ...
         return enemy
 
     def _display_enemies(self):
@@ -516,11 +540,11 @@ class Game:
             # move enemy
             enemy.step()
             if enemy.hit_bottom:
-                if enemy.enemy_type not in enemy.dodge_enemies:
-                    # non dodge enemy hit bottom
+                if enemy.enemy_type in enemy.bullet_enemies:
+                    # bullet enemy hit bottom
                     self.player.handle_point_change(-5)
             # do logic on enemies in same level
-            if enemy.z == self.player.ranger.z:
+            if enemy.z == self.player.ranger.z or enemy.enemy_type in enemy.bullet_enemies:
                 enemy = self._handle_enemy_collision(enemy)
                 enemy = self._handle_enemy_laser_hit(enemy)
                 enemy.show(
@@ -632,15 +656,16 @@ class Game:
         # fast powerup
         wants_fast = self.controller.voice.fast_flag
         self.fast_timer = max(self.fast_timer - 1, 0)
+        can_fast = self.player.current_score >= FAST_SCORE and self.fast_timer == 0
         if wants_fast:
-            if self.player.current_score >= FIRE_SCORE and self.fast_timer == 0:
-                self.fast_timer = self.max_fast_timer
+            if can_fast:
+                self.fast_timer = MAX_FAST_TIMER
                 self.player.acceleration = MAX_RANGER_ACCELERATION
                 self.player.max_speed = MAX_FAST_SPEED
                 self.player.ranger.particle_cloud.is_coin_bursting = True
                 self.player.ranger.health = MAX_RANGER_HEALTH
             else:
-                point_diff = abs(self.player.current_score - FIRE_SCORE)
+                point_diff = abs(self.player.current_score - FAST_SCORE)
                 say_string = f"you can't speed up yet you need {point_diff} more points"
                 self.speech_engine.say(say_string)
                 self.speech_engine.startLoop(False)
@@ -651,9 +676,10 @@ class Game:
             self.player.ranger.particle_cloud.is_coin_bursting = False
 
         # clear powerup
-        wants_clear = self.controller.voice.clear_flag
         self.clear_cooldown = max(self.clear_cooldown - 1, 0)
-        if wants_clear and self.player.current_score >= CLEAR_SCORE:
+        wants_clear = self.controller.voice.clear_flag
+        can_clear = self.player.current_score >= CLEAR_SCORE and self.clear_cooldown == 0
+        if wants_clear and can_clear:
             self.clear_flag = True
             self.clear_cooldown = self.max_clear_cooldown
         elif not wants_fast and wants_clear:
@@ -748,6 +774,12 @@ class Game:
 
         # show current score
         self.screen_manager.render_score(self.player.current_score)
+
+        # show if player can go fast
+        self.screen_manager.render_fast(can_fast)
+
+        # show if player can clear
+        self.screen_manager.render_clear(can_clear)
 
         # show current level minimap
         self.screen_manager.render_level(

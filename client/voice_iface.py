@@ -1,5 +1,7 @@
 import speech_recognition as sr
 
+from constants import CLEAR_WORD, FAST_WORD
+
 
 class VoiceIface():
     def __init__(self):
@@ -17,9 +19,9 @@ class VoiceIface():
         self.mic = sr.Microphone()
         self.stop_listening = None
         self.fast_flag = False
-        self.fast_word = 'fast'
+        self.fast_word = FAST_WORD
         self.clear_flag = False
-        self.clear_word = 'clear'
+        self.clear_word = CLEAR_WORD
         with self.mic as source:
             self.recognizer.adjust_for_ambient_noise(source, duration=1)
 
@@ -34,7 +36,7 @@ class VoiceIface():
     def _voice_callback(self, recognizer, audio):
         try:
             said = str(recognizer.recognize_google(audio)).lower().split()
-            print(said)
+            print('[debug]', said)
             if self.fast_word in said:
                 self.fast_flag = True
             if self.clear_word in said:
@@ -54,4 +56,4 @@ class VoiceIface():
         if self.stop_listening is not None:
             self.stop_listening(wait_for_stop=False)
         else:
-            print('not started')
+            print('[error] voice not started')
