@@ -532,7 +532,7 @@ class Game:
             enemy.step()
             if enemy.hit_bottom:
                 if enemy.enemy_type in enemy.bullet_enemies:
-                    # non bullet enemy hit bottom
+                    # bullet enemy hit bottom
                     self.player.handle_point_change(-5)
             # do logic on enemies in same level
             if enemy.z == self.player.ranger.z or enemy.enemy_type in enemy.bullet_enemies:
