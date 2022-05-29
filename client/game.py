@@ -401,7 +401,7 @@ class Game:
             self.enemy_id_count += 1
             new_enemy_type = choice(self.enemy_types)
             y_spawn = 100
-            if ENEMY_INFO[new_enemy_type]['direction'] is 'down':
+            if ENEMY_INFO[new_enemy_type]['direction'] == 'down':
                 y_spawn = -10
             new_enemy = Enemy(
                 randrange(0, SCREEN_WIDTH, 1),
@@ -664,8 +664,16 @@ class Game:
                 self.player.max_speed = MAX_FAST_SPEED
                 self.player.ranger.particle_cloud.is_coin_bursting = True
                 self.player.ranger.health = MAX_RANGER_HEALTH
-            else:
+            elif self.fast_timer > 0:
                 point_diff = abs(self.player.current_score - FAST_SCORE)
+                print(self.player.current_score, FAST_SCORE, point_diff)
+                say_string = 'you need to wait to speed up'
+                self.speech_engine.say(say_string)
+                self.speech_engine.startLoop(False)
+                self.speech_engine.iterate()
+            elif self.fast_timer == 0:
+                point_diff = abs(self.player.current_score - FAST_SCORE)
+                print(self.player.current_score, FAST_SCORE, point_diff)
                 say_string = f"you can't speed up yet you need {point_diff} more points"
                 self.speech_engine.say(say_string)
                 self.speech_engine.startLoop(False)
@@ -679,15 +687,25 @@ class Game:
         self.clear_cooldown = max(self.clear_cooldown - 1, 0)
         wants_clear = self.controller.voice.clear_flag
         can_clear = self.player.current_score >= CLEAR_SCORE and self.clear_cooldown == 0
-        if wants_clear and can_clear:
-            self.clear_flag = True
-            self.clear_cooldown = self.max_clear_cooldown
-        elif not wants_fast and wants_clear:
-            point_diff = abs(self.player.current_score - CLEAR_SCORE)
-            say_string = f'you need {point_diff} more points to kill all enemies'
-            self.speech_engine.say(say_string)
-            self.speech_engine.startLoop(False)
-            self.speech_engine.iterate()
+        if wants_clear:
+            if can_clear:
+                self.clear_flag = True
+                self.clear_cooldown = self.max_clear_cooldown
+            elif not wants_fast and self.clear_cooldown > 0:
+                point_diff = abs(self.player.current_score - CLEAR_SCORE)
+                print(self.player.current_score, CLEAR_SCORE, point_diff)
+                say_string = 'you need to wait to kill all enemies'
+                self.speech_engine.say(say_string)
+                self.speech_engine.startLoop(False)
+                self.speech_engine.iterate()
+            elif not wants_fast and self.clear_cooldown == 0:
+                point_diff = abs(self.player.current_score - CLEAR_SCORE)
+                print(self.player.current_score, CLEAR_SCORE, point_diff)
+                say_string = f'you need {point_diff} more points to kill all enemies'
+                self.speech_engine.say(say_string)
+                self.speech_engine.startLoop(False)
+                self.speech_engine.iterate()
+
         if self.clear_cooldown < self.max_clear_cooldown:
             self.clear_flag = False
         if self.clear_cooldown > self.max_clear_cooldown - 10:
