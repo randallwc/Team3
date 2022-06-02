@@ -130,7 +130,7 @@ class Game:
         self.enemies: List[Enemy] = []
         self.enemy_types = list(ENEMY_INFO.keys())
         self.max_num_enemies = DEFAULT_MAX_NUM_ENEMIES
-        self.max_spawn_counter = DEFAULT_MAX_SPAWN_COUNTER
+        self.max_spawn_counter = DEFAULT_MAX_SPAWN_COUNTER // DEFAULT_MAX_NUM_ENEMIES
         self.spawn_counter = START_SPAWN_COUNT
 
         # game state
@@ -290,7 +290,7 @@ class Game:
         self.is_host = None
         self.level = None
         self.max_num_enemies = DEFAULT_MAX_NUM_ENEMIES
-        self.max_spawn_counter = DEFAULT_MAX_SPAWN_COUNTER
+        self.max_spawn_counter = DEFAULT_MAX_SPAWN_COUNTER // DEFAULT_MAX_NUM_ENEMIES
         self.opponent_ranger_ids = []
         self.player.acceleration = RANGER_ACCELERATION
         self.player.current_score = 0
