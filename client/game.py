@@ -5,6 +5,7 @@ from typing import List
 import pygame
 import pygame_gui
 import pyttsx3
+import webbrowser
 
 from cloud import Cloud
 from constants import (BAD_ENEMY_COLLISION_DAMAGE,
@@ -13,8 +14,8 @@ from constants import (BAD_ENEMY_COLLISION_DAMAGE,
                        BULLET_ENEMY_COLLISION_POINT_CHANGE, CLEAR_SCORE,
                        DARK_BLUE, DEFAULT_MAX_NUM_ENEMIES,
                        DEFAULT_MAX_SPAWN_COUNTER, DEFAULT_ROOM,
-                       DEFAULT_USERNAME, ENEMY_CATEGORIES, ENEMY_INFO,
-                       FAST_SCORE, FRAME_RATE, GAME_STATES, GAME_TIMER,
+                       DEFAULT_USERNAME, ENEMY_INFO, FAST_SCORE, FRAME_RATE,
+                       GAME_STATES, GAME_TIMER,
                        GOOD_ENEMY_COLLISION_HEALTH_CHANGE,
                        GOOD_ENEMY_COLLISION_POINT_CHANGE,
                        GOOD_ENEMY_HIT_HEALTH_CHANGE, LIGHT_BLUE,
@@ -372,6 +373,15 @@ class Game:
             play_music(background_music_path)
         elif not self.play_music and is_playing:
             stop_music()
+
+        # open how to play
+        if self.screen_manager.button(
+                'how to play',
+                SCREEN_HEIGHT - 200,
+                100,
+                DARK_BLUE,
+                LIGHT_BLUE) and self.mousedown:
+            webbrowser.open('https://docs.google.com/document/d/1Zjqs9thXO0dv_LNow-hVzB7dnTfCidPn1XvWt8zP9mY/edit?usp=sharing')
 
         # update display
         pygame.display.update()
