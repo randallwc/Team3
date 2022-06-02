@@ -7,6 +7,7 @@
 - linux `sudo apt-get install portaudio19-dev`
 
 ## test install
+
 ```sh
 cd client/
 python3 test.py
@@ -20,7 +21,9 @@ run these commands to use the client
 make setup
 make
 ```
+
 or
+
 ```sh
 cd client/
 python3 main.py
@@ -54,4 +57,5 @@ make remove-env
 - https://www.vhv.rs/dpng/d/118-1189537_clouds-png-animated-cute-cartoon-cloud-png-transparent.png
 
 # Resources
+
 - https://kiwidamien.github.io/save-the-environment-with-conda-and-how-to-let-others-run-your-programs.html
