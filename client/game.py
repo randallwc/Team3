@@ -381,7 +381,8 @@ class Game:
                 100,
                 DARK_BLUE,
                 LIGHT_BLUE) and self.mousedown:
-            webbrowser.open('https://docs.google.com/document/d/1Zjqs9thXO0dv_LNow-hVzB7dnTfCidPn1XvWt8zP9mY/edit?usp=sharing')
+            webbrowser.open(
+                'https://docs.google.com/document/d/1Zjqs9thXO0dv_LNow-hVzB7dnTfCidPn1XvWt8zP9mY/edit?usp=sharing')
 
         # update display
         pygame.display.update()
