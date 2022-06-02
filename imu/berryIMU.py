@@ -219,6 +219,11 @@ def on_message(client, userdata, message):
           str(message.qos))
 
 
+if len(sys.argv) != 2:
+    print('ERROR: incorrect number of arguments')
+    print('use: python3 berryIMU.py username')
+    sys.exit(1)
+
 server = 'test.mosquitto.org'
 room = f'team3/controller/{sys.argv[1]}'
 publisher = mqtt.Client()
